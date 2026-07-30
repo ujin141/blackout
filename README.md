@@ -12,19 +12,14 @@ python -m http.server 5180
 
 ## 배포
 
-**최초 1회만** 저장소에서 켜면 됩니다.
+**https://www.blackoutsound.com** — Vercel이 GitHub `main` 브랜치를 보고 있어서, 푸시하면 1~2분 안에 자동으로 반영됩니다.
 
-[Settings → Pages](https://github.com/ujin141/blackout/settings/pages)
-→ Source: **Deploy from a branch**
-→ Branch: **main** / **/ (root)** → **Save**
-
-1~2분 뒤 `https://ujin141.github.io/blackout/` 에서 열립니다. 이후에는 `main`에 푸시할 때마다 자동으로 갱신됩니다.
+도메인(가비아)은 이미 Vercel을 가리키고 있습니다. DNS를 건드릴 일은 없습니다.
 
 ### 링크 미리보기(카카오톡 등)가 안 나올 때
 
-- 사이트가 실제로 열리는지 먼저 확인하세요. 주소가 죽어 있으면 미리보기는 무조건 빈 화면입니다.
-- 카카오톡은 미리보기를 캐시합니다. 예전에 공유한 적이 있으면 [카카오 디버거](https://developers.kakao.com/tool/debugger/sharing)에서 캐시를 초기화하거나, 주소 뒤에 `?v=2`를 붙여 새 주소로 공유하세요.
-- 도메인을 연결하면 `index.html` 상단의 미리보기 주소 4곳을 그 도메인으로 바꿔야 합니다.
+- 카카오톡은 미리보기를 한 번 읽으면 캐시합니다. 예전에 공유한 적이 있으면 [카카오 디버거](https://developers.kakao.com/tool/debugger/sharing)에서 캐시를 초기화하거나, 주소 뒤에 `?v=2`를 붙여 새 주소로 공유하세요.
+- 미리보기에 쓰는 이미지는 `assets/img/og-image.png`이고, `video/make_og.py`로 다시 만들 수 있습니다.
 
 ## 자주 바꿀 것들
 
