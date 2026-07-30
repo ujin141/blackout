@@ -5,8 +5,8 @@
 
 const I18N = {
   ko: {
-    'meta.title': 'BLACKOUT CREW — Where the Lights Fade, The Music Takes Over.',
-    'meta.desc': '서울 기반 DJ 크루 BLACKOUT. 하우스, 테크노, 그리고 조명이 꺼지는 순간. 창립 멤버를 모집합니다.',
+    'meta.title': 'BLACKOUT CREW — 서울 DJ 크루 | House · Techno · Minimal',
+    'meta.desc': '서울 기반 DJ 크루 BLACKOUT CREW. 하우스·테크노·미니멀을 클럽, 창고 파티, 페스티벌에서 플레이합니다. 멤버 AROS, LYNN, TS. 창립 멤버 모집 중.',
 
     /* 내비게이션은 한국어에서도 영어로 노출 (브랜드 톤 유지).
        한글로 되돌리려면 이 8줄만 한국어로 바꾸면 됩니다. */
@@ -119,7 +119,7 @@ const I18N = {
   },
 
   en: {
-    'meta.title': 'BLACKOUT CREW — Where the Lights Fade, The Music Takes Over.',
+    'meta.title': 'BLACKOUT CREW — Seoul DJ Crew | House · Techno · Minimal',
     'meta.desc': 'BLACKOUT is a DJ crew based in Seoul. House, techno, and the moment the lights go out. Founding members wanted.',
 
     'nav.about': 'About',
