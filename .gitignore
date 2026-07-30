@@ -1,0 +1,7 @@
+# 개인정보가 들어있는 원본 자료 (프로필 카드에 전화번호 있음) — 공개 저장소에 올리지 않음
+AROS/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

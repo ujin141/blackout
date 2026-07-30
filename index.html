@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>BLACKOUT CREW — Where the Lights Fade, The Music Takes Over.</title>
+<meta name="description" data-i18n="meta.desc" data-i18n-attr="content" content="서울 기반 DJ 크루 BLACKOUT. 하우스, 테크노, 그리고 조명이 꺼지는 순간. 창립 멤버를 모집합니다." />
+<meta name="theme-color" content="#000000" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="BLACKOUT CREW — Seoul DJ Crew" />
+<meta property="og:description" content="Where the Lights Fade, The Music Takes Over." />
+<meta property="og:image" content="assets/img/logo-lockup.png" />
+<meta property="og:site_name" content="BLACKOUT CREW" />
+
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="icon" href="assets/img/favicon.png" sizes="180x180" type="image/png" />
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<!-- ── intro ────────────────────────────────────────────────── -->
+<div class="intro" id="intro" aria-hidden="true">
+  <img class="intro__logo" src="assets/img/logo-mark.png" alt="" width="574" height="843" />
+  <div class="intro__bar"><span></span></div>
+</div>
+
+<!-- ── nav ──────────────────────────────────────────────────── -->
+<header class="nav" id="nav">
+  <a class="nav__logo" href="#top" aria-label="BLACKOUT CREW">
+    <img src="assets/img/logo-mark.png" alt="" width="574" height="843" />
+    <img class="nav__word" src="assets/img/logo-blackout.png" alt="BLACKOUT" width="874" height="62" />
+  </a>
+
+  <nav class="nav__links" aria-label="Primary">
+    <a href="#about" data-i18n="nav.about">소개</a>
+    <a href="#philosophy" data-i18n="nav.philosophy">철학</a>
+    <a href="#work" data-i18n="nav.work">활동</a>
+    <a href="#members" data-i18n="nav.members">멤버</a>
+    <a href="#gallery" data-i18n="nav.gallery">갤러리</a>
+    <a href="#join" data-i18n="nav.join">합류</a>
+    <a href="#contact" data-i18n="nav.contact">문의</a>
+  </nav>
+
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="ko">KO</button>
+    <span aria-hidden="true">/</span>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+
+  <button class="nav__cta" data-open-apply type="button" data-i18n="nav.cta">BLACKOUT 합류하기</button>
+
+  <button class="nav__burger" id="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">
+    <span></span><span></span>
+  </button>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav class="menu__links" aria-label="Mobile">
+    <a href="#about"><i>01</i> <b data-i18n="nav.about">소개</b></a>
+    <a href="#philosophy"><i>02</i> <b data-i18n="nav.philosophy">철학</b></a>
+    <a href="#work"><i>03</i> <b data-i18n="nav.work">활동</b></a>
+    <a href="#members"><i>04</i> <b data-i18n="nav.members">멤버</b></a>
+    <a href="#gallery"><i>05</i> <b data-i18n="nav.gallery">갤러리</b></a>
+    <a href="#join"><i>06</i> <b data-i18n="nav.join">합류</b></a>
+    <a href="#contact"><i>07</i> <b data-i18n="nav.contact">문의</b></a>
+  </nav>
+  <div class="menu__foot">
+    <span data-i18n="menu.base">서울, 대한민국</span>
+    <a href="#" data-link="instagram" target="_blank" rel="noopener">Instagram</a>
+  </div>
+</div>
+
+<main id="top">
+
+<!-- ── hero ─────────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+  <div class="hero__vignette" aria-hidden="true"></div>
+
+  <div class="hero__inner">
+    <p class="hero__eyebrow">
+      <span data-i18n="hero.eyebrow1">서울</span><em></em>
+      <span data-i18n="hero.eyebrow2">DJ 크루</span><em></em>
+      <span data-i18n="hero.eyebrow3">EST. 2026</span>
+    </p>
+
+    <h1 class="hero__logo">
+      <div class="logo3d" id="logo3d">
+        <div class="logo3d__inner">
+          <img class="logo3d__glow" src="assets/img/logo-lockup.png" alt="" aria-hidden="true" />
+          <img class="logo3d__mark" src="assets/img/logo-mark.png" alt="" aria-hidden="true" />
+          <img class="logo3d__word" src="assets/img/logo-word.png" alt="BLACKOUT CREW" />
+          <span class="logo3d__spec" aria-hidden="true"></span>
+          <span class="logo3d__sweep" aria-hidden="true"></span>
+        </div>
+        <span class="logo3d__floor" aria-hidden="true"></span>
+      </div>
+    </h1>
+
+    <p class="hero__slogan">Where the Lights Fade,<br /><em>The Music Takes Over.</em></p>
+
+    <div class="hero__actions">
+      <button class="btn btn--solid" data-open-apply type="button" data-i18n="hero.cta1">BLACKOUT 합류하기</button>
+      <a class="btn btn--ghost" href="#contact" data-i18n="hero.cta2">문의하기</a>
+    </div>
+  </div>
+
+  <div class="hero__scroll" aria-hidden="true"><span data-i18n="hero.scroll">SCROLL</span><i></i></div>
+</section>
+
+<!-- ── marquee ──────────────────────────────────────────────── -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>House</span><b>◆</b><span>Techno</span><b>◆</b><span>Minimal</span><b>◆</b><span>Underground</span><b>◆</b>
+    <span>House</span><b>◆</b><span>Techno</span><b>◆</b><span>Minimal</span><b>◆</b><span>Underground</span><b>◆</b>
+    <span>House</span><b>◆</b><span>Techno</span><b>◆</b><span>Minimal</span><b>◆</b><span>Underground</span><b>◆</b>
+  </div>
+</div>
+
+<!-- ── about ────────────────────────────────────────────────── -->
+<section class="section about" id="about">
+  <div class="wrap">
+    <p class="label" data-reveal><i>01</i> <b data-i18n="about.label">소개</b></p>
+    <div class="about__grid">
+      <h2 class="display" data-reveal-lines data-i18n="about.title">BLACKOUT은 단순한<br>DJ 크루가 아닙니다.</h2>
+      <div class="about__body">
+        <p data-reveal data-i18n="about.p1">모든 조명이 꺼지고, 음악만이 공간을 지배하는 순간. 우리는 그 순간을 만드는 사람들입니다.</p>
+        <p data-reveal data-i18n="about.p2">서울을 기반으로 활동하는 DJ, 프로듀서, 비주얼 아티스트가 모였습니다.</p>
+        <p data-reveal data-i18n="about.p3">우리는 라인업을 짜지 않습니다. 하나의 밤을 통째로 설계합니다.</p>
+        <ul class="stats" data-reveal>
+          <li><b data-i18n="about.stat1">서울</b><span data-i18n="about.stat1s">홈 베이스</span></li>
+          <li><b data-i18n="about.stat2">House / Techno</b><span data-i18n="about.stat2s">사운드</span></li>
+          <li><b data-i18n="about.stat3">모집 중</b><span data-i18n="about.stat3s">창립 멤버</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── philosophy ───────────────────────────────────────────── -->
+<section class="section philosophy" id="philosophy">
+  <div class="wrap">
+    <p class="label" data-reveal><i>02</i> <b data-i18n="phil.label">브랜드 철학</b></p>
+    <h2 class="display display--center" data-reveal-lines data-i18n="phil.title">우리가 지키는<br>여덟 단어.</h2>
+    <ul class="words">
+      <li data-reveal><i>01</i><b>Underground</b><span data-i18n="phil.1d">피드보다 플로어. 알고리즘이 아니라 그 공간이 결정합니다.</span></li>
+      <li data-reveal><i>02</i><b>Energy</b><span data-i18n="phil.2d">한 세트는 하나의 곡선입니다. 쌓고, 버티고, 터뜨립니다.</span></li>
+      <li data-reveal><i>03</i><b>Unity</b><span data-i18n="phil.3d">크루 안에 헤드라이너는 없습니다. 플라이어에 이름은 하나.</span></li>
+      <li data-reveal><i>04</i><b>Future</b><span data-i18n="phil.4d">새로운 사운드, 새로운 얼굴, 새로운 공간. 언제나 다음.</span></li>
+      <li data-reveal><i>05</i><b>House</b><span data-i18n="phil.5d">시작점. 그루브와 온도, 그리고 움직일 이유.</span></li>
+      <li data-reveal><i>06</i><b>Techno</b><span data-i18n="phil.6d">도착점. 생각이 멈출 때까지의 반복.</span></li>
+      <li data-reveal><i>07</i><b>Minimal</b><span data-i18n="phil.7d">다 덜어냅니다. 남는 것이 트랙입니다.</span></li>
+      <li data-reveal><i>08</i><b>Night</b><span data-i18n="phil.8d">아무도 일정에 넣지 않는 시간이 우리 시간입니다.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── what we do ───────────────────────────────────────────── -->
+<section class="section work" id="work">
+  <div class="wrap">
+    <p class="label" data-reveal><i>03</i> <b data-i18n="work.label">활동</b></p>
+    <h2 class="display" data-reveal-lines data-i18n="work.title">우리가 밤을<br>장악하는 다섯 가지.</h2>
+    <div class="cards">
+      <article class="card" data-reveal>
+        <span class="card__no">01</span>
+        <h3 data-i18n="work.1t">DJ 퍼포먼스</h3>
+        <p data-i18n="work.1d">클럽 나이트, 창고 파티, B2B.</p>
+      </article>
+      <article class="card" data-reveal>
+        <span class="card__no">02</span>
+        <h3 data-i18n="work.2t">음악 프로덕션</h3>
+        <p data-i18n="work.2d">오리지널 트랙과 에딧, 크루 전용 툴.</p>
+      </article>
+      <article class="card" data-reveal>
+        <span class="card__no">03</span>
+        <h3 data-i18n="work.3t">이벤트</h3>
+        <p data-i18n="work.3d">밤 전체를 기획합니다.</p>
+      </article>
+      <article class="card" data-reveal>
+        <span class="card__no">04</span>
+        <h3 data-i18n="work.4t">페스티벌</h3>
+        <p data-i18n="work.4d">스테이지 테이크오버와 페스티벌 프로그래밍.</p>
+      </article>
+      <article class="card card--wide" data-reveal>
+        <span class="card__no">05</span>
+        <h3 data-i18n="work.5t">크리에이티브 콜라보</h3>
+        <p data-i18n="work.5d">비주얼 아티스트, 포토그래퍼, 영상 감독, 브랜드.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ── members ──────────────────────────────────────────────── -->
+<section class="section members" id="members">
+  <div class="wrap">
+    <p class="label" data-reveal><i>04</i> <b data-i18n="mem.label">멤버</b></p>
+    <div class="members__head">
+      <h2 class="display" data-reveal-lines data-i18n="mem.title">밤을 만드는<br>사람들.</h2>
+      <p class="members__lead" data-reveal data-i18n="mem.lead">BLACKOUT은 이름 하나로 움직입니다.</p>
+    </div>
+    <div class="members__grid" id="memberGrid"></div>
+  </div>
+</section>
+
+<!-- ── gallery ──────────────────────────────────────────────── -->
+<section class="section gallery" id="gallery">
+  <div class="wrap">
+    <p class="label" data-reveal><i>05</i> <b data-i18n="gal.label">갤러리</b></p>
+    <h2 class="display" data-reveal-lines data-i18n="gal.title">그날 밤의<br>기록.</h2>
+  </div>
+
+  <div class="grid">
+    <figure class="tile tile--hero" data-reveal data-art="beams">
+      <figcaption><b data-i18n="gal.1t">메인 플로어</b><span data-i18n="gal.1s">서울</span></figcaption>
+    </figure>
+    <figure class="tile tile--tall" data-reveal data-art="crowd">
+      <figcaption><b data-i18n="gal.2t">프론트 로우</b><span data-i18n="gal.2s">03:40</span></figcaption>
+    </figure>
+    <figure class="tile" data-reveal data-art="strobe">
+      <figcaption><b data-i18n="gal.3t">스트로브</b><span data-i18n="gal.3s">창고</span></figcaption>
+    </figure>
+    <figure class="tile" data-reveal data-art="smoke">
+      <figcaption><b data-i18n="gal.4t">헤이즈</b><span data-i18n="gal.4s">백룸</span></figcaption>
+    </figure>
+    <figure class="tile tile--wide" data-reveal data-art="lasers">
+      <figcaption><b data-i18n="gal.5t">레이저</b><span data-i18n="gal.5s">페스티벌 스테이지</span></figcaption>
+    </figure>
+    <figure class="tile" data-reveal data-art="booth">
+      <figcaption><b data-i18n="gal.6t">부스</b><span data-i18n="gal.6s">클로징 세트</span></figcaption>
+    </figure>
+    <figure class="tile tile--tall" data-reveal data-art="hands">
+      <figcaption><b data-i18n="gal.7t">핸즈 업</b><span data-i18n="gal.7s">피크 타임</span></figcaption>
+    </figure>
+    <figure class="tile tile--wide3" data-reveal data-art="silhouette">
+      <figcaption><b data-i18n="gal.8t">블랙아웃</b><span data-i18n="gal.8s">조명이 꺼지는 순간</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ── join ─────────────────────────────────────────────────── -->
+<section class="section join" id="join">
+  <div class="wrap">
+    <p class="label" data-reveal><i>06</i> <b data-i18n="join.label">JOIN BLACKOUT</b></p>
+    <div class="join__head">
+      <h2 class="display" data-reveal-lines data-i18n="join.title">창립 멤버<br>모집</h2>
+      <div class="join__copy">
+        <p data-reveal data-i18n="join.p1">우리는 단순히 DJ를 모집하지 않습니다.</p>
+        <p data-reveal data-i18n="join.p2">완성된 경력보다 무엇을 만드는 사람인지가 중요합니다.</p>
+      </div>
+    </div>
+
+    <ul class="roles">
+      <li data-reveal><b data-i18n="join.r1">DJ</b><span data-i18n="join.r1d">하우스, 테크노, 미니멀.</span></li>
+      <li data-reveal><b data-i18n="join.r2">프로듀서</b><span data-i18n="join.r2d">오리지널, 에딧, 하드웨어 라이브 셋.</span></li>
+      <li data-reveal><b data-i18n="join.r3">비주얼 아티스트</b><span data-i18n="join.r3d">VJ, 조명, 무대와 프로젝션 디자인.</span></li>
+      <li data-reveal><b data-i18n="join.r4">포토그래퍼</b><span data-i18n="join.r4d">어두운 조명, 거친 입자, 진짜 현장.</span></li>
+      <li data-reveal><b data-i18n="join.r5">영상 감독</b><span data-i18n="join.r5d">애프터무비, 세트 영상, 다큐멘터리.</span></li>
+      <li data-reveal><b data-i18n="join.r6">콘텐츠 크리에이터</b><span data-i18n="join.r6d">편집, 글, 채널 운영.</span></li>
+    </ul>
+
+    <div class="join__cta" data-reveal>
+      <button class="btn btn--solid btn--lg" data-open-apply type="button" data-i18n="join.cta">지원하기</button>
+      <p data-i18n="join.note">이력서는 필요 없습니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── contact ──────────────────────────────────────────────── -->
+<section class="section contact" id="contact">
+  <div class="wrap">
+    <p class="label" data-reveal><i>07</i> <b data-i18n="contact.label">문의</b></p>
+    <h2 class="display" data-reveal-lines data-i18n="contact.title">연락 주세요.</h2>
+    <ul class="contact__list">
+      <li data-reveal>
+        <a href="#" data-link="instagram" target="_blank" rel="noopener">
+          <b>Instagram</b><span data-text="instagram"></span><i aria-hidden="true">↗</i>
+        </a>
+      </li>
+      <li data-reveal>
+        <a href="#" data-link="email">
+          <b>Email</b><span data-text="email"></span><i aria-hidden="true">↗</i>
+        </a>
+      </li>
+      <li data-reveal>
+        <a href="#" data-link="instagram" target="_blank" rel="noopener">
+          <b data-i18n="contact.dm">DM</b><span data-i18n="contact.dmd">부킹, 협업, 지원 문의</span><i aria-hidden="true">↗</i>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<!-- ── footer ───────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="wrap">
+    <img class="footer__logo" src="assets/img/logo-lockup.png" alt="BLACKOUT CREW" width="878" height="978" />
+    <p class="footer__slogan">Where the Lights Fade, The Music Takes Over.</p>
+    <div class="footer__row">
+      <span>© <span id="year">2026</span> BLACKOUT CREW. <span data-i18n="footer.rights">모든 권리 보유.</span></span>
+      <span data-i18n="footer.city">서울, 대한민국</span>
+      <a href="#top" data-i18n="footer.top">맨 위로 ↑</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── apply modal ──────────────────────────────────────────── -->
+<div class="modal" id="apply" hidden>
+  <div class="modal__scrim" data-close-apply></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="applyTitle">
+    <button class="modal__x" type="button" data-close-apply aria-label="Close">✕</button>
+    <p class="label"><i>06</i> <b data-i18n="apply.label">창립 멤버</b></p>
+    <h2 id="applyTitle" data-i18n="apply.title">BLACKOUT 지원하기</h2>
+    <p class="modal__note">
+      <span data-i18n="apply.note">작성하면 메일 앱이 내용이 채워진 채로 열립니다. 직접 보내셔도 됩니다:</span>
+      <a href="#" data-link="email"><span data-text="email"></span></a>
+    </p>
+
+    <form class="form" id="applyForm" novalidate>
+      <div class="field">
+        <label for="f-name" data-i18n="apply.name">이름 / 활동명</label>
+        <input id="f-name" name="name" type="text" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="f-email" data-i18n="apply.email">이메일</label>
+        <input id="f-email" name="email" type="email" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="f-role" data-i18n="apply.role">분야</label>
+        <select id="f-role" name="role" required>
+          <option value="" data-i18n="apply.select">선택하세요</option>
+          <option data-i18n="join.r1">DJ</option>
+          <option data-i18n="join.r2">프로듀서</option>
+          <option data-i18n="join.r3">비주얼 아티스트</option>
+          <option data-i18n="join.r4">포토그래퍼</option>
+          <option data-i18n="join.r5">영상 감독</option>
+          <option data-i18n="join.r6">콘텐츠 크리에이터</option>
+          <option data-i18n="apply.other">기타</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-link" data-i18n="apply.link">링크 <span>(사운드클라우드, 인스타그램, 포트폴리오…)</span></label>
+        <input id="f-link" name="link" type="text" inputmode="url" />
+      </div>
+      <div class="field field--full">
+        <label for="f-about" data-i18n="apply.about">무엇을 만드는지 알려주세요</label>
+        <textarea id="f-about" name="about" rows="4"></textarea>
+      </div>
+      <p class="form__error" id="formError" role="alert" hidden></p>
+      <button class="btn btn--solid btn--lg" type="submit" data-i18n="apply.submit">지원서 보내기</button>
+    </form>
+  </div>
+</div>
+
+<div class="grain" aria-hidden="true"></div>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/members.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
