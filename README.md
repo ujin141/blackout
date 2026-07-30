@@ -12,12 +12,19 @@ python -m http.server 5180
 
 ## 배포
 
-`main`에 푸시하면 `.github/workflows/pages.yml`이 GitHub Pages로 자동 배포합니다.
+**최초 1회만** 저장소에서 켜면 됩니다.
 
-**최초 1회만** 저장소에서 켜줘야 합니다:
-[Settings → Pages](https://github.com/ujin141/blackout/settings/pages) → **Source: GitHub Actions** 선택.
+[Settings → Pages](https://github.com/ujin141/blackout/settings/pages)
+→ Source: **Deploy from a branch**
+→ Branch: **main** / **/ (root)** → **Save**
 
-그다음부터는 푸시할 때마다 자동으로 나갑니다. 주소는 `https://ujin141.github.io/blackout/`.
+1~2분 뒤 `https://ujin141.github.io/blackout/` 에서 열립니다. 이후에는 `main`에 푸시할 때마다 자동으로 갱신됩니다.
+
+### 링크 미리보기(카카오톡 등)가 안 나올 때
+
+- 사이트가 실제로 열리는지 먼저 확인하세요. 주소가 죽어 있으면 미리보기는 무조건 빈 화면입니다.
+- 카카오톡은 미리보기를 캐시합니다. 예전에 공유한 적이 있으면 [카카오 디버거](https://developers.kakao.com/tool/debugger/sharing)에서 캐시를 초기화하거나, 주소 뒤에 `?v=2`를 붙여 새 주소로 공유하세요.
+- 도메인을 연결하면 `index.html` 상단의 미리보기 주소 4곳을 그 도메인으로 바꿔야 합니다.
 
 ## 자주 바꿀 것들
 
