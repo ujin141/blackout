@@ -885,9 +885,9 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 
 /* 누끼 인물 — 생성된 무대 조명 위에 세운다.
    카드 높이를 꽉 채우면 확대돼 보여서 위쪽에 여백을 둔다. */
-.member__cut {
+.member__photo img.member__cut {
   inset: auto 0 0 0;
-  height: 84%;
+  height: 72%;
   object-fit: contain !important;
   object-position: bottom center;
   transform: scale(1.01) !important;

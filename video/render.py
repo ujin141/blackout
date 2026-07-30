@@ -161,8 +161,11 @@ def blit(dst, mask, cx, cy, alpha=1.0, glow=0.0, glow_r=25, color=(1, 1, 1),
     x0, y0 = int(cx - w / 2), int(cy - h / 2)
     layers = [(m, 1.0)]
     if glow > 0:
+        # 마스크 바깥으로 번질 자리를 미리 확보하지 않으면 글로우가 사각형으로 잘린다
+        pad = int(glow_r * 1.6) + 4
+        mp = cv2.copyMakeBorder(m, pad, pad, pad, pad, cv2.BORDER_CONSTANT, value=0)
         k = int(glow_r) * 2 + 1
-        layers.insert(0, (cv2.GaussianBlur(m, (k, k), 0), glow))
+        layers.insert(0, (cv2.GaussianBlur(mp, (k, k), 0), glow))
 
     for lm, la in layers:
         lh, lw = lm.shape
