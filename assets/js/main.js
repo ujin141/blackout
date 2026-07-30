@@ -93,9 +93,11 @@ function localizeMembers() {
     if (!m) return;
     const role = card.querySelector('.member__role');
     const bio = card.querySelector('.member__bio');
+    const genres = card.querySelector('.member__genres');
     const career = card.querySelector('.member__career');
     if (role) role.textContent = pick(m.role);
     if (bio) bio.textContent = pick(m.bio);
+    if (genres) genres.textContent = (pick(m.genres) || []).join(' · ');
     if (career) {
       const items = pick(m.career) || [];
       career.replaceChildren(...items.map(c => {
@@ -129,13 +131,19 @@ function localizeMembers() {
       : m.cutout
         ? `<img class="member__cut" src="${esc(m.cutout)}" alt="${esc(m.name)}" loading="lazy" />`
         : '';
+    const genres = pick(m.genres) || [];
+    const genreHtml = genres.length
+      ? `<p class="member__genres">${genres.map(esc).join(' · ')}</p>`
+      : '';
     const career = pick(m.career) || [];
     const careerHtml = career.length
       ? `<ul class="member__career">${career.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`
       : '';
+    /* 값이 전체 URL이면 그대로, 아니면 핸들로 취급 */
+    const url = (base, v) => v.includes('://') ? v : base + v;
     const links = [
-      m.instagram && `<a href="https://instagram.com/${esc(m.instagram)}" target="_blank" rel="noopener">@${esc(m.instagram)}</a>`,
-      m.soundcloud && `<a href="https://soundcloud.com/${esc(m.soundcloud)}" target="_blank" rel="noopener">SoundCloud</a>`
+      m.instagram && `<a href="${esc(url('https://instagram.com/', m.instagram))}" target="_blank" rel="noopener">@${esc(m.instagram)}</a>`,
+      m.soundcloud && `<a href="${esc(url('https://soundcloud.com/', m.soundcloud))}" target="_blank" rel="noopener">SoundCloud</a>`
     ].filter(Boolean).join('');
     html.push(
       `<article class="member" data-reveal data-index="${i}">
@@ -143,6 +151,7 @@ function localizeMembers() {
          <div class="member__info">
            <h3 class="member__name">${esc(m.name)}</h3>
            <p class="member__role">${esc(pick(m.role))}</p>
+           ${genreHtml}
            <p class="member__bio">${esc(pick(m.bio))}</p>
            ${careerHtml}
            ${links ? `<div class="member__links">${links}</div>` : ''}

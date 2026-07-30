@@ -5,6 +5,7 @@
    {
      name:      'AROS',                            // 활동명
      role:      { ko: 'DJ', en: 'DJ' },
+     genres:    { ko: ['하우스', '테크노'], en: ['House', 'Techno'] },  // 이름 아래 한 줄
      bio:       { ko: '한 줄 소개', en: 'one line' },
      career:    { ko: ['클럽 A', '클럽 B'], en: [...] },   // 없으면 생략
      instagram: 'handle',                          // @ 없이 (없으면 '')
@@ -18,9 +19,13 @@ const MEMBERS = [
   {
     name: 'AROS',
     role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '바운스', '하우스', '하드'],
+      en: ['EDM', 'Bounce', 'House', 'Hard']
+    },
     bio: {
-      ko: '중학교 때 Alan Walker로 전자음악에 빠졌고, 지금은 무대 위에서 그 에너지를 그대로 돌려줍니다. EDM · 바운스 · 하우스 · 하드.',
-      en: 'Fell for electronic music through Alan Walker as a kid, now gives that energy back on stage. EDM · bounce · house · hard.'
+      ko: '중학교 때 Alan Walker로 전자음악에 빠졌고, 지금은 무대 위에서 그 에너지를 그대로 돌려줍니다.',
+      en: 'Fell for electronic music through Alan Walker as a kid, now gives that energy back on stage.'
     },
     career: {
       ko: ['상하이 클럽 MAX', '클럽 234', '성남 국빈관 나이트클럽'],
@@ -29,6 +34,22 @@ const MEMBERS = [
     instagram: 'arosjin__2000_12_23',
     soundcloud: 'jin-aros',
     cutout: 'assets/img/members/aros-cutout.webp',
+    photo: ''
+  },
+  {
+    name: 'LYNN',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '테크하우스', '하우스', '미니멀', '미니멀 바운스', '힙합'],
+      en: ['EDM', 'Tech House', 'House', 'Minimal', 'Minimal Bounce', 'Hip-hop']
+    },
+    bio: {
+      ko: '장르를 넘나들며 그날 플로어에 맞춰 갑니다.',
+      en: 'Moves between genres and plays to whatever the room needs that night.'
+    },
+    instagram: '_1.ynn___',
+    soundcloud: 'jfjmq6ahybym',
+    cutout: 'assets/img/members/lynn-cutout.webp',
     photo: ''
   }
 ];
