@@ -75,6 +75,20 @@ const MEMBERS = [
 
 세기 조절은 `assets/css/styles.css`의 `.logo3d` 블록과 `assets/js/main.js`의 `logo3d()` 안 `MAX`(기울기 각도) 값으로 합니다. 층 위치(`16.97%`, `87.32%` 등)는 원본 로고에서 계산한 값이라 건드리지 마세요.
 
+## 영상
+
+`video/` 폴더에서 만듭니다. 음악과 효과음까지 전부 코드로 합성해서 저작권 이슈가 없습니다.
+
+```bash
+cd video
+python audio.py && python make.py        # 티저 28초 → out/blackout_teaser.mp4
+python audio_open.py && python opening.py # 오프닝 30초 → out/blackout_opening.mp4
+python make_og.py                        # 링크 미리보기 카드
+```
+
+둘 다 1080x1920 세로, 128BPM에 컷이 맞춰져 있습니다. 문구는 각 스크립트 상단의 목록(`WORDS`, `ROLES` 등)에서 바꿉니다.
+`python make.py 15.0 16.2` 처럼 시간 두 개를 주면 그 구간만 PNG로 뽑아 빠르게 확인할 수 있습니다.
+
 ## 로고 파일
 
 | 파일 | 용도 |
