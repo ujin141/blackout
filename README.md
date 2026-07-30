@@ -8,7 +8,16 @@
 python -m http.server 5180
 ```
 
-브라우저에서 `http://localhost:5180` 열기. 빌드 과정 없음 — HTML/CSS/JS 파일만 있으면 어디든 올라갑니다 (Vercel, Netlify, GitHub Pages 등 폴더 통째로 업로드).
+브라우저에서 `http://localhost:5180` 열기. 빌드 과정 없음 — HTML/CSS/JS 파일만 있으면 어디든 올라갑니다.
+
+## 배포
+
+`main`에 푸시하면 `.github/workflows/pages.yml`이 GitHub Pages로 자동 배포합니다.
+
+**최초 1회만** 저장소에서 켜줘야 합니다:
+[Settings → Pages](https://github.com/ujin141/blackout/settings/pages) → **Source: GitHub Actions** 선택.
+
+그다음부터는 푸시할 때마다 자동으로 나갑니다. 주소는 `https://ujin141.github.io/blackout/`.
 
 ## 자주 바꿀 것들
 
