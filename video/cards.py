@@ -1,0 +1,313 @@
+"""
+인스타 카드뉴스 (1080x1350). DJ 1명당 5장.
+python cards.py  →  out/cards/aros_1..5.png, lynn_1..5.png
+"""
+import os
+import glob
+import numpy as np
+import cv2
+from PIL import Image, ImageDraw, ImageFont
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+IMG = os.path.join(ROOT, 'assets', 'img')
+BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
+KR = 'C:/Windows/Fonts/malgun.ttf'
+KRB = 'C:/Windows/Fonts/malgunbd.ttf'
+
+W, H = 1080, 1350
+OUT = os.path.join(HERE, 'out', 'cards')
+os.makedirs(OUT, exist_ok=True)
+
+MARGIN = 90
+HANDLE = '@blackoutcrew_official'
+SLOGAN = 'WHERE THE LIGHTS FADE, THE MUSIC TAKES OVER.'
+
+
+# ── 기본 도구 ──────────────────────────────────────────────
+def load_alpha(name, height):
+    im = Image.open(os.path.join(IMG, name)).convert('RGBA')
+    w = max(1, int(im.width * height / im.height))
+    im = im.resize((w, height), Image.LANCZOS)
+    return np.asarray(im).astype(np.float32)[..., 3] / 255.0
+
+
+def blit_photo(dst, name, height, cx, bottom, contrast=1.15, bright=1.0):
+    """누끼 사진을 실제 픽셀로 합성 (알파만 쓰는 blit과 다름)"""
+    im = Image.open(os.path.join(IMG, name)).convert('RGBA')
+    w = max(1, int(im.width * height / im.height))
+    im = im.resize((w, height), Image.LANCZOS)
+    arr = np.asarray(im).astype(np.float32) / 255.0
+    rgb, al = arr[..., :3], arr[..., 3:4]
+    g = (rgb[..., 0] * .299 + rgb[..., 1] * .587 + rgb[..., 2] * .114)[..., None]
+    g = np.clip((g - 0.5) * contrast + 0.5, 0, 1) * bright
+    g = np.repeat(g, 3, axis=2)
+    x0, y0 = int(cx - w / 2), int(bottom - height)
+    sx0, sy0 = max(0, x0), max(0, y0)
+    sx1, sy1 = min(W, x0 + w), min(H, y0 + height)
+    if sx1 <= sx0 or sy1 <= sy0:
+        return
+    sub_a = al[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0]
+    sub_c = g[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0]
+    dst[sy0:sy1, sx0:sx1] = dst[sy0:sy1, sx0:sx1] * (1 - sub_a) + sub_c * sub_a
+
+
+def blit(dst, m, cx, cy, a=1.0, glow=0.0, glow_r=24, anchor='c'):
+    if abs(a) < 0.003:
+        return
+    m = m.astype(np.float32)
+    if m.max() > 1.5:
+        m /= 255.0
+    layers = [(m, 1.0)]
+    if glow > 0:
+        pad = int(glow_r * 1.6) + 4
+        mp = cv2.copyMakeBorder(m, pad, pad, pad, pad, cv2.BORDER_CONSTANT, value=0)
+        layers.insert(0, (cv2.GaussianBlur(mp, (0, 0), glow_r * 0.55), glow))
+    for lm, la in layers:
+        h, w = lm.shape
+        x0 = int(cx) if anchor == 'l' else int(cx - w / 2)
+        y0 = int(cy - h / 2)
+        sx0, sy0 = max(0, x0), max(0, y0)
+        sx1, sy1 = min(W, x0 + w), min(H, y0 + h)
+        if sx1 <= sx0 or sy1 <= sy0:
+            continue
+        dst[sy0:sy1, sx0:sx1] += lm[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0][..., None] * (a * la)
+
+
+def tmask(text, path, size, track_em=0.0):
+    f = ImageFont.truetype(path, size)
+    tr = int(size * track_em)
+    ws = [f.getlength(c) for c in text]
+    total = int(sum(ws) + tr * max(len(text) - 1, 0))
+    asc, desc = f.getmetrics()
+    im = Image.new('L', (total + 60, asc + desc + 40), 0)
+    d = ImageDraw.Draw(im)
+    x = 30
+    for c, wc in zip(text, ws):
+        d.text((x, 20), c, font=f, fill=255)
+        x += wc + tr
+    a = np.asarray(im)
+    ys, xs = np.where(a > 0)
+    if not len(xs):
+        return np.zeros((1, 1), np.uint8)
+    return a[ys.min():ys.max() + 1, xs.min():xs.max() + 1].copy()
+
+
+def fit(text, path, target_w, track_em=0.0):
+    lo, hi = 8, 300
+    for _ in range(20):
+        mid = (lo + hi) / 2
+        if tmask(text, path, int(mid), track_em).shape[1] > target_w:
+            hi = mid
+        else:
+            lo = mid
+    return int(lo)
+
+
+def beam(dst, x, angle, spread, a):
+    if a <= 0.004:
+        return
+    layer = np.zeros((H // 2, W // 2), np.float32)
+    L = H
+    pts = np.array([[x / 2, -30], [x / 2 - spread / 2 + np.sin(angle) * L, L],
+                    [x / 2 + spread / 2 + np.sin(angle) * L, L]], np.int32)
+    cv2.fillPoly(layer, [pts], 1.0)
+    layer *= (np.linspace(1, 0, H // 2, dtype=np.float32) ** 1.4)[:, None]
+    layer = cv2.GaussianBlur(layer, (0, 0), 20)
+    dst += cv2.resize(layer, (W, H))[..., None] * a
+
+
+def haze(dst, x, y, r, a):
+    yy, xx = np.mgrid[0:H:3, 0:W:3].astype(np.float32)
+    g = np.clip(1 - np.sqrt((xx - x) ** 2 + (yy - y) ** 2) / r, 0, 1) ** 2.2
+    dst += cv2.resize(g, (W, H))[..., None] * a
+
+
+def floor(dst, a, top=0.62):
+    g = np.zeros((H, 1), np.float32)
+    y0 = int(H * top)
+    g[y0:, 0] = np.linspace(0, 1, H - y0) ** 1.6
+    dst += g[..., None] * a
+
+
+_VIG = None
+
+
+def finish(img, vig=1.0):
+    global _VIG
+    if _VIG is None:
+        yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+        d = np.sqrt(((xx - W / 2) / (W * 0.78)) ** 2 + ((yy - H / 2) / (H * 0.78)) ** 2)
+        _VIG = np.clip(1.12 - d ** 1.9, 0, 1)[..., None]
+    img = img * ((1 - vig) + vig * _VIG)
+    rng = np.random.default_rng(9)
+    img = img + rng.standard_normal((H, W, 1)).astype(np.float32) * 0.018
+    return np.clip(img, 0, 1)
+
+
+def stage_bg(seed=0):
+    """무대 조명 배경"""
+    img = np.zeros((H, W, 3), np.float32)
+    rng = np.random.default_rng(seed)
+    for i in range(4):
+        beam(img, W * (0.12 + i * 0.25) + rng.integers(-70, 70),
+             (rng.random() - 0.5) * 0.4, 90 + i * 14, 0.10 + rng.random() * 0.07)
+    haze(img, W * 0.5, H * 0.4, W * 0.85, 0.05)
+    floor(img, 0.10)
+    return img
+
+
+def brandmark(img, y=MARGIN + 10):
+    """좌상단 로고 + 우상단 핸들"""
+    mk = load_alpha('logo-mark.png', 74)
+    blit(img, mk, MARGIN, y, 0.95, glow=0.3, glow_r=14, anchor='l')
+    wd = load_alpha('logo-blackout.png', 15)
+    blit(img, wd, MARGIN + 66, y + 2, 0.9, glow=0.2, glow_r=8, anchor='l')
+    h = tmask(HANDLE, BRAND, 17, 0.1)
+    blit(img, h, W - MARGIN - h.shape[1], y, 0.5)
+
+
+def footer(img, text=SLOGAN):
+    m = tmask(text, BRAND, 15, 0.2)
+    blit(img, m, W / 2, H - MARGIN + 6, 0.4)
+
+
+def lines(img, rows, y0, font, size, gap, a=1.0, glow=0.35, track=0.0, align='c'):
+    y = y0
+    for r in rows:
+        m = tmask(r, font, size, track)
+        if align == 'l':
+            blit(img, m, MARGIN, y, a, glow=glow, glow_r=18, anchor='l')
+        else:
+            blit(img, m, W / 2, y, a, glow=glow, glow_r=18)
+        y += gap
+    return y
+
+
+def photo_card(path, focus=0.42, dark=0.62):
+    """풀블리드 흑백 사진"""
+    im = Image.open(path).convert('L')
+    tw, th = W, H
+    s = max(tw / im.width, th / im.height)
+    im = im.resize((int(im.width * s) + 1, int(im.height * s) + 1), Image.LANCZOS)
+    x0 = max(0, (im.width - tw) // 2)
+    y0 = int(max(0, min(im.height - th, im.height * focus - th * 0.42)))
+    im = im.crop((x0, y0, x0 + tw, y0 + th))
+    a = np.asarray(im).astype(np.float32) / 255.0
+    a = np.clip((a - 0.5) * 1.28 + 0.5, 0, 1) ** 1.18 * dark
+    img = np.repeat(a[..., None], 3, axis=2)
+    g = np.zeros((H, 1), np.float32)
+    g[int(H * 0.42):, 0] = np.linspace(0, 1, H - int(H * 0.42)) ** 1.5
+    img *= (1 - g[..., None] * 0.86)          # 하단 어둡게 (글자 자리)
+    return img
+
+
+# ── 카드 정의 ──────────────────────────────────────────────
+def make(dj):
+    name = dj['name']
+    src = dj['photo']
+    out = []
+
+    # 1) 훅 — 풀블리드 사진
+    img = photo_card(src, dj['focus'])
+    brandmark(img)
+    y = H - MARGIN - 150
+    for i, ln in enumerate(dj['hook']):
+        m = tmask(ln, KRB, 62)
+        blit(img, m, MARGIN, y + i * 84, 1.0, glow=0.3, glow_r=16, anchor='l')
+    m = tmask('SWIPE', BRAND, 16, 0.35)
+    blit(img, m, W - MARGIN - m.shape[1], H - MARGIN + 6, 0.55)
+    out.append(finish(img, 0.55))
+
+    # 2) 이름
+    img = stage_bg(1)
+    haze(img, W / 2, 420, W * 0.6, 0.07)
+    img = np.clip(img, 0, 1)
+    blit_photo(img, dj['cutout'], 850, W / 2, 950)
+    brandmark(img)
+    sz = fit(name, BRAND, W - MARGIN * 2 - 120, 0.08)
+    m = tmask(name, BRAND, min(sz, 150), 0.08)
+    blit(img, m, W / 2, 1075, 1.0, glow=0.5, glow_r=30)
+    m = tmask(dj['role'], BRAND, 20, 0.4)
+    blit(img, m, W / 2, 1160, 0.75)
+    footer(img)
+    out.append(finish(img))
+
+    # 3) 장르
+    img = stage_bg(2)
+    brandmark(img)
+    m = tmask('PLAYS', BRAND, 22, 0.42)
+    blit(img, m, W / 2, 330, 0.55)
+    sz = min(72, fit(max(dj['genres'], key=len), KRB, W - MARGIN * 2 - 60))
+    y = 470
+    for g in dj['genres']:
+        m = tmask(g, KRB, sz)
+        blit(img, m, W / 2, y, 1.0, glow=0.35, glow_r=20)
+        y += int(sz * 1.55)
+    footer(img)
+    out.append(finish(img))
+
+    # 4) 경력 or 한마디
+    img = stage_bg(3)
+    brandmark(img)
+    m = tmask(dj['c4_label'], BRAND, 22, 0.42)
+    blit(img, m, W / 2, 330, 0.55)
+    y = 480
+    for r in dj['c4_rows']:
+        sz = min(58, fit(r, KRB, W - MARGIN * 2 - 40))
+        m = tmask(r, KRB, sz)
+        blit(img, m, W / 2, y, 1.0, glow=0.32, glow_r=18)
+        y += int(sz * 1.7)
+    if dj.get('c4_note'):
+        m = tmask(dj['c4_note'], KR, 30)
+        blit(img, m, W / 2, y + 40, 0.6)
+    footer(img)
+    out.append(finish(img))
+
+    # 5) CTA
+    img = stage_bg(4)
+    haze(img, W / 2, 520, W * 0.7, 0.08)
+    lock = load_alpha('logo-lockup.png', 520)
+    blit(img, lock, W / 2, 520, 1.0, glow=0.45, glow_r=40)
+    m = tmask('창립 멤버 모집 중', KRB, 52)
+    blit(img, m, W / 2, 930, 1.0, glow=0.35, glow_r=20)
+    m = tmask('DJ · PRODUCER · VISUAL · PHOTO · VIDEO', BRAND, 19, 0.22)
+    blit(img, m, W / 2, 1010, 0.6)
+    m = tmask(HANDLE, BRAND, 30, 0.12)
+    blit(img, m, W / 2, 1130, 0.95, glow=0.3, glow_r=16)
+    m = tmask('DM 주세요', KR, 26)
+    blit(img, m, W / 2, 1190, 0.55)
+    footer(img)
+    out.append(finish(img))
+
+    for i, im in enumerate(out, 1):
+        p = os.path.join(OUT, f'{dj["key"]}_{i}.png')
+        Image.fromarray((im * 255).astype(np.uint8)).save(p, optimize=True)
+        print(p)
+
+
+AROS = dict(
+    key='aros', name='AROS', role='DJ',
+    photo=glob.glob(os.path.join(ROOT, 'AROS', '*_02.jpg'))[0],
+    cutout='members/aros-cutout.png', focus=0.34,
+    hook=['중학생 때 들은 노래 한 곡이', '이 사람을 부스에 앉혔다'],
+    genres=['EDM', '바운스', '하우스', '하드'],
+    c4_label='PLAYED AT',
+    c4_rows=['상하이 클럽 MAX', '클럽 234', '성남 국빈관 나이트클럽'],
+    c4_note='',
+)
+
+LYNN = dict(
+    key='lynn', name='LYNN', role='DJ',
+    photo=glob.glob(os.path.join(ROOT, 'Lynn', '*.jpg'))[0],
+    cutout='members/lynn-cutout.png', focus=0.36,
+    hook=['한 세트에', '장르가 여섯 개 있다'],
+    genres=['EDM', '테크하우스', '하우스', '미니멀', '미니멀 바운스', '힙합'],
+    c4_label='RANGE',
+    c4_rows=['EDM부터 힙합까지', '플로어 보고 고른다'],
+    c4_note='',
+)
+
+if __name__ == '__main__':
+    make(AROS)
+    make(LYNN)
