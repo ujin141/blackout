@@ -883,8 +883,11 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .member:hover .member__photo canvas,
 .member:hover .member__photo img { transform: scale(1.07); filter: grayscale(1) contrast(1.25) brightness(1.18); }
 
-/* 누끼 인물 — 생성된 무대 조명 위에 세운다 */
+/* 누끼 인물 — 생성된 무대 조명 위에 세운다.
+   카드 높이를 꽉 채우면 확대돼 보여서 위쪽에 여백을 둔다. */
 .member__cut {
+  inset: auto 0 0 0;
+  height: 84%;
   object-fit: contain !important;
   object-position: bottom center;
   transform: scale(1.01) !important;
