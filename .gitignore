@@ -8,3 +8,8 @@ desktop.ini
 
 # 멤버 원본 사진 폴더 (누끼 결과물만 저장소에 올림)
 Lynn/
+
+# 영상 렌더 결과물 (스크립트로 다시 만들 수 있음)
+video/out/
+__pycache__/
+*.pyc
