@@ -51,8 +51,24 @@ const MEMBERS = [
     soundcloud: 'jfjmq6ahybym',
     cutout: 'assets/img/members/lynn-cutout.webp',
     photo: ''
+  },
+  {
+    name: 'TS',
+    role: { ko: 'DJ', en: 'DJ' },
+    bio: {
+      ko: '업장 오픈덱에서 시작해 학원 파티와 워크샵, 빠지까지. 생일 파티 초청 DJ로도 섭니다.',
+      en: 'Came up through open decks. Plays school parties, workshops, pool villas and private events.'
+    },
+    career: {
+      ko: ['업장 오픈덱', 'DJ 학원 수강생 파티', '학원 워크샵', '가평 빠지'],
+      en: ['Open decks', 'DJ school parties', 'Academy workshops', 'Gapyeong pool villa']
+    },
+    instagram: '',
+    soundcloud: '',
+    cutout: 'assets/img/members/ts-cutout.webp',
+    photo: ''
   }
 ];
 
 /* 멤버 수가 이 숫자보다 적으면 남는 칸은 "모집 중"으로 표시됩니다. 0이면 표시 안 함. */
-const MEMBER_SLOTS = 3;
+const MEMBER_SLOTS = 6;
