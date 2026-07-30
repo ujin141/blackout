@@ -75,6 +75,15 @@ const MEMBERS = [
 
 세기 조절은 `assets/css/styles.css`의 `.logo3d` 블록과 `assets/js/main.js`의 `logo3d()` 안 `MAX`(기울기 각도) 값으로 합니다. 층 위치(`16.97%`, `87.32%` 등)는 원본 로고에서 계산한 값이라 건드리지 마세요.
 
+## 검색·AI 노출 (SEO / AEO / GEO)
+
+- `index.html` 맨 아래 **JSON-LD**에 크루 정보, 멤버 3명, 자주 묻는 질문 6개가 들어 있습니다. 구글과 AI 답변엔진(ChatGPT, Perplexity 등)이 이걸 읽습니다.
+- **멤버를 추가하면 세 곳을 같이 고쳐야 합니다**: `assets/js/members.js`(화면), `index.html`의 JSON-LD와 `<noscript>` 목록(크롤러), `llms.txt`.
+  화면은 자바스크립트로 그려서 크롤러가 못 보기 때문입니다.
+- `robots.txt`에서 AI 크롤러를 명시적으로 허용해 뒀습니다. 노출을 막고 싶으면 해당 봇을 `Disallow: /`로 바꾸세요.
+- `llms.txt`는 AI가 읽기 좋게 정리한 브랜드 요약입니다.
+- 도메인이 바뀌면 `index.html`(미리보기 주소 4곳 + JSON-LD), `robots.txt`, `sitemap.xml`의 주소를 함께 바꿔야 합니다.
+
 ## 영상
 
 `video/` 폴더에서 만듭니다. 음악과 효과음까지 전부 코드로 합성해서 저작권 이슈가 없습니다.
