@@ -55,6 +55,10 @@ const MEMBERS = [
   {
     name: 'TS',
     role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '딥 하우스', '개러지 하우스', 'K-POP', '시티팝'],
+      en: ['EDM', 'Deep House', 'Garage House', 'K-Pop', 'City Pop']
+    },
     bio: {
       ko: '업장 오픈덱에서 시작해 학원 파티와 워크샵, 빠지까지. 생일 파티 초청 DJ로도 섭니다.',
       en: 'Came up through open decks. Plays school parties, workshops, pool villas and private events.'
