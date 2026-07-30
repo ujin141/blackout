@@ -8,14 +8,16 @@ const I18N = {
     'meta.title': 'BLACKOUT CREW — Where the Lights Fade, The Music Takes Over.',
     'meta.desc': '서울 기반 DJ 크루 BLACKOUT. 하우스, 테크노, 그리고 조명이 꺼지는 순간. 창립 멤버를 모집합니다.',
 
-    'nav.about': '소개',
-    'nav.philosophy': '철학',
-    'nav.work': '활동',
-    'nav.members': '멤버',
-    'nav.gallery': '갤러리',
-    'nav.join': '합류',
-    'nav.contact': '문의',
-    'nav.cta': 'BLACKOUT 합류하기',
+    /* 내비게이션은 한국어에서도 영어로 노출 (브랜드 톤 유지).
+       한글로 되돌리려면 이 8줄만 한국어로 바꾸면 됩니다. */
+    'nav.about': 'About',
+    'nav.philosophy': 'Philosophy',
+    'nav.work': 'What We Do',
+    'nav.members': 'Members',
+    'nav.gallery': 'Gallery',
+    'nav.join': 'Join',
+    'nav.contact': 'Contact',
+    'nav.cta': 'Join BLACKOUT',
     'menu.base': '서울, 대한민국',
 
     'hero.eyebrow1': '서울',
