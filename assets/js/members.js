@@ -71,6 +71,22 @@ const MEMBERS = [
     soundcloud: '',
     cutout: 'assets/img/members/ts-cutout.webp',
     photo: ''
+  },
+  {
+    name: 'AKILL',
+    role: { ko: 'DJ / 레지던트', en: 'DJ / Resident' },
+    bio: {
+      ko: '대학 일일호프에서 시작해 클럽 타임 디제이로 현장을 쌓았습니다. 지금은 드래곤시티 풀파티 상주 디제이로 섭니다.',
+      en: 'Started on college one-day bar nights and worked up through club time slots. Now resident DJ at the Dragon City pool party.'
+    },
+    career: {
+      ko: ['드래곤시티 풀파티 상주', '이태원 더서울', '의정부 아레나2 클럽', '커튼클럽', '문 라운지', '파티팀'],
+      en: ['Dragon City pool party (resident)', 'The Seoul, Itaewon', 'Arena2, Uijeongbu', 'Curtain Club', 'Moon Lounge', 'Party team']
+    },
+    instagram: '',
+    soundcloud: '',
+    cutout: 'assets/img/members/akill-cutout.webp',
+    photo: ''
   }
 ];
 
