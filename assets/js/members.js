@@ -83,7 +83,7 @@ const MEMBERS = [
       ko: ['드래곤시티 풀파티 상주', '이태원 더서울', '의정부 아레나2 클럽', '커튼클럽', '문 라운지', '파티팀'],
       en: ['Dragon City pool party (resident)', 'The Seoul, Itaewon', 'Arena2, Uijeongbu', 'Curtain Club', 'Moon Lounge', 'Party team']
     },
-    instagram: '',
+    instagram: 'dj_aki1l',
     soundcloud: '',
     cutout: 'assets/img/members/akill-cutout.webp',
     photo: ''
