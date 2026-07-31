@@ -205,16 +205,24 @@ def photo_card(path, focus=0.42, dark=0.62):
 # ── 카드 정의 ──────────────────────────────────────────────
 def make(dj):
     name = dj['name']
-    src = dj['photo']
     out = []
 
-    # 1) 훅 — 풀블리드 사진
-    img = photo_card(src, dj['focus'])
+    # 1) 훅
+    if dj.get('hook_bg') == 'stage':
+        img = stage_bg(7)
+        haze(img, W / 2, 420, W * 0.7, 0.06)
+        img = np.clip(img, 0, 1)
+        blit_photo(img, dj['cutout'], int(H * 0.82), W / 2, int(H * 0.86))
+        g = np.zeros((H, 1), np.float32)
+        g[int(H * 0.45):, 0] = np.linspace(0, 1, H - int(H * 0.45)) ** 1.5
+        img *= (1 - g[..., None] * 0.9)
+    else:
+        img = photo_card(dj['photo'], dj['focus'])
     brandmark(img)
     y = H - MARGIN - 150
     for i, ln in enumerate(dj['hook']):
-        m = tmask(ln, KRB, 62)
-        blit(img, m, MARGIN, y + i * 84, 1.0, glow=0.3, glow_r=16, anchor='l')
+        m = tmask(ln, KRB, 58)
+        blit(img, m, MARGIN, y + i * 80, 1.0, glow=0.3, glow_r=16, anchor='l')
     m = tmask('SWIPE', BRAND, 16, 0.35)
     blit(img, m, W - MARGIN - m.shape[1], H - MARGIN + 6, 0.55)
     out.append(finish(img, 0.55))
@@ -233,36 +241,26 @@ def make(dj):
     footer(img)
     out.append(finish(img))
 
-    # 3) 장르
-    img = stage_bg(2)
-    brandmark(img)
-    m = tmask('PLAYS', BRAND, 22, 0.42)
-    blit(img, m, W / 2, 330, 0.55)
-    sz = min(72, fit(max(dj['genres'], key=len), KRB, W - MARGIN * 2 - 60))
-    y = 470
-    for g in dj['genres']:
-        m = tmask(g, KRB, sz)
-        blit(img, m, W / 2, y, 1.0, glow=0.35, glow_r=20)
-        y += int(sz * 1.55)
-    footer(img)
-    out.append(finish(img))
-
-    # 4) 경력 or 한마디
-    img = stage_bg(3)
-    brandmark(img)
-    m = tmask(dj['c4_label'], BRAND, 22, 0.42)
-    blit(img, m, W / 2, 330, 0.55)
-    y = 480
-    for r in dj['c4_rows']:
-        sz = min(58, fit(r, KRB, W - MARGIN * 2 - 40))
-        m = tmask(r, KRB, sz)
-        blit(img, m, W / 2, y, 1.0, glow=0.32, glow_r=18)
-        y += int(sz * 1.7)
-    if dj.get('c4_note'):
-        m = tmask(dj['c4_note'], KR, 30)
-        blit(img, m, W / 2, y + 40, 0.6)
-    footer(img)
-    out.append(finish(img))
+    # 3~4) 정보 두 장
+    for si, seed in ((dj['s3'], 2), (dj['s4'], 3)):
+        img = stage_bg(seed)
+        brandmark(img)
+        m = tmask(si['label'], BRAND, 22, 0.42)
+        blit(img, m, W / 2, 330, 0.55)
+        rows = si['rows']
+        cap = 72 if len(rows) <= 4 else 56
+        sz = min(cap, fit(max(rows, key=len), KRB, W - MARGIN * 2 - 60))
+        gap = int(sz * 1.6)
+        y = int(H / 2 - (len(rows) - 1) * gap / 2) - 40
+        for r in rows:
+            m = tmask(r, KRB, sz)
+            blit(img, m, W / 2, y, 1.0, glow=0.34, glow_r=20)
+            y += gap
+        if si.get('note'):
+            m = tmask(si['note'], KR, 28)
+            blit(img, m, W / 2, y + 30, 0.6)
+        footer(img)
+        out.append(finish(img))
 
     # 5) CTA
     img = stage_bg(4)
@@ -291,10 +289,8 @@ AROS = dict(
     photo=glob.glob(os.path.join(ROOT, 'AROS', '*_02.jpg'))[0],
     cutout='members/aros-cutout.png', focus=0.34,
     hook=['중학생 때 들은 노래 한 곡이', '이 사람을 부스에 앉혔다'],
-    genres=['EDM', '바운스', '하우스', '하드'],
-    c4_label='PLAYED AT',
-    c4_rows=['상하이 클럽 MAX', '클럽 234', '성남 국빈관 나이트클럽'],
-    c4_note='',
+    s3=dict(label='PLAYS', rows=['EDM', '바운스', '하우스', '하드']),
+    s4=dict(label='PLAYED AT', rows=['상하이 클럽 MAX', '클럽 234', '성남 국빈관 나이트클럽']),
 )
 
 LYNN = dict(
@@ -302,12 +298,31 @@ LYNN = dict(
     photo=glob.glob(os.path.join(ROOT, 'Lynn', '*.jpg'))[0],
     cutout='members/lynn-cutout.png', focus=0.36,
     hook=['한 세트에', '장르가 여섯 개 있다'],
-    genres=['EDM', '테크하우스', '하우스', '미니멀', '미니멀 바운스', '힙합'],
-    c4_label='RANGE',
-    c4_rows=['EDM부터 힙합까지', '플로어 보고 고른다'],
-    c4_note='',
+    s3=dict(label='PLAYS', rows=['EDM', '테크하우스', '하우스', '미니멀', '미니멀 바운스', '힙합']),
+    s4=dict(label='RANGE', rows=['EDM부터 힙합까지', '플로어 보고 고른다']),
+)
+
+AKILL = dict(
+    key='akill', name='AKILL', role='DJ / RESIDENT',
+    photo='', cutout='members/akill-cutout.png', focus=0.3, hook_bg='stage',
+    hook=['타임 하나 받으러 다니다', '지금은 한 시즌을 지킨다'],
+    s3=dict(label='PLAYED AT', rows=['이태원 더서울', '의정부 아레나2 클럽', '커튼클럽', '문 라운지', '파티팀']),
+    s4=dict(label='NOW', rows=['드래곤시티 풀파티', '상주 디제이']),
+)
+
+V = dict(
+    key='v', name='V', role='DJ',
+    photo=glob.glob(os.path.join(ROOT, 'V', '*.jpg'))[0],
+    cutout='members/v-cutout.png', focus=0.42,
+    hook=['장르를 가리지 않습니다', '음악의 길로 안내합니다'],
+    s3=dict(label='PLAYS', rows=['힙합', '테크노', '하우스']),
+    s4=dict(label='PLAYED AT', rows=['홍대 다다르다', '세인트 더 스위트 양양', '구디 별밤', '루미아르 청담'],
+            note='현 홍대 다다르다 파트타임'),
 )
 
 if __name__ == '__main__':
-    make(AROS)
-    make(LYNN)
+    import sys
+    who = dict(aros=AROS, lynn=LYNN, akill=AKILL, v=V)
+    keys = sys.argv[1:] or ['aros', 'lynn', 'akill', 'v']
+    for k in keys:
+        make(who[k])
