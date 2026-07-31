@@ -897,7 +897,7 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
    카드 높이를 꽉 채우면 확대돼 보여서 위쪽에 여백을 둔다. */
 .member__photo img.member__cut {
   inset: auto 0 0 0;
-  height: 72%;
+  height: 82%;   /* 전 멤버 동일 */
   object-fit: contain !important;
   object-position: bottom center;
   transform: scale(1.01) !important;
