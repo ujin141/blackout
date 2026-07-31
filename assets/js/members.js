@@ -11,6 +11,7 @@
      instagram: 'handle',                          // @ 없이 (없으면 '')
      soundcloud:'handle',                          // soundcloud.com/handle (없으면 '')
      cutout:    'assets/img/members/x.webp',       // 누끼(배경 투명) — 조명 위에 인물만
+     fit:       72,                                // 카드 높이 대비 인물 크기(%). 얼굴 크기를 다른 멤버와 맞출 때 조절
      photo:     ''                                 // 일반 사진(카드 꽉 채움). cutout 쓰면 비워둠
    }
    ============================================================ */
@@ -34,6 +35,7 @@ const MEMBERS = [
     instagram: 'arosjin__2000_12_23',
     soundcloud: 'jin-aros',
     cutout: 'assets/img/members/aros-cutout.webp',
+    fit: 47,
     photo: ''
   },
   {
@@ -50,6 +52,7 @@ const MEMBERS = [
     instagram: '_1.ynn___',
     soundcloud: 'jfjmq6ahybym',
     cutout: 'assets/img/members/lynn-cutout.webp',
+    fit: 66,
     photo: ''
   },
   {
@@ -70,6 +73,7 @@ const MEMBERS = [
     instagram: '_kim_jung_hoon_',
     soundcloud: '',
     cutout: 'assets/img/members/ts-cutout.webp',
+    fit: 96,
     photo: ''
   },
   {
@@ -86,6 +90,7 @@ const MEMBERS = [
     instagram: 'dj_aki1l',
     soundcloud: '',
     cutout: 'assets/img/members/akill-cutout.webp',
+    fit: 77,
     photo: ''
   },
   {
@@ -102,8 +107,9 @@ const MEMBERS = [
     },
     instagram: '_hogil',
     soundcloud: '',
-    cutout: '',
-    photo: 'assets/img/members/v-photo.webp'
+    cutout: 'assets/img/members/v-cutout.webp',
+    fit: 40,
+    photo: ''
   }
 ];
 

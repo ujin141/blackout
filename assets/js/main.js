@@ -129,7 +129,7 @@ function localizeMembers() {
     const media = m.photo
       ? `<img src="${esc(m.photo)}" alt="${esc(m.name)}" loading="lazy" />`
       : m.cutout
-        ? `<img class="member__cut" src="${esc(m.cutout)}" alt="${esc(m.name)}" loading="lazy" />`
+        ? `<img class="member__cut" src="${esc(m.cutout)}" alt="${esc(m.name)}" loading="lazy"${m.fit ? ` style="height:${+m.fit}%"` : ''} />`
         : '';
     const genres = pick(m.genres) || [];
     const genreHtml = genres.length
