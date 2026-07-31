@@ -20,8 +20,8 @@ const MEMBERS = [
     name: 'AKILL',
     role: { ko: 'DJ / 레지던트', en: 'DJ / Resident' },
     bio: {
-      ko: '대학 일일호프에서 시작해 클럽 타임 디제이로 현장을 쌓았습니다. 지금은 드래곤시티 풀파티 상주 디제이로 섭니다.',
-      en: 'Started on college one-day bar nights and worked up through club time slots. Now resident DJ at the Dragon City pool party.'
+      ko: '여러 업장을 타임으로 돌다 지금은 한자리를 지킵니다. 어떤 플로어든 끝까지 끌고 갑니다.',
+      en: 'Played time slots across a lot of rooms, now holds one down. Whatever the floor, I take it all the way.'
     },
     career: {
       ko: ['드래곤시티 풀파티 상주', '이태원 더서울', '의정부 아레나2 클럽', '커튼클럽', '문 라운지', '파티팀'],
