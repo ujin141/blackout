@@ -17,62 +17,6 @@
 
 const MEMBERS = [
   {
-    name: 'AROS',
-    role: { ko: 'DJ', en: 'DJ' },
-    genres: {
-      ko: ['EDM', '바운스', '하우스', '하드'],
-      en: ['EDM', 'Bounce', 'House', 'Hard']
-    },
-    bio: {
-      ko: '중학교 때 Alan Walker로 전자음악에 빠졌고, 지금은 무대 위에서 그 에너지를 그대로 돌려줍니다.',
-      en: 'Fell for electronic music through Alan Walker as a kid, now gives that energy back on stage.'
-    },
-    career: {
-      ko: ['상하이 클럽 MAX', '클럽 234', '성남 국빈관 나이트클럽'],
-      en: ['Club MAX, Shanghai', 'Club 234, Korea', 'Kukbinkwan, Seongnam']
-    },
-    instagram: 'arosjin__2000_12_23',
-    soundcloud: 'jin-aros',
-    cutout: 'assets/img/members/aros-cutout.webp',
-    photo: ''
-  },
-  {
-    name: 'LYNN',
-    role: { ko: 'DJ', en: 'DJ' },
-    genres: {
-      ko: ['EDM', '테크하우스', '하우스', '미니멀', '미니멀 바운스', '힙합'],
-      en: ['EDM', 'Tech House', 'House', 'Minimal', 'Minimal Bounce', 'Hip-hop']
-    },
-    bio: {
-      ko: '장르를 넘나들며 그날 플로어에 맞춰 갑니다.',
-      en: 'Moves between genres and plays to whatever the room needs that night.'
-    },
-    instagram: '_1.ynn___',
-    soundcloud: 'jfjmq6ahybym',
-    cutout: 'assets/img/members/lynn-cutout.webp',
-    photo: ''
-  },
-  {
-    name: 'TS',
-    role: { ko: 'DJ', en: 'DJ' },
-    genres: {
-      ko: ['EDM', '딥 하우스', '개러지 하우스', 'K-POP', '시티팝'],
-      en: ['EDM', 'Deep House', 'Garage House', 'K-Pop', 'City Pop']
-    },
-    bio: {
-      ko: '업장 오픈덱에서 시작해 학원 파티와 워크샵, 빠지까지. 생일 파티 초청 DJ로도 섭니다.',
-      en: 'Came up through open decks. Plays school parties, workshops, pool villas and private events.'
-    },
-    career: {
-      ko: ['업장 오픈덱', 'DJ 학원 수강생 파티', '학원 워크샵', '가평 빠지'],
-      en: ['Open decks', 'DJ school parties', 'Academy workshops', 'Gapyeong pool villa']
-    },
-    instagram: '_kim_jung_hoon_',
-    soundcloud: '',
-    cutout: 'assets/img/members/ts-cutout.webp',
-    photo: ''
-  },
-  {
     name: 'AKILL',
     role: { ko: 'DJ / 레지던트', en: 'DJ / Resident' },
     bio: {
@@ -96,8 +40,8 @@ const MEMBERS = [
       en: ['Hip-hop', 'Techno', 'House']
     },
     bio: {
-      ko: '어렸을 때부터 드문드문 틀다가, 지금은 홍대 다다르다에서 파트타임으로 섭니다.',
-      en: 'Has been playing on and off since he was young. Now plays part-time at Dadareuda in Hongdae.'
+      ko: '남녀불문, 장르에 국한되지 않게 음악의 길로 안내해 드립니다.',
+      en: 'Whoever you are, whatever the genre. I will show you the way into the music.'
     },
     career: {
       ko: ['홍대 다다르다', '세인트 더 스위트 양양 풀파티', '구디 별밤', '루미아르 청담'],
@@ -106,6 +50,62 @@ const MEMBERS = [
     instagram: '_hogil',
     soundcloud: '',
     cutout: 'assets/img/members/v-cutout.webp',
+    photo: ''
+  },
+  {
+    name: 'LYNN',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '테크하우스', '하우스', '미니멀', '미니멀 바운스', '힙합'],
+      en: ['EDM', 'Tech House', 'House', 'Minimal', 'Minimal Bounce', 'Hip-hop']
+    },
+    bio: {
+      ko: '장르를 넘나들며 그날 플로어에 맞춰 갑니다.',
+      en: 'Moves between genres and plays to whatever the room needs that night.'
+    },
+    instagram: '_1.ynn___',
+    soundcloud: 'jfjmq6ahybym',
+    cutout: 'assets/img/members/lynn-cutout.webp',
+    photo: ''
+  },
+  {
+    name: 'AROS',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '바운스', '하우스', '하드'],
+      en: ['EDM', 'Bounce', 'House', 'Hard']
+    },
+    bio: {
+      ko: '중학교 때 Alan Walker로 전자음악에 빠졌고, 지금은 무대 위에서 그 에너지를 그대로 돌려줍니다.',
+      en: 'Fell for electronic music through Alan Walker as a kid, now gives that energy back on stage.'
+    },
+    career: {
+      ko: ['상하이 클럽 MAX', '클럽 234', '성남 국빈관 나이트클럽'],
+      en: ['Club MAX, Shanghai', 'Club 234, Korea', 'Kukbinkwan, Seongnam']
+    },
+    instagram: 'arosjin__2000_12_23',
+    soundcloud: 'jin-aros',
+    cutout: 'assets/img/members/aros-cutout.webp',
+    photo: ''
+  },
+  {
+    name: 'TS',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '딥 하우스', '개러지 하우스', 'K-POP', '시티팝'],
+      en: ['EDM', 'Deep House', 'Garage House', 'K-Pop', 'City Pop']
+    },
+    bio: {
+      ko: '업장 오픈덱에서 시작해 학원 파티와 워크샵, 빠지까지. 생일 파티 초청 DJ로도 섭니다.',
+      en: 'Came up through open decks. Plays school parties, workshops, pool villas and private events.'
+    },
+    career: {
+      ko: ['업장 오픈덱', 'DJ 학원 수강생 파티', '학원 워크샵', '가평 빠지'],
+      en: ['Open decks', 'DJ school parties', 'Academy workshops', 'Gapyeong pool villa']
+    },
+    instagram: '_kim_jung_hoon_',
+    soundcloud: '',
+    cutout: 'assets/img/members/ts-cutout.webp',
     photo: ''
   }
 ];
