@@ -87,6 +87,23 @@ const MEMBERS = [
     soundcloud: '',
     cutout: 'assets/img/members/akill-cutout.webp',
     photo: ''
+  },
+  {
+    name: 'V',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: { ko: ['하우스'], en: ['House'] },
+    bio: {
+      ko: '어렸을 때부터 드문드문 틀다가, 지금은 캐스팅 들어오는 대로 섭니다.',
+      en: 'Has been playing on and off since he was young. Now takes bookings as they come.'
+    },
+    career: {
+      ko: ['구디 별밤', '루미아르 청담'],
+      en: ['Byeolbam, Guro', 'Lumiar Cheongdam']
+    },
+    instagram: '_hogil',
+    soundcloud: '',
+    cutout: '',
+    photo: 'assets/img/members/v-photo.webp'
   }
 ];
 
