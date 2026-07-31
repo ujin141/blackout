@@ -67,7 +67,7 @@ const MEMBERS = [
       ko: ['업장 오픈덱', 'DJ 학원 수강생 파티', '학원 워크샵', '가평 빠지'],
       en: ['Open decks', 'DJ school parties', 'Academy workshops', 'Gapyeong pool villa']
     },
-    instagram: '',
+    instagram: '_kim_jung_hoon_',
     soundcloud: '',
     cutout: 'assets/img/members/ts-cutout.webp',
     photo: ''
