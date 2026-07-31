@@ -91,14 +91,17 @@ const MEMBERS = [
   {
     name: 'V',
     role: { ko: 'DJ', en: 'DJ' },
-    genres: { ko: ['하우스'], en: ['House'] },
+    genres: {
+      ko: ['힙합', '테크노', '하우스'],
+      en: ['Hip-hop', 'Techno', 'House']
+    },
     bio: {
-      ko: '어렸을 때부터 드문드문 틀다가, 지금은 캐스팅 들어오는 대로 섭니다.',
-      en: 'Has been playing on and off since he was young. Now takes bookings as they come.'
+      ko: '어렸을 때부터 드문드문 틀다가, 지금은 홍대 다다르다에서 파트타임으로 섭니다.',
+      en: 'Has been playing on and off since he was young. Now plays part-time at Dadareuda in Hongdae.'
     },
     career: {
-      ko: ['구디 별밤', '루미아르 청담'],
-      en: ['Byeolbam, Guro', 'Lumiar Cheongdam']
+      ko: ['홍대 다다르다', '세인트 더 스위트 양양 풀파티', '구디 별밤', '루미아르 청담'],
+      en: ['Dadareuda, Hongdae', 'Saint the Sweet, Yangyang (pool party)', 'Byeolbam, Guro', 'Lumiar Cheongdam']
     },
     instagram: '_hogil',
     soundcloud: '',
