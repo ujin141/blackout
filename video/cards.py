@@ -319,9 +319,19 @@ V = dict(
             note='현 홍대 다다르다 파트타임'),
 )
 
+TS = dict(
+    key='ts', name='TS', role='DJ / DESIGNER',
+    photo=glob.glob(os.path.join(ROOT, 'TS', '*.jpg'))[0],
+    cutout='members/ts-cutout.png', focus=0.36,
+    hook=['오픈덱에서 시작해', '무대를 늘려가는 중'],
+    s3=dict(label='PLAYS', rows=['EDM', '딥 하우스', '개러지 하우스', 'K-POP', '시티팝']),
+    s4=dict(label='PLAYED AT', rows=['업장 오픈덱', 'DJ 학원 수강생 파티', '학원 워크샵', '가평 빠지'],
+            note='크루 디자인도 맡고 있습니다'),
+)
+
 if __name__ == '__main__':
     import sys
-    who = dict(aros=AROS, lynn=LYNN, akill=AKILL, v=V)
-    keys = sys.argv[1:] or ['aros', 'lynn', 'akill', 'v']
+    who = dict(aros=AROS, lynn=LYNN, akill=AKILL, v=V, ts=TS)
+    keys = sys.argv[1:] or ['aros', 'lynn', 'akill', 'v', 'ts']
     for k in keys:
         make(who[k])

@@ -67,7 +67,7 @@ cd video
 python audio.py       && python make.py        # 티저 28초
 python audio_open.py  && python opening.py     # 오프닝 1 (30초)
 python audio_open2.py && python opening2.py    # 오프닝 2 (29초, 140BPM 하드테크노)
-python cards.py aros lynn akill v              # 인스타 카드뉴스
+python cards.py aros lynn v ts                 # 인스타 카드뉴스
 python feed.py                                 # 피드 3분할 세트
 python make_og.py                              # 링크 미리보기 카드
 ```
@@ -121,11 +121,9 @@ GitHub Pages는 쓰지 않습니다. 도메인(가비아)은 이미 Vercel을 �
 
 ## 8. 현재 상태 (2026-08-01)
 
-**완료** — 랜딩페이지(한/영, 3D 로고), 멤버 5명(AKILL·V·LYNN·AROS·TS), SEO/AEO, Vercel 배포, 영상 3편, 카드뉴스 4명분 + 피드 3분할, 제안서 2건.
+**완료** — 랜딩페이지(한/영, 3D 로고), 멤버 4명(V·LYNN·AROS·TS), SEO/AEO, Vercel 배포, 영상 3편, 카드뉴스 4명분 + 피드 3분할, 제안서 2건.
 
 **열려 있는 것**
 
-- AKILL 장르 미확인 — 카드·제안서에 장르 줄이 비어 있음
 - TS 사운드클라우드 주소 없음
-- TS 카드뉴스 미제작 (AROS·LYNN·AKILL·V만 있음)
 - 디제이코리아 제안서 중 2개 문장이 미검증 추정 — 용산 쇼룸 유동인구, CAMPUS 커리큘럼 범위. 미팅에서 확인 후 조정 권장
