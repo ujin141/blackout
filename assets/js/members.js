@@ -17,22 +17,6 @@
 
 const MEMBERS = [
   {
-    name: 'AKILL',
-    role: { ko: 'DJ / 레지던트', en: 'DJ / Resident' },
-    bio: {
-      ko: '여러 업장을 타임으로 돌다 지금은 한자리를 지킵니다. 어떤 플로어든 끝까지 끌고 갑니다.',
-      en: 'Played time slots across a lot of rooms, now holds one down. Whatever the floor, I take it all the way.'
-    },
-    career: {
-      ko: ['드래곤시티 풀파티 상주', '이태원 더서울', '의정부 아레나2 클럽', '커튼클럽', '문 라운지', '파티팀'],
-      en: ['Dragon City pool party (resident)', 'The Seoul, Itaewon', 'Arena2, Uijeongbu', 'Curtain Club', 'Moon Lounge', 'Party team']
-    },
-    instagram: 'dj_aki1l',
-    soundcloud: '',
-    cutout: 'assets/img/members/akill-cutout.webp',
-    photo: ''
-  },
-  {
     name: 'V',
     role: { ko: 'DJ', en: 'DJ' },
     genres: {
