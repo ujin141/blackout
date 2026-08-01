@@ -301,14 +301,6 @@ LYNN = dict(
     s4=dict(label='RANGE', rows=['EDM부터 힙합까지', '플로어 보고 고른다']),
 )
 
-AKILL = dict(
-    key='akill', name='AKILL', role='DJ / RESIDENT',
-    photo='', cutout='members/akill-cutout.png', focus=0.3, hook_bg='stage',
-    hook=['타임 하나 받으러 다니다', '지금은 한 시즌을 지킨다'],
-    s3=dict(label='PLAYED AT', rows=['이태원 더서울', '의정부 아레나2 클럽', '커튼클럽', '문 라운지', '파티팀']),
-    s4=dict(label='NOW', rows=['드래곤시티 풀파티', '상주 디제이']),
-)
-
 V = dict(
     key='v', name='V', role='DJ',
     photo=glob.glob(os.path.join(ROOT, 'V', '*.jpg'))[0],
@@ -331,7 +323,7 @@ TS = dict(
 
 if __name__ == '__main__':
     import sys
-    who = dict(aros=AROS, lynn=LYNN, akill=AKILL, v=V, ts=TS)
-    keys = sys.argv[1:] or ['aros', 'lynn', 'akill', 'v', 'ts']
+    who = dict(aros=AROS, lynn=LYNN, v=V, ts=TS)
+    keys = sys.argv[1:] or ['aros', 'lynn', 'v', 'ts']
     for k in keys:
         make(who[k])
