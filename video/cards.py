@@ -12,8 +12,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 IMG = os.path.join(ROOT, 'assets', 'img')
 BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
-KR = 'C:/Windows/Fonts/malgun.ttf'
-KRB = 'C:/Windows/Fonts/malgunbd.ttf'
+from fonts import KR, KRB          # OS별 한글 폰트 (video/fonts.py)
 
 W, H = 1080, 1350
 OUT = os.path.join(HERE, 'out', 'cards')

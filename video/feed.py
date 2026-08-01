@@ -13,7 +13,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 IMG = os.path.join(ROOT, 'assets', 'img')
 BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
-KRB = 'C:/Windows/Fonts/malgunbd.ttf'
+from fonts import KRB             # OS별 한글 폰트 (video/fonts.py)
 
 TW, TH = 1080, 1350          # 게시물 한 장
 W, H = TW * 3, TH            # 이어붙인 전체

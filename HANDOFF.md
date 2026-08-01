@@ -44,18 +44,13 @@ pip install numpy scipy opencv-python pillow rembg onnxruntime
 | **Google Chrome** | 제안서 PDF 출력 | PDF만 못 뽑음 |
 | `rembg` | 새 멤버 사진 누끼 | 기존 멤버는 이미 따둠 |
 
-### 맥·리눅스로 옮길 때 반드시 고칠 것
+### 맥·리눅스 한글 폰트
 
-한글 폰트 경로가 **윈도우 기준으로 하드코딩**되어 있습니다.
-`video/render.py:23-24`, `video/cards.py:15-16`, `video/feed.py:16`:
+`video/fonts.py`가 OS를 보고 알아서 찾습니다. 다만 **맥은 Pretendard를 설치하는 편이 좋습니다** — 없으면 Apple SD Gothic으로 대체되는데 볼드가 없어 제목이 얇게 나옵니다.
 
-```python
-KR  = 'C:/Windows/Fonts/malgun.ttf'
-KRB = 'C:/Windows/Fonts/malgunbd.ttf'
-```
+[Pretendard 내려받기](https://github.com/orioncactus/pretendard/releases) → `Pretendard-Regular.otf`와 `Pretendard-Bold.otf`를 `~/Library/Fonts`에 넣으면 끝입니다.
 
-맥이면 `/System/Library/Fonts/AppleSDGothicNeo.ttc`, 리눅스면 설치한 나눔·프리텐다드 경로로 바꾸세요.
-영문 폰트(Michroma)는 `video/assets/`에 들어 있어 그대로 씁니다.
+영문 폰트(Michroma)는 `video/assets/`에 들어 있어 어디서나 동일합니다.
 
 ### 윈도우에서 한글 깨질 때
 

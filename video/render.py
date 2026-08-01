@@ -20,8 +20,7 @@ DUR = BAR * 15
 NF = int(round(DUR * FPS))
 
 BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
-KR = 'C:/Windows/Fonts/malgun.ttf'
-KRB = 'C:/Windows/Fonts/malgunbd.ttf'
+from fonts import KR, KRB          # OS별 한글 폰트 (video/fonts.py)
 
 # 숏폼 UI 세이프존
 SAFE_TOP, SAFE_BOT = 300, 1560
