@@ -67,6 +67,7 @@ cd video
 python audio.py       && python make.py        # 티저 28초
 python audio_open.py  && python opening.py     # 오프닝 1 (30초)
 python audio_open2.py && python opening2.py    # 오프닝 2 (29초, 140BPM 하드테크노)
+python audio_open3.py && python opening3.py    # 오프닝 3 (29초, 174BPM 브레이크비트)
 python cards.py aros lynn v ts                 # 인스타 카드뉴스
 python feed.py                                 # 피드 3분할 세트
 python make_og.py                              # 링크 미리보기 카드
