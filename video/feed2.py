@@ -102,30 +102,43 @@ g = np.zeros((H, 1), np.float32)
 g[int(H * 0.66):, 0] = np.linspace(0, 1, H - int(H * 0.66)) ** 1.7
 img += g[..., None] * 0.05
 
-# 이음새에 정확히 걸치는 엠블럼 (절반씩 두 장에 나뉜다)
-logo(img, 'logo-mark.png', 470, W / 2, 545, glow=0.42, glow_r=48)
+# ⚠ 이음새(x=TW)에는 아무것도 올리지 않는다.
+#   인스타 그리드는 타일 사이에 간격이 있어서, 경계에 걸친 것은 잘려서 사라진다.
+#   (첫 시도에서 엠블럼 가운데 번개와 UNDERGROUND의 G가 통째로 날아갔다)
+SEAM_CLEAR = 80                     # 경계 좌우로 비워 두는 폭
+
+
+def span(left_txt, right_txt, y, size, track, a, glow=0.0, glow_r=16):
+    """한 문장을 두 장에 나눠 놓되, 끊기는 지점은 단어 사이 공백이 되게 한다"""
+    ml = tmask(left_txt, BRAND, size, track)
+    mr = tmask(right_txt, BRAND, size, track)
+    blit(img, ml, TW - SEAM_CLEAR - ml.shape[1] / 2, y, a, glow=glow, glow_r=glow_r)
+    blit(img, mr, TW + SEAM_CLEAR + mr.shape[1] / 2, y, a, glow=glow, glow_r=glow_r)
+
+
+# 엠블럼 — 오른쪽 장 안에 통째로 (경계에 걸치지 않음)
+logo(img, 'logo-mark.png', 400, TW * 1.5, 560, glow=0.42, glow_r=48)
+
+# 왼쪽 장 — 엠블럼과 무게를 맞추는 단어
+m = tmask('UNDER', BRAND, 66, 0.18)
+blit(img, m, TW * 0.5, 520, 0.92, glow=0.32, glow_r=24)
+m = tmask('GROUND', BRAND, 66, 0.18)
+blit(img, m, TW * 0.5, 600, 0.92, glow=0.32, glow_r=24)
+m = tmask('SEOUL · SINCE 2026', BRAND, 22, 0.34)
+blit(img, m, TW * 0.5, 690, 0.45)
+
+# 두 장에 걸치는 한 문장 — 끊기는 곳이 단어 사이라 잘려도 티가 안 난다
+span('WE DON’T JUST', 'PLAY MUSIC.', 900, 40, 0.16, 0.75, glow=0.26, glow_r=16)
 
 # 두 장을 관통하는 가로선 — 첫 세트와 같은 y
 img[RULE_Y:RULE_Y + 2, 110:W - 110] += 0.30
 img[RULE_Y + 1:RULE_Y + 2, int(W * 0.30):int(W * 0.70)] += 0.25
 
-# 이음새를 지나는 단어 — 한 문장이 두 장에 걸린다
-m = tmask('UNDERGROUND', BRAND, 62, 0.2)
-blit(img, m, W / 2, 900, 0.9, glow=0.32, glow_r=24)
-m = tmask('SEOUL · SINCE 2026', BRAND, 24, 0.34)
-blit(img, m, W / 2, 985, 0.5)
-
-# 왼쪽 칸 (4번) — 무엇을 하는가
-m = tmask('WE DON’T JUST', BRAND, 34, 0.16)
-blit(img, m, TW * 0.5, 1130, 0.55)
-m = tmask('PLAY MUSIC.', BRAND, 34, 0.16)
-blit(img, m, TW * 0.5, 1182, 0.8, glow=0.24, glow_r=14)
-
-# 오른쪽 칸 (5번) — 무엇을 만드는가
-for i, txt in enumerate(['MUSIC', 'CONTENT', 'COMMUNITY']):
-    m = tmask(txt, BRAND, 30, 0.26)
-    blit(img, m, TW * 1.5, 1118 + i * 48, 0.55 + i * 0.12,
-         glow=0.2 if i == 2 else 0.0, glow_r=12)
+# 가로선 아래 — 각 장 안에서 끝나는 짧은 줄
+m = tmask('MUSIC · CONTENT · COMMUNITY', BRAND, 24, 0.2)
+blit(img, m, TW * 0.5, 1140, 0.6)
+m = tmask('@BLACKOUTCREW_OFFICIAL', BRAND, 24, 0.14)
+blit(img, m, TW * 1.5, 1140, 0.7, glow=0.2, glow_r=12)
 
 # 상단 — 좌우 대칭으로 하나씩
 m = tmask('NIGHT', BRAND, 30, 0.34)

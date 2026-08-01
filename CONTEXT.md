@@ -109,6 +109,7 @@ JSON-LD `@graph`(MusicGroup·WebSite·WebPage·FAQPage) + `<noscript>` 멤버 �
 | 스톡 사진 사용 | 처음부터 배제. 캔버스 생성 아트로 대체 |
 
 **기술적으로 물렸던 것**
+- **인스타 피드 그리드는 타일 사이에 간격이 있다.** 두 장에 걸치는 디자인을 만들 때 이음새에 중요한 요소를 올리면 그 부분이 통째로 사라진다. 실제로 엠블럼 가운데 번개와 UNDERGROUND의 G가 날아갔다. `feed2.py`의 `SEAM_CLEAR`(경계 좌우 80px)를 지키고, 문장을 나눌 때는 **단어 사이 공백이 경계에 오게** 한다.
 - `.member__photo img`(0,1,1)가 `.member__cut`(0,1,0)를 이겨서 크기 조정이 안 먹었습니다 → 선택자를 `.member__photo img.member__cut`로.
 - 제안서 페이지 번호를 파이썬으로 일괄 수정하다 `<head>`를 통째로 날린 적이 있습니다. **HTML을 문자열 분할로 재조립하지 마세요.**
 - 윈도우에서 `python -c`로 `—` 출력 시 cp949 오류 → `PYTHONIOENCODING=utf-8`.
