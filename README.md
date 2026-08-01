@@ -50,7 +50,7 @@ const MEMBERS = [
 ```
 
 - `cutout`(배경 투명 PNG/WebP)을 쓰면 뒤에 무대 조명이 자동 생성되고 그 위에 인물만 서 있게 됩니다.
-- **`fit`은 카드 높이 대비 인물 크기(%)입니다.** 사진마다 얼굴이 크게 찍힌 것도 있고 전신도 있어서, 이 값으로 **멤버들 얼굴 크기를 서로 맞춥니다.** 클로즈업일수록 낮게(40~50), 전신일수록 높게(90~100). 새 멤버를 넣으면 옆 사람과 얼굴 크기를 비교해 조절하세요.
+- **인물 크기는 전 멤버 동일합니다.** `styles.css`의 `.member__photo img.member__cut { height: 82% }` 한 곳에서 관리하며, 멤버별 값은 두지 않습니다. 새 사진은 누끼를 딸 때 여백을 맞춰 주세요.
 - 누끼 만들기: `python -c "from rembg import remove; from PIL import Image; Image.open('원본.jpg').save('x.png')"` 대신, 사진 주시면 제가 따드리는 게 빠릅니다.
 - `photo`는 카드를 꽉 채우는 일반 사진입니다. 둘 다 비우면 조명 실루엣이 자동으로 들어갑니다(멤버마다 다르게).
 - `MEMBER_SLOTS` 숫자만큼 자리를 만들고, 등록된 멤버보다 남는 칸은 "모집 중"으로 표시되며 누르면 지원서가 열립니다. 모집 칸을 없애려면 `MEMBER_SLOTS = 0`.
@@ -93,6 +93,9 @@ const MEMBERS = [
 cd video
 python audio.py && python make.py        # 티저 28초 → out/blackout_teaser.mp4
 python audio_open.py && python opening.py # 오프닝 30초 → out/blackout_opening.mp4
+python audio_open2.py && python opening2.py # 오프닝 2 (140BPM) → out/blackout_opening2.mp4
+python cards.py aros lynn akill v         # 인스타 카드뉴스
+python feed.py                           # 피드 3분할 세트
 python make_og.py                        # 링크 미리보기 카드
 ```
 
@@ -111,3 +114,7 @@ python make_og.py                        # 링크 미리보기 카드
 | `assets/img/apple-touch-icon.png` | 폰 홈화면 아이콘 |
 
 원본에서 잘라 배경을 투명하게 뺀 것이라 어떤 배경에도 올릴 수 있습니다.
+
+## 다른 컴퓨터로 옮기기
+
+[HANDOFF.md](HANDOFF.md) 참고 — 저장소에 없는 파일, 필요한 프로그램, 재생성 명령이 정리돼 있습니다.
