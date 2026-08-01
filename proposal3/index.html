@@ -41,6 +41,16 @@
   .split li::before { content: ''; position: absolute; left: 0; top: 2.6mm;
                       width: 1.6mm; height: 1px; background: var(--w45); }
   .split li b { color: var(--white); font-weight: 600; }
+
+  /* STEP 아래 기간은 한글이라 브랜드 폰트(영문 전용) 대신 본문 폰트로 */
+  .phase b small {
+    font-family: var(--body);
+    font-size: 8pt;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--w45);
+    margin-top: 2.2mm;
+  }
 </style>
 </head>
 <body>
