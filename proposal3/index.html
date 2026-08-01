@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>지오바니 디제이 스튜디오 — 공간 협업 계획안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="../proposal/style.css" />
+<style>
+  /* 로고 이미지 대신 워드마크 */
+  .wm { font-family: var(--brand); letter-spacing: 0.26em; line-height: 1.5; }
+  .cover .wm { font-size: 31pt; margin-bottom: 13mm; }
+  .cover .wm small { display: block; font-size: 10pt; letter-spacing: 0.62em;
+                     color: var(--w45); margin-top: 6mm; text-indent: 0.62em; }
+  .cover .cover__meta { font-family: var(--body); letter-spacing: 0.02em; }
+  .head__logo .wm { font-size: 8pt; letter-spacing: 0.22em; }
+
+  /* 안 번호 배지 */
+  .opt { display: flex; align-items: baseline; gap: 4mm; margin-bottom: 4mm; }
+  .opt__no { font-family: var(--brand); font-size: 30pt; color: var(--w28); line-height: 1; }
+  .opt__ttl { font-size: 17pt; font-weight: 700; letter-spacing: -0.02em; }
+  .opt__tag { font-family: var(--brand); font-size: 7pt; letter-spacing: 0.2em;
+              border: 1px solid var(--line); padding: 1.6mm 3mm; color: var(--w65); }
+
+  /* 비교표 점수 */
+  .dot { letter-spacing: 0.16em; color: var(--white); }
+  .dot i { font-style: normal; color: var(--w28); }
+
+  /* 요점 박스 */
+  .why { border-left: 2px solid var(--white); padding: 3mm 0 3mm 5mm; margin-top: 5mm; }
+  .why b { display: block; font-family: var(--brand); font-size: 7.5pt;
+           letter-spacing: 0.2em; color: var(--w45); margin-bottom: 2.5mm; }
+  .why p { font-size: 9.5pt; line-height: 1.75; color: var(--w90); }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 5mm; }
+  .split h4 { font-family: var(--brand); font-size: 7.5pt; letter-spacing: 0.2em;
+              color: var(--w45); margin-bottom: 3mm; padding-bottom: 2mm;
+              border-bottom: 1px solid var(--line-soft); }
+  .split ul { list-style: none; }
+  .split li { font-size: 9pt; line-height: 1.7; color: var(--w65); padding-left: 4mm;
+              position: relative; margin-bottom: 1.6mm; }
+  .split li::before { content: ''; position: absolute; left: 0; top: 2.6mm;
+                      width: 1.6mm; height: 1px; background: var(--w45); }
+  .split li b { color: var(--white); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ══ 01 표지 ══════════════════════════════════════════════ -->
+<section class="page cover">
+  <span class="cover__corner cc1"></span><span class="cover__corner cc2"></span>
+  <span class="cover__corner cc3"></span><span class="cover__corner cc4"></span>
+
+  <p class="wm">GIOVANNI<small>DJ STUDIO</small></p>
+  <p class="cover__kicker">COLLABORATION PLAN</p>
+  <p class="cover__title">공간 협업 계획안</p>
+  <p class="cover__sub">작은 공간에서 시작하는 다섯 가지 방법</p>
+  <div class="cover__rule"></div>
+  <p class="cover__meta">
+    지오바니 디제이 스튜디오<br />
+    SEOUL · 2026
+  </p>
+</section>
+
+<!-- ══ 02 목차 ══════════════════════════════════════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">Contents</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>00</i> 목차</p>
+    <h1 class="title">이 문서는<br />무엇을 담고 있나</h1>
+
+    <div class="toc">
+      <div><i>01</i><b>전제 — 좌석 수는 문제가 아닙니다</b><span>03</span></div>
+      <div><i>02</i><b>다섯 가지 안 — 한눈에</b><span>04</span></div>
+      <div><i>03</i><b>안 1. 콘텐츠 촬영 배경</b><span>05</span></div>
+      <div><i>04</i><b>안 2. 소규모 프라이빗 클래스</b><span>06</span></div>
+      <div><i>05</i><b>안 3. 인티메이트 살롱 파티</b><span>07</span></div>
+      <div><i>06</i><b>안 4. 멤버십 · 리퍼럴 교환</b><span>08</span></div>
+      <div><i>07</i><b>안 5. 큰 행사는 스튜디오, 매장은 F&amp;B</b><span>09</span></div>
+      <div><i>08</i><b>역할과 비용 분담</b><span>10</span></div>
+      <div><i>09</i><b>진행 순서</b><span>11</span></div>
+      <div><i>10</i><b>마무리</b><span>12</span></div>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>02</span></div>
+</section>
+
+<!-- ══ 03 전제 ══════════════════════════════════════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">01 — Premise</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>01</i> 전제</p>
+    <h1 class="title">공간이 작다는 건<br /><em>협업에서 약점이 아닙니다.</em></h1>
+    <p class="lead">
+      좌석이 적어서 어렵겠다는 말씀을 들었습니다. 다시 생각해 보면,
+      <strong>사람을 많이 받아야만 성립하는 협업이 오히려 소수</strong>입니다.
+      아래 다섯 가지는 전부 좌석 수와 무관하거나, 작다는 점을 오히려 이용하는 방식입니다.
+    </p>
+
+    <div class="cards c3" style="margin-top:6mm">
+      <div class="card">
+        <div class="card__ico"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="12" rx="1"/><path d="M17 10l4-2.5v9L17 14z"/></svg></div>
+        <h3>화면에는<small>SPACE ≠ SCREEN</small></h3>
+        <p>카메라에 담기는 건 좌석이 아니라 조명과 분위기입니다. 좁을수록 밀도 있게 나옵니다.</p>
+      </div>
+      <div class="card">
+        <div class="card__ico"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+        <h3>비어 있는 시간<small>DEAD TIME</small></h3>
+        <p>손님이 없는 낮·야간 시간대는 이미 비용이 나가고 있습니다. 그 시간을 씁니다.</p>
+      </div>
+      <div class="card">
+        <div class="card__ico"><svg class="ico" viewBox="0 0 24 24"><path d="M4 18V7l8-3 8 3v11"/><path d="M9 18v-5h6v5"/></svg></div>
+        <h3>희소성<small>SCARCITY</small></h3>
+        <p>많이 못 받는다는 건 “선예약 마감”이 자연스럽다는 뜻입니다. 객단가를 올릴 수 있습니다.</p>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>THE POINT</b>
+      <p>다섯 가지 안은 순서대로 하는 것이 아니라, <strong>공간 부담이 적은 것부터 골라 붙이는</strong> 구조입니다.
+         4번은 오늘 바로 시작할 수 있고, 1번은 비용이 거의 들지 않습니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>03</span></div>
+</section>
+
+<!-- ══ 04 한눈에 ════════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">02 — Overview</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>02</i> 다섯 가지 안</p>
+    <h1 class="title">공간 부담이 적은 순서로.</h1>
+
+    <table class="tbl" style="margin-top:5mm">
+      <tr>
+        <th style="width:5%">번호</th>
+        <th style="width:27%">안</th>
+        <th style="width:15%">공간 부담</th>
+        <th style="width:15%">비용 부담</th>
+        <th style="width:14%">준비 기간</th>
+        <th>한 줄 요약</th>
+      </tr>
+      <tr>
+        <td class="k" style="width:auto">4</td>
+        <td>멤버십 · 리퍼럴 교환</td>
+        <td><span class="dot">●<i>●●●</i></span> 없음</td>
+        <td><span class="dot">●<i>●●●</i></span> 거의 없음</td>
+        <td>즉시</td>
+        <td>고객만 주고받습니다</td>
+      </tr>
+      <tr>
+        <td class="k">1</td>
+        <td>콘텐츠 촬영 배경 <b style="color:#fff">— 우선 추천</b></td>
+        <td><span class="dot">●●<i>●●</i></span> 낮음</td>
+        <td><span class="dot">●<i>●●●</i></span> 거의 없음</td>
+        <td>1~2주</td>
+        <td>영업시간 밖에 찍습니다</td>
+      </tr>
+      <tr>
+        <td class="k">5</td>
+        <td>큰 행사는 스튜디오, 매장은 F&amp;B</td>
+        <td><span class="dot">●<i>●●●</i></span> 없음</td>
+        <td><span class="dot">●●<i>●●</i></span> 낮음</td>
+        <td>행사 단위</td>
+        <td>공간 없이 매출만 참여</td>
+      </tr>
+      <tr>
+        <td class="k">2</td>
+        <td>소규모 프라이빗 클래스 · 원데이</td>
+        <td><span class="dot">●●<i>●●</i></span> 낮음</td>
+        <td><span class="dot">●●<i>●●</i></span> 낮음</td>
+        <td>3~4주</td>
+        <td>유휴 시간에 5~8명</td>
+      </tr>
+      <tr>
+        <td class="k">3</td>
+        <td>인티메이트 살롱 파티</td>
+        <td><span class="dot">●●●<i>●</i></span> 보통</td>
+        <td><span class="dot">●●<i>●●</i></span> 낮음</td>
+        <td>4~6주</td>
+        <td>10~15명 선예약 마감</td>
+      </tr>
+    </table>
+
+    <div class="why">
+      <b>추천 조합</b>
+      <p><strong>4번을 먼저 걸어두고, 1번으로 콘텐츠를 쌓습니다.</strong> 두 개가 돌기 시작하면
+         반응을 보고 2번이나 3번 중 하나를 붙이면 됩니다. 처음부터 다 할 필요는 없습니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>04</span></div>
+</section>
+
+<!-- ══ 05 안 1 ══════════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">03 — Option 1</div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="opt">
+      <span class="opt__no">01</span>
+      <span class="opt__ttl">콘텐츠 촬영 배경</span>
+      <span class="opt__tag">우선 추천</span>
+    </div>
+    <p class="lead">
+      스튜디오 DJ가 매장에서 믹스 영상을 찍고, <strong>양쪽 계정에 같이 올립니다.</strong>
+      손님이 없는 시간에 찍기 때문에 좌석 수와 무관하고, 영업에 지장이 없습니다.
+    </p>
+
+    <div class="split">
+      <div>
+        <h4>왜 작은 공간이 유리한가</h4>
+        <ul>
+          <li>화면에 담기는 건 좌석이 아니라 <b>조명과 질감</b>입니다</li>
+          <li>넓으면 오히려 휑하게 나옵니다. 좁을수록 밀도가 삽니다</li>
+          <li>붐 사운드와 조명 몇 개면 <b>부티크 DJ 셋</b>의 그림이 나옵니다</li>
+          <li>공간이 좋으면 “여기 어디예요?” 댓글이 그대로 유입이 됩니다</li>
+        </ul>
+      </div>
+      <div>
+        <h4>실행 방법</h4>
+        <ul>
+          <li>월 <b>1~2회</b>, 영업 전 또는 마감 후 2시간 내외</li>
+          <li>1회 촬영으로 <b>릴스 2~3편</b>을 뽑습니다</li>
+          <li>업로드는 양쪽 계정 동시. 서로 협업 계정으로 겁니다</li>
+          <li>매장 위치·영업시간을 영상 말미에 고정 노출</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>대표님이 부담하시는 것</b>
+      <p>공간과 전기, 그리고 촬영 시간뿐입니다. 장비·DJ·촬영·편집은 스튜디오가 맡습니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>05</span></div>
+</section>
+
+<!-- ══ 06 안 2 ══════════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">04 — Option 2</div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="opt">
+      <span class="opt__no">02</span>
+      <span class="opt__ttl">소규모 프라이빗 클래스 · 원데이</span>
+    </div>
+    <p class="lead">
+      <strong>5~8명이면 충분한 원데이 DJ 클래스</strong>를 매장 유휴 시간에 엽니다.
+      인원이 적다는 걸 “프라이빗하게 배운다”는 프리미엄으로 그대로 가져갑니다.
+    </p>
+
+    <div class="split">
+      <div>
+        <h4>어떻게 굴러가나</h4>
+        <ul>
+          <li>평일 낮 또는 야간 데드타임, <b>2시간 1회 완결</b></li>
+          <li>정원 <b>5~8명</b>. 장비는 스튜디오가 들고 들어옵니다</li>
+          <li>수업 후 자유롭게 플레이 — 자연스럽게 <b>음료 주문</b>으로 이어집니다</li>
+          <li>수료자에게 스튜디오 정규 과정 할인 연결</li>
+        </ul>
+      </div>
+      <div>
+        <h4>매장이 얻는 것</h4>
+        <ul>
+          <li>비어 있던 시간대의 <b>음료 매출</b></li>
+          <li>DJ에 관심 있는 <b>새로운 손님층</b>의 첫 방문</li>
+          <li>“여기서 클래스도 한다”는 <b>공간 성격</b>이 생깁니다</li>
+          <li>클래스 사진·영상이 그대로 매장 홍보물이 됩니다</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>역할</b>
+      <p><strong>장비와 강사는 스튜디오, 공간과 음료는 대표님.</strong>
+         수강료 배분은 첫 회차를 시범으로 돌려 보고 정하는 것을 제안드립니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>06</span></div>
+</section>
+
+<!-- ══ 07 안 3 ══════════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">05 — Option 3</div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="opt">
+      <span class="opt__no">03</span>
+      <span class="opt__ttl">인티메이트 살롱 파티</span>
+    </div>
+    <p class="lead">
+      많이 못 받는 걸 역이용합니다. <strong>10~15명 선예약 마감</strong> 형태의 밀도 높은 파티.
+      자리가 적다는 사실 자체가 마케팅 문구가 됩니다.
+    </p>
+
+    <div class="split">
+      <div>
+        <h4>희소성이 만드는 것</h4>
+        <ul>
+          <li>“<b>선착순 15명</b>”은 광고보다 강한 문구입니다</li>
+          <li>선예약이라 <b>노쇼와 매출 예측</b> 문제가 사라집니다</li>
+          <li>좌석이 적으니 <b>객단가</b>를 높게 잡아도 저항이 적습니다</li>
+          <li>매진 기록이 쌓이면 다음 회차가 저절로 팔립니다</li>
+        </ul>
+      </div>
+      <div>
+        <h4>운영 형태</h4>
+        <ul>
+          <li><b>분기 1회</b> 정도로 시작. 무리하게 늘리지 않습니다</li>
+          <li>DJ 2~3명이 짧게 이어 가는 구성</li>
+          <li>예약은 인스타 DM 또는 폼 하나로 충분합니다</li>
+          <li>웰컴 드링크를 티켓에 포함해 <b>객단가를 고정</b>합니다</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>주의</b>
+      <p>소음과 마감 시간은 <strong>주변 상황을 먼저 확인</strong>한 뒤 시간대를 잡겠습니다.
+         무리해서 늦게까지 가는 형태는 제안드리지 않습니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>07</span></div>
+</section>
+
+<!-- ══ 08 안 4 ══════════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">06 — Option 4</div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="opt">
+      <span class="opt__no">04</span>
+      <span class="opt__ttl">멤버십 · 리퍼럴 교환</span>
+      <span class="opt__tag">오늘 바로 가능</span>
+    </div>
+    <p class="lead">
+      공간을 전혀 쓰지 않습니다. <strong>서로의 고객만 주고받는</strong> 구조라
+      좌석 수와 완전히 무관하고, 실패해도 잃는 것이 없습니다.
+    </p>
+
+    <div class="split">
+      <div>
+        <h4>스튜디오 → 매장</h4>
+        <ul>
+          <li>수강생에게 <b>매장 할인 · 전용 혜택</b> 안내</li>
+          <li>수업 자료와 안내문에 매장을 <b>공식 제휴처</b>로 표기</li>
+          <li>수료 파티·뒤풀이 장소를 매장으로 안내</li>
+        </ul>
+      </div>
+      <div>
+        <h4>매장 → 스튜디오</h4>
+        <ul>
+          <li>단골에게 <b>클래스 할인 코드</b> 제공</li>
+          <li>계산대·테이블에 안내 카드 비치</li>
+          <li>인스타 프로필에 제휴 링크 한 줄</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>왜 이것부터인가</b>
+      <p>비용도, 일정도, 공간도 필요 없습니다. <strong>합의하고 안내물만 만들면 이번 주에 시작</strong>됩니다.
+         여기서 오가는 사람 수를 보면 나머지 안의 규모를 정할 근거가 생깁니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>08</span></div>
+</section>
+
+<!-- ══ 09 안 5 ══════════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">07 — Option 5</div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="opt">
+      <span class="opt__no">05</span>
+      <span class="opt__ttl">큰 행사는 스튜디오에서, 매장은 F&amp;B로</span>
+    </div>
+    <p class="lead">
+      규모가 필요한 행사는 <strong>지오바니 스튜디오 공간이나 외부 장소</strong>에서 엽니다.
+      대표님은 공간을 내주지 않고 <strong>케이터링 · 주류 · 굿즈로 참여</strong>해 매출만 가져갑니다.
+    </p>
+
+    <div class="split">
+      <div>
+        <h4>매장이 맡는 것</h4>
+        <ul>
+          <li>행사장 <b>음료 · 주류 운영</b></li>
+          <li>시그니처 메뉴를 행사 한정으로 편성</li>
+          <li>원하시면 <b>굿즈 · 콜라보 상품</b>까지</li>
+        </ul>
+      </div>
+      <div>
+        <h4>이 방식의 장점</h4>
+        <ul>
+          <li>좌석 수 제약이 <b>완전히 사라집니다</b></li>
+          <li>매장 문을 닫지 않아도 됩니다</li>
+          <li>행사에 온 사람들에게 <b>매장을 노출</b>합니다</li>
+          <li>공간 리스크 없이 <b>협업 매출에만 참여</b>합니다</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>정산</b>
+      <p>행사 단위로 정산합니다. <strong>F&amp;B 매출은 매장, 티켓은 주최 측</strong>으로 나누는 형태를
+         기본으로 두고, 규모에 따라 조정하는 것을 제안드립니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>09</span></div>
+</section>
+
+<!-- ══ 10 역할 분담 ═════════════════════════════════════════ -->
+<section class="page tighter">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">08 — Roles</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>08</i> 역할과 비용 분담</p>
+    <h1 class="title">누가 무엇을 대는가.</h1>
+
+    <table class="tbl" style="margin-top:4mm">
+      <tr>
+        <th style="width:20%">안</th>
+        <th style="width:32%">지오바니 스튜디오</th>
+        <th style="width:28%">매장</th>
+        <th>정산</th>
+      </tr>
+      <tr>
+        <td class="k" style="width:auto">1. 촬영</td>
+        <td>DJ · 장비 · 촬영 · 편집 · 업로드</td>
+        <td>공간, 전기, 촬영 시간</td>
+        <td>비용 정산 없음 (노출 교환)</td>
+      </tr>
+      <tr>
+        <td class="k">2. 클래스</td>
+        <td>장비 반입, 강사, 모집, 커리큘럼</td>
+        <td>공간, 음료</td>
+        <td>음료 매출은 매장 / 수강료 배분 협의</td>
+      </tr>
+      <tr>
+        <td class="k">3. 살롱 파티</td>
+        <td>라인업, 사운드, 홍보물, 예약 관리</td>
+        <td>공간, F&amp;B 운영</td>
+        <td>F&amp;B는 매장 / 티켓은 협의</td>
+      </tr>
+      <tr>
+        <td class="k">4. 리퍼럴</td>
+        <td>수강생 안내, 제휴 표기</td>
+        <td>단골 안내, 안내물 비치</td>
+        <td>정산 없음 (혜택 교환)</td>
+      </tr>
+      <tr>
+        <td class="k">5. 외부 행사</td>
+        <td>장소, 라인업, 운영 전반</td>
+        <td>케이터링 · 주류 · 굿즈</td>
+        <td>F&amp;B 매출은 매장</td>
+      </tr>
+    </table>
+
+    <div class="why">
+      <b>원칙</b>
+      <p>대표님이 <strong>현금을 먼저 쓰시는 항목은 없습니다.</strong> 공간과 시간, 그리고 음료 원가만 들어갑니다.
+         표의 배분 비율은 정해진 값이 아니라 <strong>논의를 위한 출발점</strong>입니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>10</span></div>
+</section>
+
+<!-- ══ 11 진행 순서 ═════════════════════════════════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span class="wm">GIOVANNI DJ STUDIO</span></div>
+    <div class="head__sec">09 — Process</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>09</i> 진행 순서</p>
+    <h1 class="title">작게 시작해서<br /><em>되는 것만 키웁니다.</em></h1>
+
+    <div class="timeline" style="margin-top:6mm">
+      <div class="timeline__row">
+        <div class="phase"><b>STEP 01</b><span>이번 주</span></div>
+        <div>
+          <h3>리퍼럴부터 걸기</h3>
+          <p>혜택 내용만 합의하고 안내 카드와 링크를 만듭니다. 비용도 준비도 필요 없습니다.</p>
+        </div>
+      </div>
+      <div class="timeline__row">
+        <div class="phase"><b>STEP 02</b><span>2~4주</span></div>
+        <div>
+          <h3>첫 촬영</h3>
+          <p>영업 밖 시간에 한 번 찍어 봅니다. 결과물을 보고 계속할지 판단하시면 됩니다.</p>
+        </div>
+      </div>
+      <div class="timeline__row">
+        <div class="phase"><b>STEP 03</b><span>1~2개월</span></div>
+        <div>
+          <h3>원데이 클래스 시범 1회</h3>
+          <p>정원을 채워 한 번 돌려 보고, 음료 매출과 반응을 보고 정례화 여부를 정합니다.</p>
+        </div>
+      </div>
+      <div class="timeline__row">
+        <div class="phase"><b>STEP 04</b><span>3개월~</span></div>
+        <div>
+          <h3>살롱 파티 또는 외부 행사</h3>
+          <p>앞의 세 가지가 자리 잡은 뒤에 붙입니다. 순서를 건너뛰지 않는 것이 안전합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>지오바니 디제이 스튜디오 — 공간 협업 계획안</span><span>11</span></div>
+</section>
+
+<!-- ══ 12 마무리 ════════════════════════════════════════════ -->
+<section class="page close">
+  <span class="cover__corner cc1"></span><span class="cover__corner cc2"></span>
+  <span class="cover__corner cc3"></span><span class="cover__corner cc4"></span>
+
+  <p class="close__q">좌석이 아니라<br /><em>분위기를 파는 협업입니다.</em></p>
+  <div class="cover__rule"></div>
+  <p class="cover__meta" style="margin-top:8mm">
+    다섯 가지 중 마음에 걸리는 것만 골라 주셔도 됩니다.<br />
+    하나만 시작해도 나머지는 그 뒤에 자연스럽게 붙습니다.
+  </p>
+
+  <p class="wm" style="margin-top:14mm; font-size:12pt">GIOVANNI<small>DJ STUDIO</small></p>
+</section>
+
+</body>
+</html>
