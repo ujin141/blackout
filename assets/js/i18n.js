@@ -5,8 +5,8 @@
 
 const I18N = {
   ko: {
-    'meta.title': 'BLACKOUT CREW — 서울 DJ 크루 | House · Techno · Minimal',
-    'meta.desc': '서울 기반 DJ 크루 BLACKOUT CREW. 하우스·테크노·미니멀을 클럽, 창고 파티, 페스티벌에서 플레이합니다. 멤버 AROS, LYNN, TS. 창립 멤버 모집 중.',
+    'meta.title': 'BLACKOUT CREW 블랙아웃 크루 — 서울 DJ 크루 | 하우스 · 테크노',
+    'meta.desc': '서울 기반 DJ 크루 블랙아웃(BLACKOUT CREW). 하우스·테크노·미니멀을 클럽, 창고 파티, 페스티벌에서 플레이합니다. 멤버 V, LYNN, AROS, TS. 창립 멤버 모집 중.',
 
     /* 내비게이션은 한국어에서도 영어로 노출 (브랜드 톤 유지).
        한글로 되돌리려면 이 8줄만 한국어로 바꾸면 됩니다. */
