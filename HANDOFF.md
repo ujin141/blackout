@@ -72,6 +72,7 @@ python cards.py aros lynn v ts                 # 인스타 카드뉴스
 python feed.py                                 # 피드 3분할 세트 (1~3번)
 python feed2.py                                # 이어지는 4·5번
 python make_og.py                              # 링크 미리보기 카드
+python kakao_bg.py                             # 카톡 단톡방 배경
 ```
 
 전부 `video/out/`에 저장됩니다. 한 편에 몇 분 걸립니다.
