@@ -62,6 +62,7 @@ python feed.py                                # 피드 3분할 (1~3번)
 python feed2.py                               # 이어지는 4·5번
 python make_og.py                             # 링크 미리보기 카드
 python kakao_bg.py                            # 카톡 단톡방 배경
+python poster_pool.py                         # 파티 포스터 (스토리용)
 ```
 
 영상 스크립트에 시간 두 개를 주면 그 구간만 PNG로 뽑습니다 — `python make.py 15.0 16.2`.
