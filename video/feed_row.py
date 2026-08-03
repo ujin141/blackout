@@ -38,15 +38,15 @@ os.makedirs(OUT, exist_ok=True)
 # ── 줄 정의 ────────────────────────────────────────────────
 ROWS = [
     dict(key='demic', name='DEMIC', cut='members/demic-cutout.png', focus=0.30,
-         mid='NIGHT', right='SEOUL', sub='대학 축제부터 호텔 풀파티까지', reel=True),
+         mid='NIGHT', right='SEOUL', sub='축제부터 호텔 풀파티까지', reel=True),
     dict(key='v', name='V', cut='members/v-cutout.png', focus=0.42,
-         mid='HOUSE', right='TECHNO', sub='장르를 가리지 않습니다'),
+         mid='HOUSE', right='TECHNO', sub='남녀불문 장르불문'),
     dict(key='lynn', name='LYNN', cut='members/lynn-cutout.png', focus=0.36,
-         mid='MINIMAL', right='BOUNCE', sub='한 세트에 장르가 여섯 개'),
+         mid='MINIMAL', right='BOUNCE', sub='한 세트에 장르 여섯 개'),
     dict(key='aros', name='AROS', cut='members/aros-cutout.png', focus=0.34,
-         mid='ENERGY', right='HARD', sub='무대 위에서 돌려주는 에너지'),
+         mid='ENERGY', right='HARD', sub='받은 만큼 돌려주는 에너지'),
     dict(key='ts', name='TS', cut='members/ts-cutout.png', focus=0.36,
-         mid='DEEP', right='CITY POP', sub='오픈덱에서 시작해'),
+         mid='DEEP', right='CITY POP', sub='오픈덱에서 시작한 사람'),
 ]
 
 
@@ -168,9 +168,11 @@ def build(row):
     # 글자 수가 적은 이름(V, TS)이 과하게 커지지 않게 상한을 둔다
     s = min(fit(row['name'], BRAND, 620, 0.14), 118)
     m = tmask(row['name'], BRAND, s, 0.14)
-    blit(img, m, TW * 0.5, 880, 1.0, glow=0.35, glow_r=26)
-    m = tmask(row['sub'], KRB, 34)
-    blit(img, m, TW * 0.5, 975, 0.62, glow=0.2, glow_r=14)
+    blit(img, m, TW * 0.5, 836, 1.0, glow=0.35, glow_r=26)
+    # 이름과 문구 사이 짧은 선 — 둘을 한 덩어리로 묶어 준다
+    img[930:932, int(TW * 0.5 - 80):int(TW * 0.5 + 80)] += 0.42
+    m = tmask(row['sub'], KRB, 39, 0.05)
+    blit(img, m, TW * 0.5, 992, 0.82, glow=0.26, glow_r=16)
 
     # ── 2칸: 가운데 (릴스 커버로도 쓰는 칸) ────────────────
     lock = logo_alpha('logo-mark.png', 420)
