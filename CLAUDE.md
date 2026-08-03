@@ -61,6 +61,7 @@ python cards.py aros lynn v ts                # 인스타 카드뉴스
 python feed.py                                # 피드 3분할 (1~3번)
 python feed2.py                               # 이어지는 4·5번
 python feed_row.py                            # 멤버 한 줄(3칸) 이어지는 세트
+python audio_reel.py && python reel_word.py   # 멤버별 키워드 릴스 5편 (15초)
 python make_og.py                             # 링크 미리보기 카드
 python kakao_bg.py                            # 카톡 단톡방 배경
 python poster_pool.py                         # 파티 포스터 (스토리용)
