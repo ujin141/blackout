@@ -6,7 +6,9 @@
      ↑ 여기가 카드뉴스 1번 슬라이드. 눌러서 열면 기존 카드뉴스가 이어진다.
 
 한 줄을 3240x1350 파노라마로 그린 뒤 1080x1350 세 장으로 자른다.
-가운데 칸은 오프닝 영상(릴스)의 커버로 쓸 수 있게 따로 한 장 더 뽑는다.
+3번 칸은 릴스 커버로 쓴다. 커버는 9:16(1080x1920)으로 올라가고 그리드에서는
+그 가운데를 4:5로 잘라 보여주므로, 1350짜리를 그대로 주면 선 위치가 밀린다.
+→ {key}_3_cover.png (1080x1920, 타일을 정확히 가운데 배치) 를 커버로 쓸 것.
 
 ⚠ 이음새(x=1080, 2160)에는 아무것도 올리지 않는다. 인스타 그리드는 타일 사이가
    벌어져서 경계에 걸친 글자·가는 획은 잘려 사라진다.
@@ -220,9 +222,29 @@ def render(row):
                  ('← 릴스 커버로 지정' if (i == 1 and row.get('reel')) else ''))
 
 
+def cover(row):
+    """릴스 커버(1080x1920) — 그리드는 이 커버의 가운데를 4:5로 잘라 보여준다.
+    3번 칸을 정확히 가운데 놓아야 잘린 결과가 카드와 같은 위치에 온다."""
+    CH = 1920
+    top = (CH - TH) // 2                       # (1920-1350)/2 = 285
+    tile = Image.open(os.path.join(OUT, f"{row['key']}_3.png")).convert('RGB')
+    a = np.asarray(tile).astype(np.float32) / 255.0
+    canvas = np.zeros((CH, TW, 3), np.float32)
+    canvas[top:top + TH] = a
+    # 위아래 여백은 타일 끝 줄을 늘여 어둡게 — 전체 화면으로 봐도 잘린 티가 안 난다
+    for i in range(top):
+        f = (1 - i / top) ** 1.6
+        canvas[top - 1 - i] = a[0] * f
+        canvas[top + TH + i] = a[-1] * f
+    p = os.path.join(OUT, f"{row['key']}_3_cover.png")
+    Image.fromarray((np.clip(canvas, 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
+    print(p, '← 릴스 커버 (1080x1920)')
+
+
 if __name__ == '__main__':
     keys = [k.lower() for k in sys.argv[1:]]
     for r in ROWS:
         if not keys or r['key'] in keys:
             render(r)
+            cover(r)
     print('->', OUT)
