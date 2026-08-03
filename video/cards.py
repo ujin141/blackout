@@ -132,12 +132,19 @@ def floor(dst, a, top=0.62):
 _VIG = None
 
 
+RULE_Y = 1058          # 피드의 모든 1080x1350 자산이 공유하는 가로선 높이.
+                       # feed.py · feed2.py · feed_row.py · feed_grid.py 와 같은 값이어야
+                       # 그리드에서 옆 칸과 선이 이어진다. 건드리지 말 것.
+
+
 def finish(img, vig=1.0):
     global _VIG
     if _VIG is None:
         yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
         d = np.sqrt(((xx - W / 2) / (W * 0.78)) ** 2 + ((yy - H / 2) / (H * 0.78)) ** 2)
         _VIG = np.clip(1.12 - d ** 1.9, 0, 1)[..., None]
+    img[RULE_Y:RULE_Y + 2, 0:W] += 0.28
+    img[RULE_Y + 1:RULE_Y + 2, int(W * 0.30):int(W * 0.70)] += 0.20
     img = img * ((1 - vig) + vig * _VIG)
     rng = np.random.default_rng(9)
     img = img + rng.standard_normal((H, W, 1)).astype(np.float32) * 0.018

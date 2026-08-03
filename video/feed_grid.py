@@ -111,8 +111,17 @@ def caustics(scale=1.0, seed=0):
     return cv2.resize(lines, (W, H), interpolation=cv2.INTER_LINEAR)
 
 
+RULE_Y = 1058          # 다른 피드 자산과 같은 높이. 그래야 옆 칸과 선이 이어진다.
+
+
 def rule(dst, y, x0, x1, a, th=2):
     dst[y:y + th, int(x0):int(x1)] += a
+
+
+def line(dst):
+    """모든 타일이 공유하는 가로선"""
+    dst[RULE_Y:RULE_Y + 2, 0:W] += 0.28
+    dst[RULE_Y + 1:RULE_Y + 2, int(W * 0.30):int(W * 0.70)] += 0.20
 
 
 def base(seed=0, lit=1.0):
@@ -139,6 +148,7 @@ def finish(img, seed=3):
 
 
 def save(img, n, seed=3):
+    line(img)
     p = os.path.join(OUT, f'brand_{n:02d}.png')
     Image.fromarray((finish(img, seed) * 255).astype(np.uint8)).save(p, optimize=True)
     print(p)
@@ -150,7 +160,6 @@ def word_tile(n, word, sub, seed, mark=True):
     s = fit(word, BRAND, 830, 0.08)
     m = tmask(word, BRAND, s, 0.08)
     blit(img, m, W / 2, 640, 1.0, glow=0.36, glow_r=26)
-    rule(img, 760, 330, W - 330, 0.26)
     m = tmask(sub, BRAND, 22, 0.32)
     blit(img, m, W / 2, 830, 0.45)
     if mark:
@@ -166,7 +175,6 @@ word_tile(2, 'TECHNO', 'SOUND OF THE CREW', 12)
 # 03 — 엠블럼
 img = base(13)
 logo(img, 'logo-mark.png', 520, W / 2, 590, 1.0, glow=0.45, glow_r=48)
-rule(img, 900, 300, W - 300, 0.26)
 m = tmask('SEOUL · SINCE 2026', BRAND, 24, 0.32)
 blit(img, m, W / 2, 970, 0.5)
 save(img, 3, 13)
@@ -222,7 +230,6 @@ for i, t in enumerate(('ENERGY', 'UNITY', 'FUTURE')):
     s = fit(t, BRAND, 620, 0.14)
     m = tmask(t, BRAND, s, 0.14)
     blit(img, m, W / 2, 480 + i * 170, 0.95 - i * 0.16, glow=0.3, glow_r=22)
-rule(img, 960, 340, W - 340, 0.22)
 m = tmask('@BLACKOUTCREW_OFFICIAL', BRAND, 22, 0.16)
 blit(img, m, W / 2, 1050, 0.5)
 save(img, 9, 19)
@@ -235,7 +242,6 @@ blit(img, m, W / 2, 780, 1.0, glow=0.35, glow_r=22)
 for i, t in enumerate(('DJ · PRODUCER', 'VISUAL · PHOTO', 'VIDEO · CONTENT')):
     m = tmask(t, BRAND, 22, 0.24)
     blit(img, m, W / 2, 880 + i * 48, 0.5)
-rule(img, 1060, 340, W - 340, 0.22)
 m = tmask('DM', BRAND, 26, 0.3)
 blit(img, m, W / 2, 1130, 0.7, glow=0.25, glow_r=14)
 save(img, 10, 20)
