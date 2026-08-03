@@ -143,11 +143,13 @@ def finish(img, vig=1.0):
         yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
         d = np.sqrt(((xx - W / 2) / (W * 0.78)) ** 2 + ((yy - H / 2) / (H * 0.78)) ** 2)
         _VIG = np.clip(1.12 - d ** 1.9, 0, 1)[..., None]
-    img[RULE_Y:RULE_Y + 2, 0:W] += 0.28
-    img[RULE_Y + 1:RULE_Y + 2, int(W * 0.30):int(W * 0.70)] += 0.20
     img = img * ((1 - vig) + vig * _VIG)
     rng = np.random.default_rng(9)
     img = img + rng.standard_normal((H, W, 1)).astype(np.float32) * 0.018
+    # 선은 비네팅 뒤에 그린다. 앞에 그리면 가장자리가 어두워져서
+    # 옆 칸과 붙였을 때 이어지지 않고 끊긴 점선처럼 보인다.
+    img[RULE_Y:RULE_Y + 2, 0:W] += 0.30
+    img[RULE_Y + 1:RULE_Y + 2, int(W * 0.30):int(W * 0.70)] += 0.18
     return np.clip(img, 0, 1)
 
 

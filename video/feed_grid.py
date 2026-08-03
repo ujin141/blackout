@@ -148,9 +148,10 @@ def finish(img, seed=3):
 
 
 def save(img, n, seed=3):
-    line(img)
+    out = finish(img, seed)
+    line(out)                      # 비네팅 뒤에 그려야 가장자리까지 살아 있다
     p = os.path.join(OUT, f'brand_{n:02d}.png')
-    Image.fromarray((finish(img, seed) * 255).astype(np.uint8)).save(p, optimize=True)
+    Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
     print(p)
 
 

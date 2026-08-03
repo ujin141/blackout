@@ -107,8 +107,6 @@ logo(img, 'logo-mark.png', 560, W / 2, 560, glow=0.5, glow_r=52)
 logo(img, 'logo-word.png', 78, W / 2, 940, glow=0.35, glow_r=26)
 
 # 세 칸을 관통하는 가로선 (그리드에서 이어져 보이는 핵심)
-img[1058:1060, 120:W - 120] += 0.30
-img[1059:1060, int(W * 0.28):int(W * 0.72)] += 0.25
 
 # 슬로건 — 가운데 칸을 넘어 좌우로 걸침
 m = tmask('WHERE THE LIGHTS FADE,   THE MUSIC TAKES OVER.', BRAND, 30, 0.24)
@@ -135,6 +133,9 @@ yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 d = np.sqrt(((xx - W / 2) / (W * 0.62)) ** 2 + ((yy - H / 2) / (H * 0.9)) ** 2)
 img *= np.clip(1.1 - d ** 2.0, 0, 1)[..., None]
 img += np.random.default_rng(8).standard_normal((H, W, 1)).astype(np.float32) * 0.016
+# 가로선은 비네팅 뒤에 그린다 — 앞에 그리면 양 끝이 어두워져 옆 칸과 안 이어진다.
+img[1058:1060, 0:W] += 0.30
+img[1059:1060, int(W * 0.30):int(W * 0.70)] += 0.18
 img = np.clip(img, 0, 1)
 
 full = Image.fromarray((img * 255).astype(np.uint8))

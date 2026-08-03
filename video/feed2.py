@@ -114,8 +114,6 @@ SEAM_CLEAR = 90                     # 글자를 놓지 않는 경계 좌우 폭
 logo(img, 'logo-mark.png', LOGO_H, W / 2, 620, glow=0.45, glow_r=60)
 
 # 두 장을 관통하는 가로선 — 첫 세트와 같은 y
-img[RULE_Y:RULE_Y + 2, 110:W - 110] += 0.30
-img[RULE_Y + 1:RULE_Y + 2, int(W * 0.30):int(W * 0.70)] += 0.25
 
 # 상단 — 각 장 안에서 끝난다
 m = tmask('NIGHT', BRAND, 26, 0.34)
@@ -139,6 +137,9 @@ yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 d = np.sqrt(((xx - W / 2) / (W * 0.64)) ** 2 + ((yy - H / 2) / (H * 0.9)) ** 2)
 img *= np.clip(1.1 - d ** 2.0, 0, 1)[..., None]
 img += np.random.default_rng(8).standard_normal((H, W, 1)).astype(np.float32) * 0.016
+# 가로선은 비네팅 뒤에 그린다 — 앞에 그리면 양 끝이 어두워져 옆 칸과 안 이어진다.
+img[1058:1060, 0:W] += 0.30
+img[1059:1060, int(W * 0.30):int(W * 0.70)] += 0.18
 img = np.clip(img, 0, 1)
 
 full = Image.fromarray((img * 255).astype(np.uint8))
