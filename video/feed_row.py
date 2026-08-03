@@ -186,8 +186,9 @@ def build(row):
     m = tmask('BLACKOUT CREW', BRAND, 26, 0.32)
     blit(img, m, TW * 2.5, 880, 0.5)
 
-    # 세 칸을 관통하는 가로선
-    img[RULE_Y:RULE_Y + 2, 110:W - 110] += 0.30
+    # 세 칸을 관통하는 가로선 — 끝에서 끝까지.
+    # 안쪽으로 들여 그으면 잘랐을 때 1번 칸은 왼쪽만, 3번 칸은 오른쪽만 비어 보인다.
+    img[RULE_Y:RULE_Y + 2, 0:W] += 0.30
     img[RULE_Y + 1:RULE_Y + 2, int(W * 0.34):int(W * 0.66)] += 0.22
 
     # 가로선 아래 — 각 칸 안에서 끝난다
