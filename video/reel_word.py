@@ -21,6 +21,7 @@ import cv2
 from render import (W, H, FPS, BRAND, MARK_A, text_mask, blit,
                     vignette, grain, chroma, shake, zoom, out_expo, clamp01)
 from audio_reel import STYLES
+from fonts import KRB
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'reel')
@@ -30,15 +31,15 @@ SAFE_T, SAFE_B = 300, 1560          # 릴스 UI가 덮는 위·아래
 
 REELS = [
     dict(key='demic', word='SEOUL',    style='festival', name='DEMIC',
-         sub='대학 축제부터 호텔 풀파티까지'),
+         sub='축제부터 호텔 풀파티까지'),
     dict(key='v',     word='TECHNO',   style='techno',   name='V',
-         sub='새벽 세시 넘어가면 이쪽'),
+         sub='남녀불문 장르불문'),
     dict(key='lynn',  word='BOUNCE',   style='bounce',   name='LYNN',
-         sub='몸이 먼저 가는 쪽'),
+         sub='한 세트에 장르 여섯 개'),
     dict(key='aros',  word='HARD',     style='hard',     name='AROS',
-         sub='셀 거면 확실하게'),
+         sub='받은 만큼 돌려주는 에너지'),
     dict(key='ts',    word='CITY POP', style='citypop',  name='TS',
-         sub='해 지기 전에 트는 음악'),
+         sub='오픈덱에서 시작한 사람'),
 ]
 
 _BW, _BH = W // 2, H // 2
@@ -202,8 +203,10 @@ def frame_of(spec, t, fi, bpm, bars):
         m = text_mask(spec['name'], BRAND, target_w=min(360, 90 * len(spec['name']) + 120),
                       track_em=0.2)
         blit(img, m, W / 2, H * 0.62, aa * 0.95, glow=0.28, glow_r=18)
-        m2 = np.full((2, int(420 * out_expo(clamp01(d / 0.8)))), 255, np.uint8)
-        blit(img, m2, W / 2, H * 0.665, aa * 0.35)
+        m2 = np.full((2, int(300 * out_expo(clamp01(d / 0.8)))), 255, np.uint8)
+        blit(img, m2, W / 2, H * 0.662, aa * 0.42)
+        m3 = text_mask(spec['sub'], KRB, target_w=600, track_em=0.03)
+        blit(img, m3, W / 2, H * 0.712, clamp01((d - 0.2) / 0.5) * 0.82, glow=0.24, glow_r=15)
 
     m = text_mask('@BLACKOUTCREW_OFFICIAL', BRAND, target_w=520, track_em=0.14)
     blit(img, m, W / 2, SAFE_B - 40, 0.7, glow=0.22, glow_r=12)
