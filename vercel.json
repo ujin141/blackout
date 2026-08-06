@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+
+  "//": "접속 차단용. 모든 경로를 maintenance.html 로 돌린다. 사이트 코드는 그대로 남아 있고, 이 파일만 지우고 푸시하면 즉시 원래대로 돌아온다.",
+
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/maintenance.html" }
+  ],
+
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    }
+  ]
+}
