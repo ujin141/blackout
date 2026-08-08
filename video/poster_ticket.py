@@ -25,15 +25,15 @@ from poster_kit import (BRAND, POOL, SIZES, tmask, fit, paint, rule, vrule, box,
 from fonts import KR
 
 # ── 여기만 고치면 됨 ───────────────────────────────────────
+# 행사 정보는 event.py 한 곳에서 온다. 여기서 고치지 말 것.
+import event as EV
+from poster_kit import timetable, partner_strip
+
 SERIAL = 'NO. 0001'
-ROWS   = [('DATE',    '일정 공개 예정'),           # 예: '8월 23일 토요일'
-          ('TIME',    '오후 2시 — 밤 10시'),
-          ('VENUE',   '장소 추후 공지'),           # 예: '서울 강남'
-          ('LINE UP', 'DEMIC · V · LYNN · AROS · TS'),
-          ('ENTRY',   '스탠딩 00,000원')]
-FINE   = '성비 1:1 · 웰컴드링크 1잔 포함 · 현장 매진 시 입장 불가'
-HANDLE = '@BLACKOUTCREW_OFFICIAL'
-NOTE   = '예약 · 문의는 DM'
+ROWS   = [('DATE', EV.DATE), ('TIME', EV.TIME),
+          ('VENUE', EV.VENUE), ('ENTRY', EV.ENTRY)]
+HANDLE = EV.HANDLE
+NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
 
 BG    = np.array([0.07, 0.07, 0.08], np.float32)   # 카드 바깥. 홈이 보이려면 있어야 한다
@@ -106,7 +106,7 @@ def build(W, H, story=False):
 
     # ── 사진 창 — 신문처럼 잉크 한 색으로 ──────────────────
     py0 = int(H * (0.320 if story else 0.325))
-    py1 = int(H * (0.500 if story else 0.520))
+    py1 = int(H * (0.455 if story else 0.462))
     ph = py1 - py0
     win = duotone(POOL, iw, ph, INK, PAPER, contrast=1.35, keep=0.0, focus=0.62, zoom=1.25)
     img[py0:py1, M:M + iw] = win
@@ -116,15 +116,15 @@ def build(W, H, story=False):
     paint(img, tmask(SERIAL, BRAND, int(13 * V), 0.30), Mx, py1 + 40 * U, color=INK, a=0.6, anchor='r')
 
     # ── 절취선 + 양 끝 홈 ─────────────────────────────────
-    ny = int(H * (0.548 if story else 0.570))
+    ny = int(H * (0.500 if story else 0.512))
     perforate(img, ny, M - int(24 * V), Mx + int(24 * V), INK, V)
     r = int(W * 0.028)
     cv2.circle(img, (cx0, ny), r, tuple(float(v) for v in BG), -1, cv2.LINE_AA)
     cv2.circle(img, (cx1, ny), r, tuple(float(v) for v in BG), -1, cv2.LINE_AA)
 
     # ── 정보 — 라벨 … 값 (영수증 조판) ─────────────────────
-    y0 = H * (0.578 if story else 0.600)
-    step = H * (0.046 if story else 0.050)
+    y0 = H * 0.540
+    step = H * 0.043
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
         lm = tmask(k, BRAND, int(14 * V), 0.24)
@@ -133,13 +133,17 @@ def build(W, H, story=False):
         paint(img, vm, Mx, y, color=INK, anchor='r')
         dots(img, y + 4 * U, M + lm.shape[1] + int(16 * V), Mx - vm.shape[1] - int(16 * V), INK, 0.42, V)
 
-    paint(img, tmask(FINE, KR, min(int(18 * V), fit(FINE, KR, iw)), 0.01),
-          M, H * (0.790 if story else 0.828), color=INK, a=0.55)
+    # ── 타임테이블 ────────────────────────────────────────
+    ty = H * 0.700
+    rule(img, ty - 24 * U, M, Mx, INK, 0.30, max(1, int(1 * V)))
+    paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.24), M, ty, color=BLUE, a=0.95)
+    timetable(img, EV.TIMETABLE, M, Mx, ty + H * 0.034, H * 0.033, V,
+              BLUE, INK, cols=2, ksize=13, vsize=17)
 
     # ── 바코드 + 발 ───────────────────────────────────────
-    by0 = int(H * (0.826 if story else 0.850))
-    barcode(img, M, Mx - int(230 * V), by0, by0 + int(52 * U), INK, V)
-    paint(img, tmask(NOTE, KR, int(19 * V), 0.02), Mx, by0 + 26 * U, color=BLUE, anchor='r')
+    by0 = int(H * (0.855 if story else 0.868))
+    barcode(img, M, Mx - int(230 * V), by0, by0 + int(44 * U), INK, V)
+    paint(img, tmask(NOTE, KR, int(19 * V), 0.02), Mx, by0 + 22 * U, color=BLUE, anchor='r')
     rule(img, cy1 - 74 * U, M, Mx, INK, 0.35, max(1, int(1 * V)))
     paint(img, tmask(HANDLE, BRAND, int(16 * V), 0.16), M, cy1 - 44 * U, color=INK, a=0.85)
     paint(img, tmask('BLACKOUTSOUND.COM', BRAND, int(16 * V), 0.16), Mx, cy1 - 44 * U,

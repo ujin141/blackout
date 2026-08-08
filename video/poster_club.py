@@ -45,13 +45,14 @@ STACK  = [('POOL',  1.00, 'l', 'w'),
           None,
           ('SOLO',  1.00, 'l', 'w'),
           ('PARTY', 0.58, 'r', 'r')]
-CELLS  = [('DATE',    '일정 공개 예정'),            # 예: '8월 23일 토요일'
-          ('TIME',    '오후 2시 — 밤 10시'),
-          ('VENUE',   '장소 추후 공지'),            # 예: '서울 강남'
-          ('LINE UP', 'DEMIC · V · LYNN · AROS · TS')]
-WIDE   = ('ENTRY',    '스탠딩 00,000원 · 성비 1:1 · 웰컴드링크 1잔')
-HANDLE = '@BLACKOUTCREW_OFFICIAL'
-NOTE   = '예약 · 문의는 DM'
+# 행사 정보는 event.py 한 곳에서 온다. 여기서 고치지 말 것.
+import event as EV
+from poster_kit import timetable, partner_strip
+
+CELLS  = [('DATE', EV.DATE), ('TIME', EV.TIME)]
+WIDE   = ('ENTRY', EV.ENTRY)
+HANDLE = EV.HANDLE
+NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
 
 OUT = os.path.join(HERE, 'out', 'poster')
@@ -188,7 +189,7 @@ def build(W, H, story=False):
     # 큰 낱말은 전폭 왼쪽, 작은 낱말은 60% 폭 오른쪽.
     # 전부 같은 폭으로 맞추면 네 줄이 다 커져서 세로가 넘치고,
     # 넘치지 않게 줄이면 오른쪽 여백이 남는다. 크기를 갈라 두 문제를 같이 푼다.
-    band0, band1 = H * 0.135, H * 0.700
+    band0, band1 = H * 0.135, H * 0.575
     colw = fx1 - fx0
     lead, divh = int(20 * U), int(104 * U)
     for _ in range(4):                                  # 칸에 맞을 때까지 폭을 줄인다
@@ -222,19 +223,24 @@ def build(W, H, story=False):
 
     # ── 정보 — 라벨 위, 값 아래. A안의 한 줄 표와 다르게 간다 ──
     cw = (fx1 - fx0) / 2
-    for i, (k, val) in enumerate(CELLS):
+    for i, (k, val) in enumerate([*CELLS, ('VENUE', EV.VENUE), WIDE]):
         cx = fx0 + cw * (i % 2)
-        ry = H * (0.742 if story else 0.748) + H * (0.070 if story else 0.074) * (i // 2)
+        ry = H * 0.618 + H * 0.070 * (i // 2)
         rule(img, ry - 26 * U, cx, cx + cw - int(24 * V), WHITE, 0.18)
         paint(img, tmask(k, BRAND, int(13 * V), 0.26), cx, ry, color=RED, a=0.95)
         sz = min(int(24 * V), fit(val, KR, cw - int(30 * V)))
         paint(img, tmask(val, KR, sz, 0.01), cx, ry + 34 * U, a=0.97)
 
-    ry = H * (0.878 if story else 0.884)
-    rule(img, ry - 26 * U, fx0, fx1, WHITE, 0.18)
-    paint(img, tmask(WIDE[0], BRAND, int(13 * V), 0.26), fx0, ry, color=RED, a=0.95)
-    sz = min(int(24 * V), fit(WIDE[1], KR, fx1 - fx0))
-    paint(img, tmask(WIDE[1], KR, sz, 0.01), fx0, ry + 34 * U, a=0.97)
+    # ── 타임테이블 ────────────────────────────────────────
+    ty = H * 0.752
+    rule(img, ty - 26 * U, fx0, fx1, WHITE, 0.18)
+    paint(img, tmask('TIME TABLE', BRAND, int(13 * V), 0.26), fx0, ty, color=RED, a=0.95)
+    timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.034, V,
+              RED, WHITE, cols=2, ksize=13, vsize=17)
+
+    ps = EV.partner_paths()
+    if ps:
+        partner_strip(img, ps, fx0, fx1, H * (0.905 if story else 0.925), H * 0.028, WHITE, a=0.85)
 
     # ── 하단 ──────────────────────────────────────────────
     fy = by - 30 * V

@@ -26,13 +26,14 @@ from poster_kit import (BRAND, CLUB, CLUB_SAFE, SIZES, tmask, fit, paint, rule,
 from fonts import KR
 
 # ── 여기만 고치면 됨 ───────────────────────────────────────
-ROWS   = [('DATE',    '일정 공개 예정'),           # 예: '8월 23일 토요일'
-          ('TIME',    '오후 2시 — 밤 10시'),
-          ('VENUE',   '장소 추후 공지'),           # 예: '서울 강남'
-          ('LINE UP', 'DEMIC · V · LYNN · AROS · TS'),
-          ('ENTRY',   '스탠딩 00,000원 · 성비 1:1 · 웰컴드링크 1잔')]
-HANDLE = '@BLACKOUTCREW_OFFICIAL'
-NOTE   = '예약 · 문의는 DM'
+# 행사 정보는 event.py 한 곳에서 온다. 여기서 고치지 말 것.
+import event as EV
+from poster_kit import timetable, partner_strip
+
+ROWS   = [('DATE', EV.DATE), ('TIME', EV.TIME),
+          ('VENUE', EV.VENUE), ('ENTRY', EV.ENTRY)]
+HANDLE = EV.HANDLE
+NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
 
 INK  = np.array([0.02, 0.03, 0.03], np.float32)
@@ -93,13 +94,23 @@ def build(W, H, story=False):
     neon(img, t2, M, y2, V, mirror=y2 + t2.shape[0] * 0.62)
 
     # ── 정보 — 간판 아래 작게. 여기서 빛나면 간판이 죽는다 ──
-    y0 = H * (0.640 if story else 0.660)
-    step = H * (0.048 if story else 0.052)
+    y0 = H * 0.575
+    step = H * 0.044
     lx = M + int(W * 0.200)
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
         paint(img, tmask(k, BRAND, int(14 * V), 0.24), M, y, color=LIME, a=0.85)
         paint(img, tmask(v, KR, min(int(24 * V), fit(v, KR, W - M - lx)), 0.01), lx, y, color=WHT, a=0.92)
+
+    # ── 타임테이블 ────────────────────────────────────────
+    ty = H * 0.735
+    paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.24), M, ty, color=LIME, a=0.85)
+    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.032, H * 0.034, V,
+              LIME, WHT, cols=2, ksize=13, vsize=17, a=0.92)
+
+    ps = EV.partner_paths()
+    if ps:
+        partner_strip(img, ps, M, W - M, H * (0.885 if story else 0.895), H * 0.026, WHT, a=0.8)
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.945

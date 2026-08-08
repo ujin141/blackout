@@ -18,6 +18,8 @@
 **검증 안 된 사실을 단정하지 않습니다.**
 특히 제안서에서 상대 회사 정보(취급 브랜드, 커리큘럼, 유동인구, 지점 성격)는 확인된 것만 씁니다. 추정은 "제안"·"가정"으로 명시. 과거에 이걸로 두 번 수정이 있었습니다(CONTEXT.md 참고).
 
+**행사 정보는 `video/event.py` 한 곳에서만 고칩니다.** 날짜·시간·타임테이블·가격이 전부 거기 있고 포스터 다섯 시안이 가져다 씁니다. 시안 파일 안에 값을 다시 적지 마세요 — 예전에 그렇게 해서 날짜 하나 바꿀 때마다 다섯 군데를 고쳐야 했습니다.
+
 **멤버를 추가·수정하면 네 곳을 같이 고칩니다.**
 `assets/js/members.js`(화면) → `index.html`의 JSON-LD → `index.html`의 `<noscript>` 목록 → `llms.txt`.
 화면은 JS로 그려서 크롤러가 못 보기 때문에 나머지 세 곳이 필요합니다.
@@ -46,7 +48,9 @@ assets/js/i18n.js       모든 문구 (ko/en)
 assets/js/main.js       CONFIG(인스타·이메일), 캔버스 아트, 3D 로고, 지원 폼
 assets/css/styles.css   :root 에 디자인 토큰
 video/                  영상·카드뉴스·OG 생성 스크립트
+video/event.py          행사 정보 원본 — 날짜·시간·타임테이블·협업 브랜드. 시안 다섯이 여기서 가져감
 video/poster_kit.py     포스터 공통 도구 (C·D·E안이 씀. A·B안은 각자 복사본)
+assets/img/partners/    협업 브랜드 로고 — 넣으면 포스터에 자동으로 들어감 (README 참고)
 proposal/               웨이비 스튜디오 제안서 (18p)
 proposal2/              디제이코리아 제안서 (15p) — style.css 는 proposal/ 것을 공유
 llms.txt robots.txt sitemap.xml   AI·검색 노출

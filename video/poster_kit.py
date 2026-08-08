@@ -151,6 +151,69 @@ def logo(height):
     return np.asarray(im.resize((w, height), Image.LANCZOS)).astype(np.float32)[..., 3]
 
 
+def timetable(img, rows, x0, x1, y0, step, V, key_color, val_color,
+              cols=2, ksize=15, vsize=19, a=1.0):
+    """타임테이블. 여덟 줄을 한 줄씩 쌓으면 포스터 절반을 먹어서 두 칸으로 접는다.
+
+    시간은 오른쪽 끝을 맞춰야 세로로 읽힌다 — 왼쪽만 맞추면 자릿수가 달라
+    들쭉날쭉해 보인다. 여기서는 24시간제라 자릿수가 같아 왼쪽 정렬로 충분하다."""
+    per = (len(rows) + cols - 1) // cols
+    cw = (x1 - x0) / cols
+    for i, (s, e, name) in enumerate(rows):
+        cx = x0 + cw * (i // per)
+        y = y0 + step * (i % per)
+        paint(img, tmask(f'{s}–{e}', BRAND, int(ksize * V), 0.10), cx, y, color=key_color, a=a * 0.8)
+        paint(img, tmask(name, BRAND, int(vsize * V), 0.08), cx + cw * 0.46, y, color=val_color, a=a)
+
+
+def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055):
+    """협업 브랜드 로고 줄.
+
+    **높이를 맞추면 크기가 안 맞아 보입니다.** 로고마다 획이 굵고 가는 정도가 달라서,
+    같은 높이로 놓으면 굵은 쪽이 훨씬 커 보입니다. 여기서는 **잉크 양(알파 합)** 을
+    맞춥니다 — 눈이 느끼는 무게가 그거라서요. 그런 다음 높이 상한만 따로 겁니다.
+
+    로고 색도 하나로 통일합니다. 흰색·금색이 섞이면 협찬 딱지처럼 보입니다."""
+    if not paths:
+        return
+    marks = []
+    for p in paths:
+        im = Image.open(p).convert('RGBA')
+        arr = np.asarray(im).astype(np.float32)
+        # 검정 바탕에 얹힌 로고가 대부분이라 알파가 없으면 밝기를 알파로 쓴다
+        al = arr[..., 3] if arr[..., 3].min() < 250 else arr[..., :3].max(2)
+        ys, xs = np.where(al > 8)
+        if len(ys) == 0:
+            continue
+        al = al[ys.min():ys.max() + 1, xs.min():xs.max() + 1] / 255.0
+        marks.append(al)
+    if not marks:
+        return
+
+    ink = np.array([m.sum() for m in marks], np.float32)
+    target = float(np.median(ink))
+    scale = np.sqrt(target / np.maximum(ink, 1e-6))
+    # 높이 상한 — 세로로 긴 로고가 줄을 뚫고 나가지 않게
+    for i, m in enumerate(marks):
+        scale[i] = min(scale[i], h_max / m.shape[0])
+    sizes = [(max(1, int(m.shape[1] * s)), max(1, int(m.shape[0] * s)))
+             for m, s in zip(marks, scale)]
+
+    gap = int((x1 - x0) * gap_ratio)
+    total = sum(w for w, _ in sizes) + gap * (len(sizes) - 1)
+    if total > x1 - x0:                                   # 줄을 넘치면 통째로 줄인다
+        k = (x1 - x0) / total
+        sizes = [(max(1, int(w * k)), max(1, int(h * k))) for w, h in sizes]
+        gap = int(gap * k)
+        total = sum(w for w, _ in sizes) + gap * (len(sizes) - 1)
+
+    x = x0 + ((x1 - x0) - total) / 2
+    for m, (w, h) in zip(marks, sizes):
+        r = cv2.resize(m, (w, h), interpolation=cv2.INTER_AREA)
+        paint(img, (r * 255).astype(np.uint8), x, cy, color=color, a=a)
+        x += w + gap
+
+
 def grain(img, amt, seed=3):
     img += np.random.default_rng(seed).standard_normal(img.shape[:2] + (1,)).astype(np.float32) * amt
 

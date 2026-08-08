@@ -23,14 +23,15 @@ from poster_kit import (BRAND, POOL, CLUB, CLUB_SAFE, SIZES, tmask, fit, paint,
 from fonts import KR
 
 # ── 여기만 고치면 됨 ───────────────────────────────────────
-LINEUP = ['DEMIC', 'V', 'LYNN', 'AROS', 'TS']
-CELLS  = [('DATE',  '일정 공개 예정'),             # 예: '8월 23일 토요일'
-          ('TIME',  '오후 2시 — 밤 10시'),
-          ('VENUE', '장소 추후 공지'),             # 예: '서울 강남'
-          ('ENTRY', '스탠딩 00,000원')]
-FINE   = '성비 1:1 · 웰컴드링크 1잔 포함'
-HANDLE = '@BLACKOUTCREW_OFFICIAL'
-NOTE   = '예약 · 문의는 DM'
+# 행사 정보는 event.py 한 곳에서 온다. 여기서 고치지 말 것.
+import event as EV
+from poster_kit import timetable, partner_strip
+
+CELLS  = [('DATE', EV.DATE), ('TIME', EV.TIME),
+          ('VENUE', EV.VENUE), ('ENTRY', EV.PRICE)]
+FINE   = f'{EV.PERKS} 포함'
+HANDLE = EV.HANDLE
+NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
 
 INK    = np.array([0.04, 0.04, 0.05], np.float32)   # 칸 사이로 보이는 바탕
@@ -39,8 +40,8 @@ ORANGE = np.array([1.00, 0.42, 0.05], np.float32)
 BLK    = np.array([0.06, 0.05, 0.05], np.float32)
 
 # (이름, 비중) — 세로를 이 비율로 나눈다
-ROWS = [('head', 0.55), ('pool', 1.55), ('pair', 2.30), ('solo', 1.55),
-        ('mix', 2.30), ('info', 1.95), ('foot', 0.55)]
+ROWS = [('head', 0.55), ('pool', 1.45), ('pair', 2.10), ('solo', 1.45),
+        ('mix', 2.55), ('info', 1.80), ('foot', 0.55)]
 
 
 def layout(W, H):
@@ -97,21 +98,20 @@ def build(W, H, story=False):
     # ── SOLO PARTY — 오렌지 칸 ────────────────────────────
     y0, y1 = ys['solo']
     box(img, M, y0, W - M, y1, ORANGE)
-    paint(img, tw('SOLO PARTY', BRAND, iw - int(52 * V)), M + int(26 * V), (y0 + y1) / 2,
+    paint(img, tw('SOLO PARTY', BRAND, iw - int(150 * V)), M + int(26 * V), (y0 + y1) / 2,
           color=BLK)
+    # × 는 라인업 칸이 타임테이블로 바뀌면서 갈 곳이 없어졌다. 여기 오른쪽 끝에 둔다.
+    paint(img, tmask('×', BRAND, int((y1 - y0) * 0.42)), W - M - int(26 * V), (y0 + y1) / 2,
+          color=BLK, anchor='r')
 
-    # ── 라인업 칸 | × 칸 ──────────────────────────────────
+    # ── 타임테이블 칸 — 여덟 줄이라 칸 하나를 통째로 쓴다 ───
     y0, y1 = ys['mix']
-    box(img, M, y0, M + cw, y1, BLK)
-    paint(img, tmask('LINE UP', BRAND, int(14 * V), 0.26), M + int(26 * V), y0 + 34 * U,
+    box(img, M, y0, W - M, y1, BLK)
+    px = int(26 * V)
+    paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.26), M + px, y0 + 32 * U,
           color=ORANGE)
-    step = (y1 - y0 - 62 * U) / len(LINEUP)
-    for i, n in enumerate(LINEUP):
-        paint(img, tmask(n, BRAND, int(23 * V), 0.06), M + int(26 * V),
-              y0 + 62 * U + step * (i + 0.42), color=WHT)
-    box(img, M + cw + G, y0, W - M, y1, WHT)
-    paint(img, tmask('×', BRAND, int((y1 - y0) * 0.95)), M + cw + G + cw / 2, (y0 + y1) / 2,
-          color=ORANGE, anchor='c')
+    timetable(img, EV.TIMETABLE, M + px, W - M - px, y0 + 76 * U,
+              (y1 - y0 - 96 * U) / 4, V, ORANGE, WHT, cols=2, ksize=13, vsize=18)
 
     # ── 정보 칸 — 2×2 ─────────────────────────────────────
     y0, y1 = ys['info']

@@ -42,16 +42,15 @@ STOCK = os.path.join(IMG, 'stock')
 BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
 from fonts import KR, KRB
 
-# ── 여기만 고치면 됨 ───────────────────────────────────────
+# 행사 정보는 event.py 한 곳에서 온다. 여기서 고치지 말 것.
+import event as EV
+from poster_kit import timetable, partner_strip
+
 HOOK   = ''                                # 한 줄 카피. 비우면 아예 안 그린다
-ROWS   = [('DATE',    '일정 공개 예정'),           # 예: '8월 23일 토요일'
-          ('TIME',    '오후 2시 — 밤 10시'),
-          ('VENUE',   '장소 추후 공지'),           # 예: '서울 강남'
-          ('LINE UP', 'DEMIC · V · LYNN · AROS · TS'),
-          ('ENTRY',   '스탠딩 00,000원 · 성비 1:1 · 웰컴드링크 1잔')]
-HANDLE = '@BLACKOUTCREW_OFFICIAL'
-NOTE   = '예약 · 문의는 DM'
-# ──────────────────────────────────────────────────────────
+ROWS   = [('DATE',  EV.DATE),
+          ('TIME',  EV.TIME),
+          ('VENUE', EV.VENUE),
+          ('ENTRY', EV.ENTRY)]
 
 OUT = os.path.join(HERE, 'out', 'poster')
 os.makedirs(OUT, exist_ok=True)
@@ -314,8 +313,8 @@ def build(W, H, story=False):
     glow(img, m1, M, SEAM - 150 * U, CYAN, 0.55, 22 * V)
     paint_split(img, m1, M, SEAM - 150 * U, off)
     m2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, tw, 0.02), 0.02)
-    glow(img, m2, M, SEAM + 132 * U, MAGENTA, 0.60, 22 * V)
-    paint_split(img, m2, M, SEAM + 132 * U, off)
+    glow(img, m2, M, SEAM + 110 * U, MAGENTA, 0.60, 22 * V)
+    paint_split(img, m2, M, SEAM + 110 * U, off)
 
     # ── 마퀴 두 줄. 서로 반대로 눕혀 화면을 잡아 준다 ───────
     # 위쪽은 물만 있는 빈 자리를 메운다. 셋 이상 깔면 산만해진다.
@@ -330,23 +329,36 @@ def build(W, H, story=False):
         paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
-    y0 = H * ((0.690 if story else 0.702) if HOOK else (0.652 if story else 0.665))
-    step = H * (0.045 if story else 0.048)
+    y0 = H * (0.585 if story else 0.605)
+    step = H * (0.036 if story else 0.038)
     lx = M + int(W * 0.215)                 # 값이 시작하는 열
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
         ry = int(y - step * 0.46)
         img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
         paint(img, tmask(k, BRAND, int(15 * V), 0.24), M, y, color=CYAN, a=0.75)
-        sz = min(int(25 * V), fit(v, KR, W - M - lx))
+        sz = min(int(24 * V), fit(v, KR, W - M - lx))
         paint(img, tmask(v, KR, sz, 0.01), lx, y, a=0.97)
     ry = int(y0 + step * (len(ROWS) - 0.46))
     img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
 
+    # ── 타임테이블 — 여덟 줄을 두 칸으로 접는다 ─────────────
+    ty = H * (0.725 if story else 0.759)
+    paint(img, tmask('TIME TABLE', BRAND, int(15 * V), 0.24), M, ty, color=CYAN, a=0.75)
+    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.034,
+              V, CYAN, WHITE, cols=2, ksize=14, vsize=18)
+
+    # ── 협업 브랜드 ───────────────────────────────────────
+    # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
+    ps = EV.partner_paths()
+    if ps:
+        partner_strip(img, ps, M, W - M, H * (0.905 if story else 0.927),
+                      H * 0.030, WHITE, a=0.85)
+
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.955
-    paint(img, tmask(HANDLE, BRAND, int(19 * V), 0.16), M, by, a=0.92)
-    paint(img, tmask(NOTE, KR, int(21 * V), 0.02), W - M, by, color=MAGENTA, a=0.95, anchor='r')
+    paint(img, tmask(EV.HANDLE, BRAND, int(19 * V), 0.16), M, by, a=0.92)
+    paint(img, tmask(EV.NOTE, KR, int(21 * V), 0.02), W - M, by, color=MAGENTA, a=0.95, anchor='r')
 
     # ── 여백 디테일 — 인쇄물처럼 보이게 하는 잔손질 ─────────
     # 옆에 세로로 세운 작은 글자와 네 귀퉁이 십자. 정보는 없지만
