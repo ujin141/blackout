@@ -351,14 +351,13 @@ def build(W, H, story=False):
 
     # ── 협업 브랜드 ───────────────────────────────────────
     # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
-    ps = EV.partner_paths()
-    if ps:
-        py = H * (0.860 if story else 0.870)
-        ry = int(py - H * 0.034)
+    if EV.PARTNERS_STR:
+        py = H * (0.868 if story else 0.878)
+        ry = int(py - H * 0.030)
         img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
         paint(img, tmask('PARTNERS', BRAND, int(15 * V), 0.24), M, py, color=CYAN, a=0.75)
-        partner_strip(img, ps, lx, W - M, py, H * 0.042, WHITE, a=0.9, align='l',
-                      names=EV.PARTNER_NAMES, name_font=KR)
+        sz = min(int(20 * V), fit(EV.PARTNERS_STR, KR, W - M - lx))
+        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), lx, py, a=0.88)
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.955

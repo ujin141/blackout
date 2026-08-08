@@ -242,13 +242,12 @@ def build(W, H, story=False):
     timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.028, V,
               WHITE, WHITE, cols=2, ksize=13, vsize=17, a=0.95)
 
-    ps = EV.partner_paths()
-    if ps:
+    if EV.PARTNERS_STR:
         py = H * (0.884 if story else 0.892)
         rule(img, py - 44 * U, fx0, fx1, WHITE, 0.18)
         paint(img, tmask('PARTNERS', BRAND, int(13 * V), 0.26), fx0, py - 18 * U, color=RED, a=0.95)
-        partner_strip(img, ps, fx0, fx1, py + 30 * U, H * 0.034, WHITE, a=0.9, align='l',
-                      names=EV.PARTNER_NAMES, name_font=KR)
+        sz = min(int(20 * V), fit(EV.PARTNERS_STR, KR, fx1 - fx0))
+        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), fx0, py + 22 * U, a=0.88)
 
     # ── 하단 ──────────────────────────────────────────────
     fy = by - 30 * V

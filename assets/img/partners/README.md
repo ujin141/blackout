@@ -1,5 +1,10 @@
 # 협업 브랜드 로고
 
+> **지금은 로고를 쓰지 않습니다.** 포스터에는 협업 브랜드를 **이름 한 줄**로 넣습니다
+> (`video/event.py` 의 `PARTNER_NAMES`). 글자가 붙은 로고와 심볼만 있는 로고가 섞여
+> 나란히 두면 따로 놀았습니다. 아래 내용은 다시 로고로 갈 때를 위해 남겨 둡니다 —
+> `PARTNERS` 에 파일명을 채우면 그리는 코드는 그대로 살아 있습니다.
+
 여기에 파일을 넣으면 포스터 다섯 시안 아래쪽에 자동으로 들어갑니다.
 **없으면 그냥 건너뜁니다** — 자리를 비워 두지 않으니 지금 상태로도 포스터는 정상입니다.
 
@@ -7,10 +12,10 @@
 
 | 파일명 | 브랜드 | 상태 |
 |---|---|---|
-| `club-ace.png` | CLUB ACE SEOUL | 사용 |
-| `z-spot.png` | Z SPOT LOUNGE | 사용 |
-| `space-seoul.png` | SPACE SEOUL | 사용 |
-| `ace-emblem.png` | 어나더 라운지 (다이아 A) | **안 씀** |
+| `club-ace.png` | CLUB ACE SEOUL | 보관 |
+| `z-spot.png` | Z SPOT LOUNGE | 보관 |
+| `space-seoul.png` | SPACE SEOUL | 보관 |
+| `ace-emblem.png` | 어나더 라운지 (다이아 A) | 보관 |
 
 목록은 `video/event.py` 의 `PARTNERS` 에 있습니다. 브랜드가 늘거나 빠지면 거기서 고칩니다.
 

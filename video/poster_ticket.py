@@ -116,12 +116,11 @@ def build(W, H, story=False):
     paint(img, tmask(SERIAL, BRAND, int(13 * V), 0.30), Mx, py1 + 40 * U, color=INK, a=0.6, anchor='r')
 
     # 협업 브랜드는 위 스텁에 둔다 — 아래는 바코드가 차지해 자리가 안 난다
-    ps = EV.partner_paths()
-    if ps:
+    if EV.PARTNERS_STR:
         py = H * 0.450
         paint(img, tmask('WITH', BRAND, int(13 * V), 0.30), M, py, color=BLUE, a=0.9)
-        partner_strip(img, ps, M + int(90 * V), Mx, py, H * 0.032, INK, a=0.8, align='l',
-                      names=EV.PARTNER_NAMES, name_font=KR)
+        sz = min(int(18 * V), fit(EV.PARTNERS_STR, KR, Mx - M - int(90 * V)))
+        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), M + int(90 * V), py, color=INK, a=0.72)
 
     # ── 절취선 + 양 끝 홈 ─────────────────────────────────
     ny = int(H * 0.490)

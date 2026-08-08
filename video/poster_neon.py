@@ -108,12 +108,11 @@ def build(W, H, story=False):
     timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.032, H * 0.030, V,
               LIME, WHT, cols=2, ksize=13, vsize=17, a=0.92)
 
-    ps = EV.partner_paths()
-    if ps:
+    if EV.PARTNERS_STR:
         py = H * (0.872 if story else 0.878)
         paint(img, tmask('PARTNERS', BRAND, int(14 * V), 0.24), M, py, color=LIME, a=0.85)
-        partner_strip(img, ps, lx, W - M, py, H * 0.036, WHT, a=0.85, align='l',
-                      names=EV.PARTNER_NAMES, name_font=KR)
+        sz = min(int(19 * V), fit(EV.PARTNERS_STR, KR, W - M - lx))
+        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), lx, py, color=WHT, a=0.82)
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.945

@@ -43,8 +43,8 @@ BLK    = np.array([0.06, 0.05, 0.05], np.float32)
 ROWS = [('head', 0.55), ('pool', 1.45), ('pair', 2.10), ('solo', 1.45),
         ('mix', 2.55), ('info', 1.80), ('foot', 0.55)]
 # 로고 칸은 파일이 있을 때만 넣는다. 비워 두면 빈 흰 칸이 남는다.
-if EV.partner_paths():
-    ROWS.insert(-1, ('partners', 0.75))
+if EV.PARTNERS_STR:
+    ROWS.insert(-1, ('partners', 0.55))
 
 
 def layout(W, H):
@@ -136,9 +136,9 @@ def build(W, H, story=False):
         cy = (y0 + y1) / 2
         lb = tmask('PARTNERS', BRAND, int(13 * V), 0.26)
         paint(img, lb, M + px, cy, color=ORANGE)
-        partner_strip(img, EV.partner_paths(), M + px + lb.shape[1] + int(34 * V),
-                      W - M - px, cy, (y1 - y0) * 0.66, BLK, a=0.85, align='l',
-                      names=EV.PARTNER_NAMES, name_font=KR)
+        nx = M + px + lb.shape[1] + int(34 * V)
+        sz = min(int(19 * V), fit(EV.PARTNERS_STR, KR, W - M - px - nx))
+        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), nx, cy, color=BLK, a=0.9)
 
     # ── 발 ────────────────────────────────────────────────
     y0, y1 = ys['foot']
