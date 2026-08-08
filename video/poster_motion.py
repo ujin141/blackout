@@ -14,7 +14,8 @@
 
 시안마다 움직임이 다른 건 디자인 언어가 다르기 때문입니다.
 
-    A split   물결 + 마퀴가 실제로 흐른다. 킥에 수면이 크게 인다
+    A split   제일 많이 움직인다. 경계에서 열리며 시작 → 마퀴 두 줄이 반대로 흐르고
+              수면 물결·코스틱 빛·떠오르는 알갱이·시차·킥마다 경계 번쩍임
     B club    어택마다 흰 섬광 · 가로 슬라이스 글리치 · 스캔라인 (고역에 속도가 붙는다)
     C ticket  종이가 기울며 빛을 받고, 바코드 위로 스캐너 선이 지나간다
     D neon    켜질 때 깜빡이고, 그 뒤엔 저역에 후광이 부푼다. 고역 어택에 관이 튄다
@@ -134,21 +135,72 @@ def notch(g, c, half):
 
 
 # ── 시안별 움직임 ─────────────────────────────────────────
-def m_water(base, t, i, dur, A, G, seam=None, bands=None):
-    gx, gy = G
-    amp = 4.0 + 11.0 * A['low'][i]
-    fade = np.clip(1 - (gy / H - 0.42) / 0.10, 0, 1) * notch(gy, H * 0.212, 108) * notch(gy, seam, 118)
-    dx = np.sin(gy * 0.021 + t * 2.6).astype(np.float32) * amp * fade
-    dy = np.sin(gx * 0.013 + t * 1.9).astype(np.float32) * amp * 0.5 * fade
-    img = cv2.remap(base, gx + dx, gy + dy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+def caustics(t, low, QW, QH):
+    """수면 물결 빛. 1/3 해상도로 그려 키운다 — 원본 크기로 계산하면 프레임당 몇 배 든다."""
+    yq, xq = np.mgrid[0:QH, 0:QW].astype(np.float32)
+    x, y = xq * 0.030, yq * 0.030
+    f = (np.sin(x * 1.4 + 1.6 * np.sin(y * 0.42 + t * 0.9)) +
+         np.sin(y * 1.1 + 1.3 * np.sin(x * 0.37 - t * 0.7)) +
+         0.8 * np.sin((x + y) * 0.85 + t * 1.4))
+    k = np.clip(1 - np.abs(np.sin(f * 1.7)) * 6.5, 0, 1) ** 1.3
+    return cv2.GaussianBlur(k, (0, 0), 1.2) * (0.10 + 0.26 * low)
 
+
+def motes(t, mid, QW, QH, seeds):
+    """클럽 쪽에 떠오르는 빛 알갱이. 정지본의 보케는 못 움직이니 새로 얹는다."""
+    L = np.zeros((QH, QW), np.float32)
+    for x0, y0, r, sp in seeds:
+        y = (y0 - t * sp) % 1.0
+        cv2.circle(L, (int(x0 * QW), int((0.47 + y * 0.53) * QH)),
+                   max(1, int(r * QW)), 1.0, -1, cv2.LINE_AA)
+    return cv2.GaussianBlur(L, (0, 0), 3.0) * (0.10 + 0.22 * mid)
+
+
+def m_water(base, t, i, dur, A, G, seam=None, bands=None, halo=None,
+            seamline=None, seeds=None):
+    gx, gy = G
+    lo, hit = A['low'][i], A['low_hit'][i]
+    QW, QH = W // 3, H // 3
+
+    # 물결 — 킥에 크게 인다. 띠가 지나가는 줄은 흔들지 않는다(겹치면 테두리가 새어 나온다)
+    amp = 5.0 + 14.0 * lo
+    fade = np.clip(1 - (gy / H - 0.42) / 0.10, 0, 1) * notch(gy, H * 0.212, 108) * notch(gy, seam, 118)
+    # 위아래를 반대로 밀어 시차를 낸다. 경계는 띠가 덮고 있어 어긋나도 안 보인다
+    par = np.tanh((gy - seam) / (H * 0.06)).astype(np.float32) * (5.0 + 7.0 * lo) * np.sin(t * 0.55)
+    dx = (np.sin(gy * 0.021 + t * 2.6) * amp * fade + par).astype(np.float32)
+    dy = (np.sin(gx * 0.013 + t * 1.9) * amp * 0.5 * fade).astype(np.float32)
+    # remap 은 float32 두 장만 받는다. numpy 스칼라 하나가 섞이면 float64 로 올라가 터진다
+    img = cv2.remap(base, (gx + dx).astype(np.float32), (gy + dy).astype(np.float32),
+                    cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+    # 수면 빛 · 떠오르는 알갱이
+    cw = cv2.resize(caustics(t, lo, QW, QH), (W, H), interpolation=cv2.INTER_LINEAR)
+    img = img + (cw * np.clip(1 - (gy / H - 0.40) / 0.08, 0, 1))[..., None] * \
+        np.float32([0.72, 0.94, 1.00])
+    mw = cv2.resize(motes(t, A['mid'][i], QW, QH, seeds), (W, H), interpolation=cv2.INTER_LINEAR)
+    img = img + mw[..., None] * np.float32([1.00, 0.42, 0.86])
+
+    # 킥마다 경계가 한 번 번쩍인다
+    img = img + seamline[..., None] * np.float32([0.30, 1.00, 0.98]) * (hit ** 1.5) * 1.1
+
+    # 마퀴는 정지본을 덮어쓰며 실제로 흘러간다
     import poster_split as PS
     for text, cy, bh, bg, ang, spd in bands:
         PS.marquee(img, text, cy, bh, bg, PS.INK, 1.0, ang, phase=-t * spd)
 
-    img = cam(img, 1.02 + 0.05 * (t / dur) + 0.018 * A['low'][i])
-    img *= 0.94 + 0.10 * A['rms'][i]
-    return chroma(img, 5.0 * A['low_hit'][i])
+    # 네온 후광이 저역에 부푼다
+    img = img + halo * (0.10 + 0.85 * lo)
+
+    img = cam(img, 1.02 + 0.05 * (t / dur) + 0.030 * lo,
+              dy=np.sin(t * 0.7) * 8.0, rot=np.sin(t * 0.41) * 0.22)
+    img = img * (0.92 + 0.13 * A['rms'][i])
+
+    # 시작 1초 — 경계에서 위아래로 열린다
+    if t < 1.0:
+        r = (t / 1.0) ** 0.55 * H * 0.75
+        edge = seam - (gx - W / 2) * np.tan(np.radians(7.0))
+        img = img * np.clip((r - np.abs(gy - edge)) / (H * 0.05), 0, 1)[..., None]
+    return chroma(img, 6.0 * hit)
 
 
 def m_strobe(base, t, i, dur, A, G, rng=None):
@@ -247,10 +299,21 @@ def render(key):
     extra = {}
     if motion == 'water':
         import poster_split as PS
-        extra['seam'] = H * 0.44
+        seam = H * 0.44
+        extra['seam'] = seam
         extra['bands'] = [
             ('DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.212, 40, PS.MAGENTA, -PS.ANGLE, 150.0),
-            ('POOL PARTY  ×  SOLO PARTY  ×  ', H * 0.44, 52, PS.CYAN, PS.ANGLE, -190.0)]
+            ('POOL PARTY  ×  SOLO PARTY  ×  ', seam, 52, PS.CYAN, PS.ANGLE, -190.0)]
+        # 밝은 부분만 뽑아 흐려 둔다. 매 프레임 블러하면 감당이 안 된다
+        lum = base @ np.float32([0.299, 0.587, 0.114])
+        extra['halo'] = cv2.GaussianBlur(np.clip(lum - 0.62, 0, 1) / 0.38, (0, 0), 22)[..., None] * \
+            np.float32([0.55, 0.85, 1.00]) * 0.42
+        edge = seam - (gx - W / 2) * np.tan(np.radians(PS.ANGLE))
+        extra['seamline'] = np.exp(-((gy - edge) / 26.0) ** 2).astype(np.float32)
+        r = np.random.default_rng(21)
+        extra['seeds'] = [(float(r.random()), float(r.random()),
+                           float(r.uniform(0.006, 0.020)), float(r.uniform(0.05, 0.16)))
+                          for _ in range(18)]
     if motion == 'strobe':
         extra['rng'] = rng
     if motion == 'card':
