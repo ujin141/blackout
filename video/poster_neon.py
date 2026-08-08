@@ -110,7 +110,9 @@ def build(W, H, story=False):
 
     ps = EV.partner_paths()
     if ps:
-        partner_strip(img, ps, M, W - M, H * (0.872 if story else 0.878), H * 0.038, WHT, a=0.85)
+        py = H * (0.872 if story else 0.878)
+        paint(img, tmask('PARTNERS', BRAND, int(14 * V), 0.24), M, py, color=LIME, a=0.85)
+        partner_strip(img, ps, lx, W - M, py, H * 0.036, WHT, a=0.85, align='l')
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.945

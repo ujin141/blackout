@@ -352,8 +352,11 @@ def build(W, H, story=False):
     # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
     ps = EV.partner_paths()
     if ps:
-        partner_strip(img, ps, M, W - M, H * (0.888 if story else 0.898),
-                      H * 0.045, WHITE, a=0.9)
+        py = H * (0.888 if story else 0.898)
+        ry = int(py - H * 0.032)
+        img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
+        paint(img, tmask('PARTNERS', BRAND, int(15 * V), 0.24), M, py, color=CYAN, a=0.75)
+        partner_strip(img, ps, lx, W - M, py, H * 0.042, WHITE, a=0.9, align='l')
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.955

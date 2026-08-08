@@ -118,7 +118,9 @@ def build(W, H, story=False):
     # 협업 브랜드는 위 스텁에 둔다 — 아래는 바코드가 차지해 자리가 안 난다
     ps = EV.partner_paths()
     if ps:
-        partner_strip(img, ps, M, Mx, H * (0.486 if story else 0.492), H * 0.034, INK, a=0.8)
+        py = H * (0.486 if story else 0.492)
+        paint(img, tmask('WITH', BRAND, int(13 * V), 0.30), M, py, color=BLUE, a=0.9)
+        partner_strip(img, ps, M + int(90 * V), Mx, py, H * 0.032, INK, a=0.8, align='l')
 
     # ── 절취선 + 양 끝 홈 ─────────────────────────────────
     ny = int(H * (0.512 if story else 0.520))

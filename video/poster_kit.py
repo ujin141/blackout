@@ -166,14 +166,19 @@ def timetable(img, rows, x0, x1, y0, step, V, key_color, val_color,
         paint(img, tmask(name, BRAND, int(vsize * V), 0.08), cx + cw * 0.46, y, color=val_color, a=a)
 
 
-def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055):
+def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055,
+                  align='l'):
     """협업 브랜드 로고 줄.
 
     **높이를 맞추면 크기가 안 맞아 보입니다.** 로고마다 획이 굵고 가는 정도가 달라서,
     같은 높이로 놓으면 굵은 쪽이 훨씬 커 보입니다. 여기서는 **잉크 양(알파 합)** 을
     맞춥니다 — 눈이 느끼는 무게가 그거라서요. 그런 다음 높이 상한만 따로 겁니다.
 
-    로고 색도 하나로 통일합니다. 흰색·금색이 섞이면 협찬 딱지처럼 보입니다."""
+    로고 색도 하나로 통일합니다. 흰색·금색이 섞이면 협찬 딱지처럼 보입니다.
+
+    **정렬을 포스터와 맞춰야 합니다.** 포스터가 전부 좌측 기준선에 세워져 있는데
+    로고만 가운데로 놓으면 따로 붙인 것처럼 겉돕니다 — `align='l'` 로 값 열에
+    맞춰 세우고, 위에 라벨과 괘선을 두면 정보표의 한 줄로 읽힙니다."""
     if not paths:
         return
     marks = []
@@ -193,7 +198,9 @@ def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055):
         ys, xs = np.where(al > 24)
         if len(ys) == 0:
             continue
-        al = np.clip((al[ys.min():ys.max() + 1, xs.min():xs.max() + 1] - 24) / 200.0, 0, 1)
+        # 은색·금색 로고는 중간 밝기가 넓게 깔려 있어 그대로 쓰면 뭉개진다.
+        # 아래위를 잘라 대비를 세워야 작은 크기에서도 형태가 남는다.
+        al = np.clip((al[ys.min():ys.max() + 1, xs.min():xs.max() + 1] - 40) / 130.0, 0, 1)
         marks.append(al)
     if not marks:
         return
@@ -215,7 +222,8 @@ def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055):
         gap = int(gap * k)
         total = sum(w for w, _ in sizes) + gap * (len(sizes) - 1)
 
-    x = x0 + ((x1 - x0) - total) / 2
+    x = x0 if align == 'l' else (x1 - total if align == 'r'
+                                 else x0 + ((x1 - x0) - total) / 2)
     for m, (w, h) in zip(marks, sizes):
         r = cv2.resize(m, (w, h), interpolation=cv2.INTER_AREA)
         paint(img, (r * 255).astype(np.uint8), x, cy, color=color, a=a)
