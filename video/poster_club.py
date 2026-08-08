@@ -230,19 +230,21 @@ def build(W, H, story=False):
         paint(img, tmask(k, BRAND, int(13 * V), 0.26), cx, ry, color=RED, a=0.95)
         sz = min(int(24 * V), fit(val, KR, cw - int(30 * V)))
         paint(img, tmask(val, KR, sz, 0.01), cx, ry + 34 * U, a=0.97)
+        if k == 'VENUE':                    # 주소는 장소명 바로 밑에 작게
+            paint(img, tmask(EV.ADDR, KR, int(16 * V), 0.01), cx, ry + 62 * U, a=0.62)
 
     # ── 타임테이블 ────────────────────────────────────────
-    ty = H * 0.700
+    ty = H * 0.722
     rule(img, ty - 26 * U, fx0, fx1, WHITE, 0.18)
     paint(img, tmask('TIME TABLE', BRAND, int(13 * V), 0.26), fx0, ty, color=RED, a=0.95)
     # 시간은 흰색으로. 배경이 붉은 판이라 붉은 글자를 쓰면 같은 색끼리 겹쳐
     # 안 읽힌다 — 강조색은 구역 라벨에만 남긴다.
-    timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.030, V,
+    timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.028, V,
               WHITE, WHITE, cols=2, ksize=13, vsize=17, a=0.95)
 
     ps = EV.partner_paths()
     if ps:
-        py = H * (0.872 if story else 0.878)
+        py = H * (0.884 if story else 0.892)
         rule(img, py - 44 * U, fx0, fx1, WHITE, 0.18)
         paint(img, tmask('PARTNERS', BRAND, int(13 * V), 0.26), fx0, py - 18 * U, color=RED, a=0.95)
         partner_strip(img, ps, fx0, fx1, py + 30 * U, H * 0.034, WHITE, a=0.9, align='l')

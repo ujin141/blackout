@@ -47,10 +47,11 @@ import event as EV
 from poster_kit import timetable, partner_strip
 
 HOOK   = ''                                # 한 줄 카피. 비우면 아예 안 그린다
-ROWS   = [('DATE',  EV.DATE),
-          ('TIME',  EV.TIME),
-          ('VENUE', EV.VENUE),
-          ('ENTRY', EV.ENTRY)]
+ROWS   = [('DATE',    EV.DATE),
+          ('TIME',    EV.TIME),
+          ('VENUE',   EV.VENUE),
+          ('ADDRESS', EV.ADDR),
+          ('ENTRY',   EV.ENTRY)]
 
 OUT = os.path.join(HERE, 'out', 'poster')
 os.makedirs(OUT, exist_ok=True)
@@ -329,8 +330,8 @@ def build(W, H, story=False):
         paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
-    y0 = H * (0.495 if story else 0.505)
-    step = H * (0.040 if story else 0.042)
+    y0 = H * (0.482 if story else 0.492)
+    step = H * (0.034 if story else 0.036)
     lx = M + int(W * 0.215)                 # 값이 시작하는 열
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i

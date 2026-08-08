@@ -30,8 +30,8 @@ from fonts import KR
 import event as EV
 from poster_kit import timetable, partner_strip
 
-ROWS   = [('DATE', EV.DATE), ('TIME', EV.TIME),
-          ('VENUE', EV.VENUE), ('ENTRY', EV.ENTRY)]
+ROWS   = [('DATE', EV.DATE), ('TIME', EV.TIME), ('VENUE', EV.VENUE),
+          ('ADDRESS', EV.ADDR), ('ENTRY', EV.ENTRY)]
 HANDLE = EV.HANDLE
 NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
@@ -94,8 +94,8 @@ def build(W, H, story=False):
     neon(img, t2, M, y2, V, mirror=y2 + t2.shape[0] * 0.62)
 
     # ── 정보 — 간판 아래 작게. 여기서 빛나면 간판이 죽는다 ──
-    y0 = H * 0.545
-    step = H * 0.040
+    y0 = H * 0.515
+    step = H * 0.037
     lx = M + int(W * 0.200)
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
