@@ -25,7 +25,7 @@
     pool-cc0.jpg   수영장 수면
     club-cc0.jpg   클럽. 아래쪽은 관객 얼굴이 다 나온다 —
                    CC0는 저작권만 푼 것이고 초상권은 별개라
-                   얼굴이 안 잡히는 위 40%(디스코볼·연기·트러스)만 잘라 쓴다.
+                   얼굴이 안 잡히는 위 34%(디스코볼·연기·트러스)만 잘라 쓴다.
                    ZOOM/FOCUS 를 건드리면 얼굴이 딸려 들어오니 주의.
 
 python poster_split.py  →  out/poster/split_{feed,story}.png
@@ -128,8 +128,18 @@ def bloom(img, thr, sigma, amt, tint):
     img += g[..., None] * tint * amt
 
 
-def marquee(img, text, cy, bh, bg, fg, V):
-    """경계에 눕혀 까는 흐르는 띠."""
+def paint_split(dst, m, x, y, off, a=1.0):
+    """색분해 — 마젠타·시안을 어긋나게 깔고 흰 글자를 덮는다.
+    클럽 조명 아래 잔상처럼 읽힌다. 어긋남을 키우면 고장 난 것처럼 보이니
+    글자 크기와 무관하게 W의 1% 안쪽으로 유지한다."""
+    paint(dst, m, x - off, y + off * 0.55, MAGENTA, a * 0.9)
+    paint(dst, m, x + off, y - off * 0.55, CYAN, a * 0.9)
+    paint(dst, m, x, y, WHITE, a)
+
+
+def marquee(img, text, cy, bh, bg, fg, V, angle=None):
+    """눕혀 까는 흐르는 띠."""
+    angle = ANGLE if angle is None else angle
     H, W = img.shape[:2]
     LW = int(W * 2.2)
     m = tmask(text, BRAND, int(21 * V), 0.36)
@@ -143,7 +153,7 @@ def marquee(img, text, cy, bh, bg, fg, V):
         sub = (m[:, :w].astype(np.float32) / 255.0)[..., None]
         strip[ty:ty + th, x:x + w] = strip[ty:ty + th, x:x + w] * (1 - sub) + fg * sub
         x += tw + gap
-    R = cv2.getRotationMatrix2D((LW / 2, bh / 2), ANGLE, 1.0)
+    R = cv2.getRotationMatrix2D((LW / 2, bh / 2), angle, 1.0)
     R[0, 2] += W / 2 - LW / 2
     R[1, 2] += cy - bh / 2
     band = cv2.warpAffine(strip, R, (W, H), flags=cv2.INTER_LINEAR)
@@ -163,13 +173,13 @@ def build(W, H, story=False):
                    contrast=1.30, keep=0.10, focus=0.32, zoom=1.15)
     # 클럽 사진은 가로로 넓다. 세로 캔버스 전체에 맞추면 가운데 빈 곳만 잘려
     # 보라색 덩어리가 된다 — 실제로 보이는 아래 띠 높이에만 맞춰 자른다.
-    # zoom 2.6 · focus 0.16 이 위 38%(디스코볼·연기·트러스) 선이다.
+    # zoom 2.9 · focus 0.16 이 위 34%(디스코볼·연기·트러스) 선이다.
     # 이 값을 낮추면 관객 얼굴이 딸려 들어온다. 초상권 때문에 올리기만 할 것.
     bh = int(H - SEAM + 80 * U)
     band = duotone(os.path.join(STOCK, 'club-cc0.jpg'), W, bh,
                    np.array([0.09, 0.00, 0.20], np.float32),
                    np.array([1.00, 0.34, 0.86], np.float32),
-                   contrast=1.34, keep=0.18, focus=0.16, zoom=2.6)
+                   contrast=1.34, keep=0.18, focus=0.16, zoom=2.9)
     club = np.concatenate([np.tile(band[:1], (H - bh, 1, 1)), band], 0)
 
     # 눕힌 경계로 두 장을 붙인다
@@ -178,7 +188,7 @@ def build(W, H, story=False):
     top = np.clip(edge - yy + 0.5, 0, 1)[..., None]
     img = club * (1 - top) + pool * top
 
-    bloom(img, 0.72, 26 * V, 0.55, np.array([0.85, 0.95, 1.00], np.float32))
+    bloom(img, 0.66, 30 * V, 0.85, np.array([0.88, 0.94, 1.00], np.float32))
 
     # 아래를 눌러 글자 자리를 만든다 — 그림자 대신 이걸로 대비를 낸다
     # 두 단으로 누른다. 한 번에 다 누르면 디스코볼까지 죽어서 파티가 안 보인다 —
@@ -203,12 +213,15 @@ def build(W, H, story=False):
 
     # ── 타이틀 — 좌측 기준선에서 시작해 오른쪽으로 거의 흘러넘친다 ──
     tw = int(W - M * 1.25)
+    off = int(6 * V)
     s1 = fit('POOL PARTY', BRAND, tw, 0.02)
-    paint(img, tmask('POOL PARTY', BRAND, s1, 0.02), M, SEAM - 150 * U)
+    paint_split(img, tmask('POOL PARTY', BRAND, s1, 0.02), M, SEAM - 150 * U, off)
     s2 = fit('SOLO PARTY', BRAND, tw, 0.02)
-    paint(img, tmask('SOLO PARTY', BRAND, s2, 0.02), M, SEAM + 132 * U)
+    paint_split(img, tmask('SOLO PARTY', BRAND, s2, 0.02), M, SEAM + 132 * U, off)
 
-    # ── 경계의 마퀴 ───────────────────────────────────────
+    # ── 마퀴 두 줄. 서로 반대로 눕혀 화면을 잡아 준다 ───────
+    # 위쪽은 물만 있는 빈 자리를 메운다. 셋 이상 깔면 산만해진다.
+    marquee(img, 'DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.212, int(40 * V), MAGENTA, INK, V, -ANGLE)
     marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V)
 
     # ── 한 줄 — 이 포스터에서 제일 중요한 문장 ─────────────
