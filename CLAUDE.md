@@ -67,6 +67,7 @@ python audio_reel.py && python reel_word.py   # 멤버별 키워드 릴스 5편 
 python make_og.py                             # 링크 미리보기 카드
 python kakao_bg.py                            # 카톡 단톡방 배경
 python poster_pool.py                         # 파티 포스터 (스토리용)
+python poster_event.py                        # 행사 포스터 (피드·스토리 / 흑백 반전 2종)
 ```
 
 영상 스크립트에 시간 두 개를 주면 그 구간만 PNG로 뽑습니다 — `python make.py 15.0 16.2`.
