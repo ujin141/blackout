@@ -72,7 +72,9 @@ python poster_pool.py                         # 파티 포스터 (스토리용)
 python poster_event.py                        # 행사 포스터 (범용)
 python poster_solo.py                         # 풀파티 × 솔로파티 티저 포스터
 python poster_ad.py                           # 같은 행사 판매용 포스터 (정보형)
-python poster_loud.py                         # 직설 버전 — 컬러. 브랜드 흑백 규칙 예외
+python poster_loud.py                         # 직설 버전 — 컬러 일러스트
+python poster_photo.py                        # 실사 물 사진 (CC0)
+python poster_split.py                        # 위=물 / 아래=디제잉 (권장)
 ```
 
 영상 스크립트에 시간 두 개를 주면 그 구간만 PNG로 뽑습니다 — `python make.py 15.0 16.2`.
