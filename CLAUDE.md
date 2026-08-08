@@ -80,6 +80,7 @@ python poster_club.py                         # B안 클럽, 직각 격자 + 쌓
 python poster_ticket.py                       # C안 입장권, 유일한 밝은 판 · 파랑
 python poster_neon.py                         # D안 네온 사인, 밤 느낌 최대 · 형광 초록
 python poster_grid.py                         # E안 모듈 그리드, 정보 밀도 최대 · 오렌지
+python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
 python poster_motion.py split story           # 사이즈까지 골라서

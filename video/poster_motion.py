@@ -21,8 +21,8 @@
     D neon    켜질 때 깜빡이고, 그 뒤엔 저역에 후광이 부푼다. 고역 어택에 관이 튄다
     E grid    칸이 밀려 들어온 뒤, 박마다 칸 하나씩 돌아가며 튄다
 
-BGM 은 `audio_reel.py` 의 다섯 곡을 나눠 물립니다. wav 가 없으면 자동으로 만듭니다.
-    A festival 128 · B techno 145 · C citypop 105 · D hard 155 · E bounce 132
+BGM 은 **포스터 전용 음원**(`audio_poster.py`)입니다. 멤버 릴스 곡과 한 곡도 안 겹칩니다.
+    A afro 122 · B industrial 138 · C garage 136 · D synthwave 118 · E breaks 110
 
 python poster_motion.py                 다섯 시안 × 두 사이즈 전부
 python poster_motion.py neon grid       시안만 골라서 (두 사이즈)
@@ -38,7 +38,6 @@ from scipy import signal
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'poster')
-REEL = os.path.join(HERE, 'out', 'reel')
 os.makedirs(OUT, exist_ok=True)
 
 FPS = 30
@@ -48,22 +47,25 @@ W, H = 1080, 1920
 
 # 시안 → (포스터 모듈, BGM 스타일, 움직임)
 SPECS = {
-    'split':  ('poster_split',  'festival', 'water'),
-    'club':   ('poster_club',   'techno',   'strobe'),
-    'ticket': ('poster_ticket', 'citypop',  'card'),
-    'neon':   ('poster_neon',   'hard',     'flicker'),
-    'grid':   ('poster_grid',   'bounce',   'tiles'),
+    'split':  ('poster_split',  'afro',       'water'),
+    'club':   ('poster_club',   'industrial', 'strobe'),
+    'ticket': ('poster_ticket', 'garage',     'card'),
+    'neon':   ('poster_neon',   'synthwave',  'flicker'),
+    'grid':   ('poster_grid',   'breaks',     'tiles'),
 }
 
 
 # ── 소리 분석 ─────────────────────────────────────────────
 def bgm(style):
-    """wav 가 없으면 만든다. (경로, BPM, 길이) 를 돌려준다."""
-    import audio_reel
-    p = os.path.join(REEL, f'bgm_{style}.wav')
+    """wav 가 없으면 만든다. (경로, BPM, 길이) 를 돌려준다.
+
+    포스터 전용 음원(`audio_poster.py`)만 쓴다. 멤버 릴스 곡을 재활용하면
+    계정 전체가 같은 영상처럼 들린다 — 한 번 그렇게 만들었다가 되돌렸다."""
+    import audio_poster
+    p = os.path.join(OUT, f'bgm_{style}.wav')
     if not os.path.exists(p):
-        audio_reel.write(style)
-    bpmv, bars = audio_reel.STYLES[style]
+        audio_poster.write(style)
+    bpmv, bars = audio_poster.STYLES[style]
     return p, bpmv, (60.0 / bpmv) * 4 * bars
 
 
