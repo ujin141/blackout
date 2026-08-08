@@ -27,6 +27,8 @@
 
 **내비게이션은 한국어 모드에서도 영문을 유지합니다** (브랜드 톤). `i18n.js`의 ko 블록에 영어가 들어 있는 건 의도된 것입니다.
 
+**흑백 규칙에 예외가 하나 있습니다** — `video/poster_loud.py`(행사 모객용 컬러 포스터). 사용자가 직접 요청한 것이고, 나머지 자산은 전부 흑백을 지킵니다.
+
 **로고를 SVG로 다시 그리지 마세요.** 원본 PNG를 잘라 쓴 것이고, 재현하면 폰트가 달라집니다.
 
 **지금 사이트는 접속 차단 중입니다.** `vercel.json`이 모든 요청을 `maintenance.html`로 보냅니다. 풀려면 그 파일만 지우고 푸시하세요.
@@ -70,6 +72,7 @@ python poster_pool.py                         # 파티 포스터 (스토리용)
 python poster_event.py                        # 행사 포스터 (범용)
 python poster_solo.py                         # 풀파티 × 솔로파티 티저 포스터
 python poster_ad.py                           # 같은 행사 판매용 포스터 (정보형)
+python poster_loud.py                         # 직설 버전 — 컬러. 브랜드 흑백 규칙 예외
 ```
 
 영상 스크립트에 시간 두 개를 주면 그 구간만 PNG로 뽑습니다 — `python make.py 15.0 16.2`.
