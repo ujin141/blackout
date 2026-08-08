@@ -46,6 +46,7 @@ assets/js/i18n.js       모든 문구 (ko/en)
 assets/js/main.js       CONFIG(인스타·이메일), 캔버스 아트, 3D 로고, 지원 폼
 assets/css/styles.css   :root 에 디자인 토큰
 video/                  영상·카드뉴스·OG 생성 스크립트
+video/poster_kit.py     포스터 공통 도구 (C·D·E안이 씀. A·B안은 각자 복사본)
 proposal/               웨이비 스튜디오 제안서 (18p)
 proposal2/              디제이코리아 제안서 (15p) — style.css 는 proposal/ 것을 공유
 llms.txt robots.txt sitemap.xml   AI·검색 노출
@@ -74,8 +75,11 @@ python poster_solo.py                         # 풀파티 × 솔로파티 티저
 python poster_ad.py                           # 같은 행사 판매용 포스터 (정보형)
 python poster_loud.py                         # 직설 버전 — 컬러 일러스트
 python poster_photo.py                        # 실사 물 사진 (CC0)
-python poster_split.py                        # A안 — 물 × 클럽, 기울인 축 (권장)
-python poster_club.py                         # B안 — 클럽 파티, 직각 격자 + 대형 타이포
+python poster_split.py                        # A안 물×클럽, 기울인 축 · 시안×마젠타
+python poster_club.py                         # B안 클럽, 직각 격자 + 쌓은 타이포 · 검정×레드
+python poster_ticket.py                       # C안 입장권, 유일한 밝은 판 · 파랑
+python poster_neon.py                         # D안 네온 사인, 밤 느낌 최대 · 형광 초록
+python poster_grid.py                         # E안 모듈 그리드, 정보 밀도 최대 · 오렌지
 ```
 
 영상 스크립트에 시간 두 개를 주면 그 구간만 PNG로 뽑습니다 — `python make.py 15.0 16.2`.

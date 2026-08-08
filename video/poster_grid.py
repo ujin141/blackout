@@ -1,0 +1,134 @@
+"""
+풀파티 × 솔로파티 — 모듈 그리드 시안 (E안).
+
+한 장의 사진 위에 글자를 얹는 대신, 판을 **칸으로 쪼개고 칸마다 성격을 다르게** 채웁니다.
+사진 · 색면 · 타이포 · 명단이 각각 자기 칸을 갖습니다.
+다섯 중 정보 밀도가 제일 높아서, 라인업까지 한눈에 보여야 할 때 이걸 씁니다.
+
+칸 높이는 픽셀이 아니라 **비중(weight)** 으로 잡습니다.
+피드(4:5)와 스토리(9:16)는 세로가 1.42배 차이 나는데,
+픽셀로 박으면 스토리에서 아래가 남고 피드에서는 넘칩니다.
+비중으로 잡으면 남는 세로가 칸에 비례해 분배됩니다.
+
+색은 셋 — 검정 · 흰색 · 오렌지.
+    A안 시안×마젠타 · B안 검정×레드 · C안 파랑 · D안 형광 초록
+
+사진 둘 다 CC0. club 은 얼굴이 없는 위 34%만 쓴다 — CLUB_SAFE 를 그대로 쓸 것.
+
+python poster_grid.py  →  out/poster/grid_{feed,story}.png
+"""
+import numpy as np
+from poster_kit import (BRAND, POOL, CLUB, CLUB_SAFE, SIZES, tmask, fit, paint,
+                        rule, box, duotone, logo, grain, save)
+from fonts import KR
+
+# ── 여기만 고치면 됨 ───────────────────────────────────────
+LINEUP = ['DEMIC', 'V', 'LYNN', 'AROS', 'TS']
+CELLS  = [('DATE',  '일정 공개 예정'),             # 예: '8월 23일 토요일'
+          ('TIME',  '오후 2시 — 밤 10시'),
+          ('VENUE', '장소 추후 공지'),             # 예: '서울 강남'
+          ('ENTRY', '스탠딩 00,000원')]
+FINE   = '성비 1:1 · 웰컴드링크 1잔 포함'
+HANDLE = '@BLACKOUTCREW_OFFICIAL'
+NOTE   = '예약 · 문의는 DM'
+# ──────────────────────────────────────────────────────────
+
+INK    = np.array([0.04, 0.04, 0.05], np.float32)   # 칸 사이로 보이는 바탕
+WHT    = np.array([0.97, 0.97, 0.96], np.float32)
+ORANGE = np.array([1.00, 0.42, 0.05], np.float32)
+BLK    = np.array([0.06, 0.05, 0.05], np.float32)
+
+# (이름, 비중) — 세로를 이 비율로 나눈다
+ROWS = [('head', 0.55), ('pool', 1.55), ('pair', 2.30), ('solo', 1.55),
+        ('mix', 2.30), ('info', 1.95), ('foot', 0.55)]
+
+
+def build(W, H, story=False):
+    U = H / 1350.0
+    V = W / 1080.0
+    M = int(W * 0.052)
+    G = int(W * 0.020)                              # 칸 사이 홈
+    iw = W - M * 2
+    cw = (iw - G) // 2                              # 두 칸짜리 열 너비
+
+    img = np.zeros((H, W, 3), np.float32) + INK
+
+    avail = H - M * 2 - G * (len(ROWS) - 1)
+    tot = sum(w for _, w in ROWS)
+    ys, y = {}, M
+    for name, w in ROWS:
+        h = avail * w / tot
+        ys[name] = (y, y + h)
+        y += h + G
+
+    def tw(text, path, box_w, track=0.02, cap=None):
+        s = fit(text, path, box_w, track)
+        return tmask(text, path, min(s, cap) if cap else s, track)
+
+    # ── 머리 ──────────────────────────────────────────────
+    y0, y1 = ys['head']
+    cy = (y0 + y1) / 2
+    paint(img, logo(int(38 * V)), M, cy, color=WHT)
+    paint(img, tmask('BLACKOUT CREW', BRAND, int(15 * V), 0.30),
+          M + int(38 * V) + int(14 * V), cy, color=WHT, a=0.9)
+    paint(img, tmask('SEOUL  ·  2026', BRAND, int(15 * V), 0.30), W - M, cy,
+          color=ORANGE, anchor='r')
+
+    # ── POOL PARTY — 흰 칸에 검은 글자 ─────────────────────
+    y0, y1 = ys['pool']
+    box(img, M, y0, W - M, y1, WHT)
+    paint(img, tw('POOL PARTY', BRAND, iw - int(52 * V)), M + int(26 * V), (y0 + y1) / 2,
+          color=BLK)
+
+    # ── 사진 두 칸 ────────────────────────────────────────
+    y0, y1 = ys['pair']
+    h = int(y1) - int(y0)
+    img[int(y0):int(y0) + h, M:M + cw] = duotone(
+        POOL, cw, h, BLK, WHT, contrast=1.32, keep=0.0, focus=0.62, zoom=1.35)
+    img[int(y0):int(y0) + h, M + cw + G:M + cw + G + cw] = duotone(
+        CLUB, cw, h, BLK, ORANGE, contrast=1.40, keep=0.10, **CLUB_SAFE)
+
+    # ── SOLO PARTY — 오렌지 칸 ────────────────────────────
+    y0, y1 = ys['solo']
+    box(img, M, y0, W - M, y1, ORANGE)
+    paint(img, tw('SOLO PARTY', BRAND, iw - int(52 * V)), M + int(26 * V), (y0 + y1) / 2,
+          color=BLK)
+
+    # ── 라인업 칸 | × 칸 ──────────────────────────────────
+    y0, y1 = ys['mix']
+    box(img, M, y0, M + cw, y1, BLK)
+    paint(img, tmask('LINE UP', BRAND, int(14 * V), 0.26), M + int(26 * V), y0 + 34 * U,
+          color=ORANGE)
+    step = (y1 - y0 - 62 * U) / len(LINEUP)
+    for i, n in enumerate(LINEUP):
+        paint(img, tmask(n, BRAND, int(23 * V), 0.06), M + int(26 * V),
+              y0 + 62 * U + step * (i + 0.42), color=WHT)
+    box(img, M + cw + G, y0, W - M, y1, WHT)
+    paint(img, tmask('×', BRAND, int((y1 - y0) * 0.95)), M + cw + G + cw / 2, (y0 + y1) / 2,
+          color=ORANGE, anchor='c')
+
+    # ── 정보 칸 — 2×2 ─────────────────────────────────────
+    y0, y1 = ys['info']
+    box(img, M, y0, W - M, y1, WHT)
+    px = int(26 * V)
+    for i, (k, v) in enumerate(CELLS):
+        bx = M + px + (cw + G) * (i % 2)
+        by = y0 + (y1 - y0) * (0.22 if i < 2 else 0.56)
+        paint(img, tmask(k, BRAND, int(13 * V), 0.26), bx, by, color=ORANGE)
+        paint(img, tmask(v, KR, min(int(22 * V), fit(v, KR, cw - px * 2)), 0.01),
+              bx, by + 32 * U, color=BLK)
+    rule(img, y0 + (y1 - y0) * 0.44, M + px, W - M - px, BLK, 0.15)
+    paint(img, tmask(FINE, KR, int(15 * V), 0.01), M + px, y1 - 22 * U, color=BLK, a=0.55)
+
+    # ── 발 ────────────────────────────────────────────────
+    y0, y1 = ys['foot']
+    cy = (y0 + y1) / 2
+    paint(img, tmask(HANDLE, BRAND, int(16 * V), 0.16), M, cy, color=WHT, a=0.9)
+    paint(img, tmask(NOTE, KR, int(18 * V), 0.02), W - M, cy, color=ORANGE, anchor='r')
+
+    grain(img, 0.009, 4)
+    return np.clip(img, 0, 1)
+
+
+for tag, (W, H, story) in SIZES.items():
+    save(build(W, H, story), f'grid_{tag}')
