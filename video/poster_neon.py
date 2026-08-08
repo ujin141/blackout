@@ -94,8 +94,8 @@ def build(W, H, story=False):
     neon(img, t2, M, y2, V, mirror=y2 + t2.shape[0] * 0.62)
 
     # ── 정보 — 간판 아래 작게. 여기서 빛나면 간판이 죽는다 ──
-    y0 = H * 0.552
-    step = H * 0.042
+    y0 = H * 0.545
+    step = H * 0.040
     lx = M + int(W * 0.200)
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
@@ -103,7 +103,7 @@ def build(W, H, story=False):
         paint(img, tmask(v, KR, min(int(24 * V), fit(v, KR, W - M - lx)), 0.01), lx, y, color=WHT, a=0.92)
 
     # ── 타임테이블 ────────────────────────────────────────
-    ty = H * 0.700
+    ty = H * 0.712
     paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.24), M, ty, color=LIME, a=0.85)
     timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.032, H * 0.030, V,
               LIME, WHT, cols=2, ksize=13, vsize=17, a=0.92)

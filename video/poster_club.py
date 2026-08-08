@@ -164,11 +164,11 @@ def build(W, H, story=False):
     # 가운데를 비우고 위아래를 눌러 글자 자리를 만든다
     yy = np.mgrid[0:H, 0:1][0].astype(np.float32)
     v = np.clip(np.abs(yy / H - 0.42) / 0.52, 0, 1) ** 1.35
-    img = img * (1 - v[..., None] * 0.70) + INK * (v[..., None] * 0.70)
+    img = img * (1 - v[..., None] * 0.78) + INK * (v[..., None] * 0.78)
     xx = np.mgrid[0:1, 0:W][1].astype(np.float32)
     hv = (np.clip((np.abs(xx / W - 0.5) - 0.22) / 0.28, 0, 1) ** 1.4 * 0.55)
     img = img * (1 - hv[..., None]) + INK * hv[..., None]
-    img = img * 0.88 + INK * 0.12                       # 전체를 한 번 더 눌러 밤으로
+    img = img * 0.80 + INK * 0.20                       # 전체를 한 번 더 눌러 밤으로
 
     # ── 격자 — A안의 기울임과 정반대. 전부 직각으로 잡는다 ──
     fx0, fx1 = M, W - M
@@ -225,22 +225,24 @@ def build(W, H, story=False):
     cw = (fx1 - fx0) / 2
     for i, (k, val) in enumerate([*CELLS, ('VENUE', EV.VENUE), WIDE]):
         cx = fx0 + cw * (i % 2)
-        ry = H * 0.590 + H * 0.068 * (i // 2)
+        ry = H * 0.575 + H * 0.066 * (i // 2)
         rule(img, ry - 26 * U, cx, cx + cw - int(24 * V), WHITE, 0.18)
         paint(img, tmask(k, BRAND, int(13 * V), 0.26), cx, ry, color=RED, a=0.95)
         sz = min(int(24 * V), fit(val, KR, cw - int(30 * V)))
         paint(img, tmask(val, KR, sz, 0.01), cx, ry + 34 * U, a=0.97)
 
     # ── 타임테이블 ────────────────────────────────────────
-    ty = H * 0.722
+    ty = H * 0.700
     rule(img, ty - 26 * U, fx0, fx1, WHITE, 0.18)
     paint(img, tmask('TIME TABLE', BRAND, int(13 * V), 0.26), fx0, ty, color=RED, a=0.95)
+    # 시간은 흰색으로. 배경이 붉은 판이라 붉은 글자를 쓰면 같은 색끼리 겹쳐
+    # 안 읽힌다 — 강조색은 구역 라벨에만 남긴다.
     timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.030, V,
-              RED, WHITE, cols=2, ksize=13, vsize=17)
+              WHITE, WHITE, cols=2, ksize=13, vsize=17, a=0.95)
 
     ps = EV.partner_paths()
     if ps:
-        py = H * (0.890 if story else 0.898)
+        py = H * (0.872 if story else 0.878)
         rule(img, py - 44 * U, fx0, fx1, WHITE, 0.18)
         paint(img, tmask('PARTNERS', BRAND, int(13 * V), 0.26), fx0, py - 18 * U, color=RED, a=0.95)
         partner_strip(img, ps, fx0, fx1, py + 30 * U, H * 0.034, WHITE, a=0.9, align='l')

@@ -126,7 +126,7 @@ def build(W, H, story=False):
         paint(img, tmask(k, BRAND, int(13 * V), 0.26), bx, by, color=ORANGE)
         paint(img, tmask(v, KR, min(int(22 * V), fit(v, KR, cw - px * 2)), 0.01),
               bx, by + 32 * U, color=BLK)
-    rule(img, y0 + (y1 - y0) * 0.44, M + px, W - M - px, BLK, 0.15)
+    rule(img, y0 + (y1 - y0) * 0.48, M + px, W - M - px, BLK, 0.15)
     paint(img, tmask(FINE, KR, int(15 * V), 0.01), M + px, y1 - 22 * U, color=BLK, a=0.55)
 
     # ── 협업 브랜드 칸 ────────────────────────────────────

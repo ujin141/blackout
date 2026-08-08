@@ -250,7 +250,7 @@ def build(W, H, story=False):
     U = H / 1350.0
     V = W / 1080.0                          # 작은 글자는 폭 기준
     M = int(W * 0.088)                      # 좌측 기준선. 모든 글자가 여기서 시작한다.
-    SEAM = H * (0.44 if story else 0.46)
+    SEAM = H * (0.34 if story else 0.36)
 
     # 물도 실제로 보이는 위 띠 높이에만 맞춰 자른다. 캔버스 전체에 맞추면
     # 다이빙대 끝만 삼각형처럼 삐져나와 무슨 물체인지 안 읽힌다 —
@@ -285,7 +285,7 @@ def build(W, H, story=False):
     # 타이틀 자리는 사진을 살리고, 표가 앉는 자리만 확실히 죽인다.
     d = (np.clip((yy - SEAM) / (H - SEAM), 0, 1) ** 0.55 * (1 - top[..., 0]) * 0.80)[..., None]
     img = img * (1 - d) + INK * d
-    d2 = np.clip((yy - H * (0.645 if HOOK else 0.608)) / (H * 0.075), 0, 1)[..., None] * 0.62
+    d2 = np.clip((yy - H * (0.560 if HOOK else 0.455)) / (H * 0.085), 0, 1)[..., None] * 0.68
     img = img * (1 - d2) + INK * d2
     t = np.clip(1 - yy / (H * 0.17), 0, 1)[..., None] * 0.42
     img = img * (1 - t) + INK * t
@@ -318,7 +318,7 @@ def build(W, H, story=False):
 
     # ── 마퀴 두 줄. 서로 반대로 눕혀 화면을 잡아 준다 ───────
     # 위쪽은 물만 있는 빈 자리를 메운다. 셋 이상 깔면 산만해진다.
-    marquee(img, 'DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.212, int(40 * V), MAGENTA, INK, V, -ANGLE)
+    marquee(img, 'DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.158, int(40 * V), MAGENTA, INK, V, -ANGLE)
     marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V)
 
     # ── 한 줄 — 이 포스터에서 제일 중요한 문장 ─────────────
@@ -329,8 +329,8 @@ def build(W, H, story=False):
         paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
-    y0 = H * (0.578 if story else 0.592)
-    step = H * (0.033 if story else 0.034)
+    y0 = H * (0.495 if story else 0.505)
+    step = H * (0.040 if story else 0.042)
     lx = M + int(W * 0.215)                 # 값이 시작하는 열
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
@@ -343,17 +343,17 @@ def build(W, H, story=False):
     img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
 
     # ── 타임테이블 — 여덟 줄을 두 칸으로 접는다 ─────────────
-    ty = H * (0.712 if story else 0.725)
+    ty = H * (0.660 if story else 0.672)
     paint(img, tmask('TIME TABLE', BRAND, int(15 * V), 0.24), M, ty, color=CYAN, a=0.75)
-    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.032,
+    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.036,
               V, CYAN, WHITE, cols=2, ksize=14, vsize=18)
 
     # ── 협업 브랜드 ───────────────────────────────────────
     # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
     ps = EV.partner_paths()
     if ps:
-        py = H * (0.888 if story else 0.898)
-        ry = int(py - H * 0.032)
+        py = H * (0.860 if story else 0.870)
+        ry = int(py - H * 0.034)
         img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
         paint(img, tmask('PARTNERS', BRAND, int(15 * V), 0.24), M, py, color=CYAN, a=0.75)
         partner_strip(img, ps, lx, W - M, py, H * 0.042, WHITE, a=0.9, align='l')
@@ -364,10 +364,8 @@ def build(W, H, story=False):
     paint(img, tmask(EV.NOTE, KR, int(21 * V), 0.02), W - M, by, color=MAGENTA, a=0.95, anchor='r')
 
     # ── 여백 디테일 — 인쇄물처럼 보이게 하는 잔손질 ─────────
-    # 옆에 세로로 세운 작은 글자와 네 귀퉁이 십자. 정보는 없지만
-    # 여백이 "비어 있는" 게 아니라 "비워 둔" 것으로 읽힌다.
-    side = np.rot90(tmask('SEOUL  ·  2026  ·  BLACKOUT CREW', BRAND, int(14 * V), 0.30), 3)
-    paint(img, side, W - int(M * 0.36), H * (0.80 if story else 0.79), color=CYAN, a=0.6, anchor='r')
+    # 네 귀퉁이 십자. 세로로 세웠던 옆 글자는 뺐다 — 타임테이블이 들어오면서
+    # 오른쪽 값 열을 뚫고 지나갔고, 빽빽한 판에서는 장식이 소음이 된다.
     cm = tmask('+', BRAND, int(19 * V))
     for cx, cy, an in ((M, H * 0.030, 'l'), (W - M, H * 0.030, 'r'),
                        (M, H * 0.982, 'l'), (W - M, H * 0.982, 'r')):

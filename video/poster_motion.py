@@ -170,7 +170,7 @@ def m_water(base, t, i, dur, A, G, seam=None, bands=None, halo=None,
 
     # 물결 — 킥에 크게 인다. 띠가 지나가는 줄은 흔들지 않는다(겹치면 테두리가 새어 나온다)
     amp = 5.0 + 14.0 * lo
-    fade = np.clip(1 - (gy / H - 0.42) / 0.10, 0, 1) * notch(gy, H * 0.212, 108) * notch(gy, seam, 118)
+    fade = np.clip(1 - (gy / H - 0.42) / 0.10, 0, 1) * notch(gy, H * 0.158, 108) * notch(gy, seam, 118)
     # 위아래를 반대로 밀어 시차를 낸다. 경계는 띠가 덮고 있어 어긋나도 안 보인다
     par = np.tanh((gy - seam) / (H * 0.06)).astype(np.float32) * (5.0 + 7.0 * lo) * np.sin(t * 0.55)
     dx = (np.sin(gy * 0.021 + t * 2.6) * amp * fade + par).astype(np.float32)
@@ -307,10 +307,10 @@ def render(key, cut='story'):
     extra = {}
     if motion == 'water':
         import poster_split as PS
-        seam = H * (0.44 if story else 0.46)
+        seam = H * (0.34 if story else 0.36)
         extra['seam'] = seam
         extra['bands'] = [
-            ('DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.212, 40, PS.MAGENTA, -PS.ANGLE, 150.0),
+            ('DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.158, 40, PS.MAGENTA, -PS.ANGLE, 150.0),
             ('POOL PARTY  ×  SOLO PARTY  ×  ', seam, 52, PS.CYAN, PS.ANGLE, -190.0)]
         # 밝은 부분만 뽑아 흐려 둔다. 매 프레임 블러하면 감당이 안 된다
         lum = base @ np.float32([0.299, 0.587, 0.114])
