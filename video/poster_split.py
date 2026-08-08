@@ -128,6 +128,79 @@ def bloom(img, thr, sigma, amt, tint):
     img += g[..., None] * tint * amt
 
 
+def add(dst, layer, x0, y0, color, a):
+    """빛은 더한다. 덮으면 사진이 죽고, 더하면 사진 위에 빛이 얹힌다."""
+    H, W = dst.shape[:2]
+    h, w = layer.shape
+    x0, y0 = int(x0), int(y0)
+    sx0, sy0 = max(0, x0), max(0, y0)
+    sx1, sy1 = min(W, x0 + w), min(H, y0 + h)
+    if sx1 <= sx0 or sy1 <= sy0:
+        return
+    dst[sy0:sy1, sx0:sx1] += layer[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0][..., None] * color * a
+
+
+def flare(size, V):
+    """수면에 튀는 빛 — 가로로 길게 늘인 아나모픽 섬광.
+    별표처럼 사방 대칭으로 그리면 크리스마스 장식이 된다. 가로를 2.6배 길게."""
+    s = int(size)
+    k = np.zeros((s, s), np.float32)
+    c = s // 2
+    th = max(1, int(1.6 * V))
+    cv2.line(k, (0, c), (s - 1, c), 1.0, th, cv2.LINE_AA)
+    cv2.line(k, (c, int(s * 0.30)), (c, int(s * 0.70)), 0.85, th, cv2.LINE_AA)
+    yy, xx = np.mgrid[0:s, 0:s].astype(np.float32)
+    r = np.sqrt(((xx - c) / (c * 1.0)) ** 2 + ((yy - c) / (c * 0.38)) ** 2)
+    k *= np.clip(1 - r, 0, 1) ** 1.5
+    k = cv2.GaussianBlur(k, (0, 0), max(0.8, 1.1 * V))
+    core = np.clip(1 - np.sqrt((xx - c) ** 2 + (yy - c) ** 2) / (c * 0.16), 0, 1) ** 2
+    k = k + core * 0.9
+    return k / max(k.max(), 1e-6)
+
+
+def flares(img, lum, mask, n, V, seed):
+    """제일 밝은 점들만 골라 섬광을 얹는다. 아무 데나 뿌리면 지저분해진다."""
+    mx = cv2.dilate(lum, np.ones((71, 71), np.uint8))
+    peaks = (lum >= mx - 1e-5) & (lum > 0.90) & mask
+    ys, xs = np.where(peaks)
+    if len(ys) == 0:
+        return
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(len(ys), min(n, len(ys)), replace=False)
+    for i in pick:
+        s = int(rng.uniform(120, 250) * V)
+        k = flare(s, V)
+        a = rng.uniform(0.14, 0.30)
+        add(img, k, xs[i] - s // 2, ys[i] - s // 2, np.array([0.85, 0.98, 1.00], np.float32), a)
+
+
+def bokeh(img, y0, y1, n, V, seed):
+    """초점 나간 조명 알갱이. 클럽 사진의 빈 어둠을 메운다."""
+    H, W = img.shape[:2]
+    rng = np.random.default_rng(seed)
+    L = np.zeros((H, W, 3), np.float32)
+    for _ in range(n):
+        x, y = int(rng.integers(0, W)), int(rng.integers(int(y0), int(y1)))
+        r = int(rng.uniform(6, 30) * V)
+        c = [MAGENTA, CYAN, np.array([1.0, 0.75, 0.95], np.float32)][int(rng.integers(0, 3))]
+        a = float(rng.uniform(0.10, 0.30))
+        cv2.circle(L, (x, y), r, tuple(float(v * a) for v in c), -1, cv2.LINE_AA)
+        cv2.circle(L, (x, y), r, tuple(float(v * a * 0.8) for v in c), max(1, int(2 * V)), cv2.LINE_AA)
+    img += cv2.GaussianBlur(L, (0, 0), 2.6 * V)
+
+
+def glow(dst, m, x, y, color, a, r, anchor='l'):
+    """네온 후광. 그림자와 다르다 — 어둡게 까는 게 아니라 빛을 더한다."""
+    pad = int(r * 2.4) + 6
+    mp = cv2.copyMakeBorder(m.astype(np.float32) / 255.0, pad, pad, pad, pad,
+                            cv2.BORDER_CONSTANT, value=0)
+    g = cv2.GaussianBlur(mp, (0, 0), r)
+    g /= max(g.max(), 1e-6)
+    h, w = g.shape
+    x0 = x - pad if anchor == 'l' else x - w + pad
+    add(dst, g, x0, y - h / 2, color, a)
+
+
 def paint_split(dst, m, x, y, off, a=1.0):
     """색분해 — 마젠타·시안을 어긋나게 깔고 흰 글자를 덮는다.
     클럽 조명 아래 잔상처럼 읽힌다. 어긋남을 키우면 고장 난 것처럼 보이니
@@ -188,7 +261,7 @@ def build(W, H, story=False):
     top = np.clip(edge - yy + 0.5, 0, 1)[..., None]
     img = club * (1 - top) + pool * top
 
-    bloom(img, 0.66, 30 * V, 0.85, np.array([0.88, 0.94, 1.00], np.float32))
+    bloom(img, 0.74, 28 * V, 0.62, np.array([0.88, 0.94, 1.00], np.float32))
 
     # 아래를 눌러 글자 자리를 만든다 — 그림자 대신 이걸로 대비를 낸다
     # 두 단으로 누른다. 한 번에 다 누르면 디스코볼까지 죽어서 파티가 안 보인다 —
@@ -203,6 +276,11 @@ def build(W, H, story=False):
     p = (np.clip((yy - SEAM * 0.52) / (SEAM * 0.48), 0, 1) ** 1.25 * top[..., 0] * 0.46)[..., None]
     img = img * (1 - p) + INK * p
 
+    # ── 빛 알갱이 — 누른 뒤에 더한다. 먼저 얹으면 같이 죽는다 ──
+    lum = img[..., 0] * .299 + img[..., 1] * .587 + img[..., 2] * .114
+    flares(img, lum, (top[..., 0] > 0.5) & (yy < SEAM * 0.80), 6, V, 11)
+    bokeh(img, SEAM, H * 0.665, 34, V, 12)
+
     # ── 상단 ──────────────────────────────────────────────
     lg = Image.open(os.path.join(IMG, 'logo-mark.png')).convert('RGBA')
     hgt = int(46 * V)
@@ -214,10 +292,12 @@ def build(W, H, story=False):
     # ── 타이틀 — 좌측 기준선에서 시작해 오른쪽으로 거의 흘러넘친다 ──
     tw = int(W - M * 1.25)
     off = int(6 * V)
-    s1 = fit('POOL PARTY', BRAND, tw, 0.02)
-    paint_split(img, tmask('POOL PARTY', BRAND, s1, 0.02), M, SEAM - 150 * U, off)
-    s2 = fit('SOLO PARTY', BRAND, tw, 0.02)
-    paint_split(img, tmask('SOLO PARTY', BRAND, s2, 0.02), M, SEAM + 132 * U, off)
+    m1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, tw, 0.02), 0.02)
+    glow(img, m1, M, SEAM - 150 * U, CYAN, 0.55, 22 * V)
+    paint_split(img, m1, M, SEAM - 150 * U, off)
+    m2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, tw, 0.02), 0.02)
+    glow(img, m2, M, SEAM + 132 * U, MAGENTA, 0.60, 22 * V)
+    paint_split(img, m2, M, SEAM + 132 * U, off)
 
     # ── 마퀴 두 줄. 서로 반대로 눕혀 화면을 잡아 준다 ───────
     # 위쪽은 물만 있는 빈 자리를 메운다. 셋 이상 깔면 산만해진다.
@@ -225,8 +305,10 @@ def build(W, H, story=False):
     marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V)
 
     # ── 한 줄 — 이 포스터에서 제일 중요한 문장 ─────────────
-    paint(img, tmask(HOOK, KR, int(54 * (U + V) / 2), 0.02), M,
-          H * (0.618 if story else 0.634), color=CYAN)
+    mh = tmask(HOOK, KR, int(54 * (U + V) / 2), 0.02)
+    hy = H * (0.618 if story else 0.634)
+    glow(img, mh, M, hy, CYAN, 0.50, 15 * V)
+    paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
     y0 = H * (0.690 if story else 0.702)
@@ -246,6 +328,16 @@ def build(W, H, story=False):
     by = H * 0.955
     paint(img, tmask(HANDLE, BRAND, int(19 * V), 0.16), M, by, a=0.92)
     paint(img, tmask(NOTE, KR, int(21 * V), 0.02), W - M, by, color=MAGENTA, a=0.95, anchor='r')
+
+    # ── 여백 디테일 — 인쇄물처럼 보이게 하는 잔손질 ─────────
+    # 옆에 세로로 세운 작은 글자와 네 귀퉁이 십자. 정보는 없지만
+    # 여백이 "비어 있는" 게 아니라 "비워 둔" 것으로 읽힌다.
+    side = np.rot90(tmask('SEOUL  ·  2026  ·  BLACKOUT CREW', BRAND, int(14 * V), 0.30), 3)
+    paint(img, side, W - int(M * 0.36), H * (0.80 if story else 0.79), color=CYAN, a=0.6, anchor='r')
+    cm = tmask('+', BRAND, int(19 * V))
+    for cx, cy, an in ((M, H * 0.030, 'l'), (W - M, H * 0.030, 'r'),
+                       (M, H * 0.982, 'l'), (W - M, H * 0.982, 'r')):
+        paint(img, cm, cx, cy, a=0.40, anchor=an)
 
     img += np.random.default_rng(4).standard_normal((H, W, 1)).astype(np.float32) * 0.010
     return np.clip(img, 0, 1)
