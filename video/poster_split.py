@@ -43,7 +43,7 @@ BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
 from fonts import KR, KRB
 
 # ── 여기만 고치면 됨 ───────────────────────────────────────
-HOOK   = '혼자 와도 됩니다'
+HOOK   = ''                                # 한 줄 카피. 비우면 아예 안 그린다
 ROWS   = [('DATE',    '일정 공개 예정'),           # 예: '8월 23일 토요일'
           ('TIME',    '오후 2시 — 밤 10시'),
           ('VENUE',   '장소 추후 공지'),           # 예: '서울 강남'
@@ -240,10 +240,15 @@ def build(W, H, story=False):
     M = int(W * 0.088)                      # 좌측 기준선. 모든 글자가 여기서 시작한다.
     SEAM = H * (0.44 if story else 0.46)
 
-    pool = duotone(os.path.join(STOCK, 'pool-cc0.jpg'), W, H,
-                   np.array([0.00, 0.30, 0.80], np.float32),
-                   np.array([0.82, 1.00, 1.00], np.float32),
-                   contrast=1.30, keep=0.10, focus=0.32, zoom=1.15)
+    # 물도 실제로 보이는 위 띠 높이에만 맞춰 자른다. 캔버스 전체에 맞추면
+    # 다이빙대 끝만 삼각형처럼 삐져나와 무슨 물체인지 안 읽힌다 —
+    # zoom 1.25 · focus 0.62 가 보드가 대각선으로 통째로 들어오는 자리다.
+    ph = int(SEAM + 80 * U)
+    pband = duotone(os.path.join(STOCK, 'pool-cc0.jpg'), W, ph,
+                    np.array([0.00, 0.30, 0.80], np.float32),
+                    np.array([0.82, 1.00, 1.00], np.float32),
+                    contrast=1.30, keep=0.10, focus=0.62, zoom=1.25)
+    pool = np.concatenate([pband, np.tile(pband[-1:], (H - ph, 1, 1))], 0)
     # 클럽 사진은 가로로 넓다. 세로 캔버스 전체에 맞추면 가운데 빈 곳만 잘려
     # 보라색 덩어리가 된다 — 실제로 보이는 아래 띠 높이에만 맞춰 자른다.
     # zoom 2.9 · focus 0.16 이 위 34%(디스코볼·연기·트러스) 선이다.
@@ -268,12 +273,12 @@ def build(W, H, story=False):
     # 타이틀 자리는 사진을 살리고, 표가 앉는 자리만 확실히 죽인다.
     d = (np.clip((yy - SEAM) / (H - SEAM), 0, 1) ** 0.55 * (1 - top[..., 0]) * 0.80)[..., None]
     img = img * (1 - d) + INK * d
-    d2 = np.clip((yy - H * 0.645) / (H * 0.075), 0, 1)[..., None] * 0.62
+    d2 = np.clip((yy - H * (0.645 if HOOK else 0.608)) / (H * 0.075), 0, 1)[..., None] * 0.62
     img = img * (1 - d2) + INK * d2
     t = np.clip(1 - yy / (H * 0.17), 0, 1)[..., None] * 0.42
     img = img * (1 - t) + INK * t
     # 물 쪽도 경계로 갈수록 눌러 준다 — 안 그러면 흰 타이틀이 수면 반짝임에 먹힌다
-    p = (np.clip((yy - SEAM * 0.52) / (SEAM * 0.48), 0, 1) ** 1.25 * top[..., 0] * 0.46)[..., None]
+    p = (np.clip((yy - SEAM * 0.44) / (SEAM * 0.56), 0, 1) ** 1.15 * top[..., 0] * 0.62)[..., None]
     img = img * (1 - p) + INK * p
 
     # ── 빛 알갱이 — 누른 뒤에 더한다. 먼저 얹으면 같이 죽는다 ──
@@ -305,13 +310,14 @@ def build(W, H, story=False):
     marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V)
 
     # ── 한 줄 — 이 포스터에서 제일 중요한 문장 ─────────────
-    mh = tmask(HOOK, KR, int(54 * (U + V) / 2), 0.02)
-    hy = H * (0.618 if story else 0.634)
-    glow(img, mh, M, hy, CYAN, 0.50, 15 * V)
-    paint(img, mh, M, hy, color=CYAN)
+    if HOOK:
+        mh = tmask(HOOK, KR, int(54 * (U + V) / 2), 0.02)
+        hy = H * (0.618 if story else 0.634)
+        glow(img, mh, M, hy, CYAN, 0.50, 15 * V)
+        paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
-    y0 = H * (0.690 if story else 0.702)
+    y0 = H * ((0.690 if story else 0.702) if HOOK else (0.652 if story else 0.665))
     step = H * (0.045 if story else 0.048)
     lx = M + int(W * 0.215)                 # 값이 시작하는 열
     for i, (k, v) in enumerate(ROWS):
