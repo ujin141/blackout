@@ -137,7 +137,8 @@ def build(W, H, story=False):
         lb = tmask('PARTNERS', BRAND, int(13 * V), 0.26)
         paint(img, lb, M + px, cy, color=ORANGE)
         partner_strip(img, EV.partner_paths(), M + px + lb.shape[1] + int(34 * V),
-                      W - M - px, cy, (y1 - y0) * 0.66, BLK, a=0.85, align='l')
+                      W - M - px, cy, (y1 - y0) * 0.66, BLK, a=0.85, align='l',
+                      names=EV.PARTNER_NAMES, name_font=KR)
 
     # ── 발 ────────────────────────────────────────────────
     y0, y1 = ys['foot']

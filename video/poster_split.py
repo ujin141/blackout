@@ -357,7 +357,8 @@ def build(W, H, story=False):
         ry = int(py - H * 0.034)
         img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
         paint(img, tmask('PARTNERS', BRAND, int(15 * V), 0.24), M, py, color=CYAN, a=0.75)
-        partner_strip(img, ps, lx, W - M, py, H * 0.042, WHITE, a=0.9, align='l')
+        partner_strip(img, ps, lx, W - M, py, H * 0.042, WHITE, a=0.9, align='l',
+                      names=EV.PARTNER_NAMES, name_font=KR)
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.955

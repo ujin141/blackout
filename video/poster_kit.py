@@ -167,7 +167,7 @@ def timetable(img, rows, x0, x1, y0, step, V, key_color, val_color,
 
 
 def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055,
-                  align='l'):
+                  align='l', names=(), name_font=None):
     """협업 브랜드 로고 줄.
 
     **높이를 맞추면 크기가 안 맞아 보입니다.** 로고마다 획이 굵고 가는 정도가 달라서,
@@ -179,7 +179,7 @@ def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055,
     **정렬을 포스터와 맞춰야 합니다.** 포스터가 전부 좌측 기준선에 세워져 있는데
     로고만 가운데로 놓으면 따로 붙인 것처럼 겉돕니다 — `align='l'` 로 값 열에
     맞춰 세우고, 위에 라벨과 괘선을 두면 정보표의 한 줄로 읽힙니다."""
-    if not paths:
+    if not paths and not names:
         return
     marks = []
     for p in paths:
@@ -213,6 +213,15 @@ def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055,
         scale[i] = min(scale[i], h_max / m.shape[0])
     sizes = [(max(1, int(m.shape[1] * s)), max(1, int(m.shape[0] * s)))
              for m, s in zip(marks, scale)]
+
+    # 이름만 넣는 브랜드 — 잉크 양으로 맞추면 글자는 로고보다 획이 적어
+    # 터무니없이 커진다. 실제로 놓인 로고 높이를 기준으로 크기를 잡는다.
+    if names and name_font:
+        base = float(np.median([h for _, h in sizes])) if sizes else h_max
+        for nm in names:
+            m = tmask(nm, name_font, max(8, int(base * 0.46)), 0.02)
+            marks.append(m.astype(np.float32) / 255.0)
+            sizes.append((m.shape[1], m.shape[0]))
 
     gap = int((x1 - x0) * gap_ratio)
     total = sum(w for w, _ in sizes) + gap * (len(sizes) - 1)

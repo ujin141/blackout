@@ -5,14 +5,23 @@
 
 ## 파일명 (정확히 이대로)
 
-| 파일명 | 브랜드 |
-|---|---|
-| `club-ace.png` | CLUB ACE SEOUL |
-| `ace-emblem.png` | ACE 엠블럼 (다이아 A) |
-| `z-spot.png` | Z SPOT LOUNGE |
-| `space-seoul.png` | SPACE SEOUL |
+| 파일명 | 브랜드 | 상태 |
+|---|---|---|
+| `club-ace.png` | CLUB ACE SEOUL | 사용 |
+| `z-spot.png` | Z SPOT LOUNGE | 사용 |
+| `space-seoul.png` | SPACE SEOUL | 사용 |
+| `ace-emblem.png` | 어나더 라운지 (다이아 A) | **안 씀** |
 
 목록은 `video/event.py` 의 `PARTNERS` 에 있습니다. 브랜드가 늘거나 빠지면 거기서 고칩니다.
+
+## 로고 대신 이름만 넣는 경우
+
+`어나더 라운지`는 **심볼만 있고 글자가 없는 로고**라 글자가 붙은 다른 셋과 나란히 두면
+무엇인지 안 읽힙니다. 게다가 행사 장소라 `VENUE` 행에 이미 이름이 나옵니다.
+그래서 로고를 빼고 이름만 넣습니다 — `video/event.py` 의 `PARTNER_NAMES`.
+
+이름은 **잉크 양으로 크기를 맞추지 않습니다.** 글자는 로고보다 획이 적어서
+같은 잉크 양이면 터무니없이 커집니다. 실제로 놓인 로고 높이의 46% 로 잡습니다.
 
 ## 어떤 파일이 좋은가
 

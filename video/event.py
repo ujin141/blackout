@@ -48,10 +48,15 @@ TIMETABLE = [
 LINEUP = [n for _, _, n in TIMETABLE if n != 'SOLO PARTY']
 LINEUP_STR = ' · '.join(LINEUP)
 
-# ── 협업 브랜드 로고 ──────────────────────────────────────
+# ── 협업 브랜드 ───────────────────────────────────────────
 # assets/img/partners/ 에 파일을 넣으면 자동으로 들어간다. 없으면 그냥 건너뛴다.
 # 파일명은 아래와 정확히 같아야 한다.
-PARTNERS = ['club-ace.png', 'ace-emblem.png', 'z-spot.png', 'space-seoul.png']
+PARTNERS = ['club-ace.png', 'z-spot.png', 'space-seoul.png']
+
+# 로고 대신 이름만 넣을 곳. 어나더 라운지는 심볼만 있는 로고라
+# 다른 로고(글자가 붙은 것)들과 나란히 두면 무엇인지 안 읽힌다.
+# 게다가 행사 장소라 VENUE 행에 이미 이름이 나온다 — 이름으로 통일한다.
+PARTNER_NAMES = ['어나더 라운지']
 
 
 def partner_paths():

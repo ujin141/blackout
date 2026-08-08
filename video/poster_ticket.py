@@ -120,7 +120,8 @@ def build(W, H, story=False):
     if ps:
         py = H * 0.450
         paint(img, tmask('WITH', BRAND, int(13 * V), 0.30), M, py, color=BLUE, a=0.9)
-        partner_strip(img, ps, M + int(90 * V), Mx, py, H * 0.032, INK, a=0.8, align='l')
+        partner_strip(img, ps, M + int(90 * V), Mx, py, H * 0.032, INK, a=0.8, align='l',
+                      names=EV.PARTNER_NAMES, name_font=KR)
 
     # ── 절취선 + 양 끝 홈 ─────────────────────────────────
     ny = int(H * 0.490)
