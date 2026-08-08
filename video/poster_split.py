@@ -349,10 +349,12 @@ def build(W, H, story=False):
     return np.clip(img, 0, 1)
 
 
-for tag, (W, H, story) in {'feed': (1080, 1350, False), 'story': (1080, 1920, True)}.items():
-    a = build(W, H, story)
-    p = os.path.join(OUT, f'split_{tag}.png')
-    Image.fromarray((a * 255).astype(np.uint8)).save(p, optimize=True)
-    print(p)
+# import 만 해도 렌더가 도는 걸 막는다 — poster_motion.py 가 build() 를 가져다 쓴다
+if __name__ == '__main__':
+    for tag, (W, H, story) in {'feed': (1080, 1350, False), 'story': (1080, 1920, True)}.items():
+        a = build(W, H, story)
+        p = os.path.join(OUT, f'split_{tag}.png')
+        Image.fromarray((a * 255).astype(np.uint8)).save(p, optimize=True)
+        print(p)
 
-print('->', OUT)
+    print('->', OUT)

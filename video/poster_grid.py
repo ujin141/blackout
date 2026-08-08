@@ -43,16 +43,12 @@ ROWS = [('head', 0.55), ('pool', 1.55), ('pair', 2.30), ('solo', 1.55),
         ('mix', 2.30), ('info', 1.95), ('foot', 0.55)]
 
 
-def build(W, H, story=False):
-    U = H / 1350.0
-    V = W / 1080.0
+def layout(W, H):
+    """칸 자리를 돌려준다. poster_motion.py 가 칸을 하나씩 움직일 때 같은 값을 써야
+    한 픽셀도 안 어긋난다 — 그래서 build() 안에 두지 않고 밖으로 뺐다."""
     M = int(W * 0.052)
     G = int(W * 0.020)                              # 칸 사이 홈
-    iw = W - M * 2
-    cw = (iw - G) // 2                              # 두 칸짜리 열 너비
-
-    img = np.zeros((H, W, 3), np.float32) + INK
-
+    cw = (W - M * 2 - G) // 2                       # 두 칸짜리 열 너비
     avail = H - M * 2 - G * (len(ROWS) - 1)
     tot = sum(w for _, w in ROWS)
     ys, y = {}, M
@@ -60,6 +56,16 @@ def build(W, H, story=False):
         h = avail * w / tot
         ys[name] = (y, y + h)
         y += h + G
+    return M, G, cw, ys
+
+
+def build(W, H, story=False):
+    U = H / 1350.0
+    V = W / 1080.0
+    M, G, cw, ys = layout(W, H)
+    iw = W - M * 2
+
+    img = np.zeros((H, W, 3), np.float32) + INK
 
     def tw(text, path, box_w, track=0.02, cap=None):
         s = fit(text, path, box_w, track)
@@ -130,5 +136,7 @@ def build(W, H, story=False):
     return np.clip(img, 0, 1)
 
 
-for tag, (W, H, story) in SIZES.items():
-    save(build(W, H, story), f'grid_{tag}')
+# import 만 해도 렌더가 도는 걸 막는다 — poster_motion.py 가 build() 를 가져다 쓴다
+if __name__ == '__main__':
+    for tag, (W, H, story) in SIZES.items():
+        save(build(W, H, story), f'grid_{tag}')

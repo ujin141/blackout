@@ -111,5 +111,7 @@ def build(W, H, story=False):
     return np.clip(img, 0, 1)
 
 
-for tag, (W, H, story) in SIZES.items():
-    save(build(W, H, story), f'neon_{tag}')
+# import 만 해도 렌더가 도는 걸 막는다 — poster_motion.py 가 build() 를 가져다 쓴다
+if __name__ == '__main__':
+    for tag, (W, H, story) in SIZES.items():
+        save(build(W, H, story), f'neon_{tag}')
