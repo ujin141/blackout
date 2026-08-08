@@ -28,7 +28,7 @@ from fonts import KR, KRB
 DATE_KR = '일정 공개 예정'          # 예: '8월 23일 토요일'
 TIME_KR = '오후 2시 — 밤 10시'
 PLACE   = '장소 추후 공지'          # 예: '서울 강남 · OO 루프탑'
-PILLS   = ['성비 1:1', '웰컴드링크 1잔', '선착순 마감']
+PILLS   = ['사전 예약제', '웰컴드링크 1잔', '선착순 마감']
 PRICE   = '스탠딩 00,000원'
 CTA     = '예약 · 문의는 DM'
 HANDLE  = '@blackoutcrew_official'

@@ -28,7 +28,7 @@ import event as EV
 from poster_kit import timetable, partner_strip
 
 CELLS  = [('DATE', EV.DATE), ('TIME', EV.TIME),
-          ('VENUE', EV.VENUE), ('ENTRY', '사전 예약제 · 성비 1:1')]
+          ('VENUE', EV.VENUE), ('ENTRY', '사전 예약제')]
 FINE   = EV.ADDR
 HANDLE = EV.HANDLE
 NOTE   = EV.NOTE
