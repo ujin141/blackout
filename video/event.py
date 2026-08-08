@@ -16,13 +16,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PARTNER_DIR = os.path.join(os.path.dirname(HERE), 'assets', 'img', 'partners')
 
 # ── 행사 정보 ─────────────────────────────────────────────
-DATE  = '일정 공개 예정'          # 예: '8월 23일 토요일'
+DATE  = '8월 29일 토요일'         # 2026-08-29 (토)
 TIME  = '오후 7시 — 자정'         # 19:00 ~ 24:00
-VENUE = '장소 추후 공지'          # 예: '서울 강남'
-PRICE = '스탠딩 00,000원'
+VENUE = '양재동 122-6 · 루프탑 어나더 라운지'
+# 사전 예약제라 가격은 포스터에 넣지 않는다 (사용자 지시).
+# 다시 넣을 일이 생기면 PRICE 에 값을 채우면 ENTRY 가 알아서 붙는다.
+PRICE = ''
 PERKS = '성비 1:1 · 웰컴드링크 1잔'
-ENTRY = f'{PRICE} · {PERKS}'
-FINE  = f'{PERKS} 포함 · 현장 매진 시 입장 불가'
+ENTRY = (f'{PRICE} · ' if PRICE else '') + f'사전 예약제 · {PERKS}'
+FINE  = f'{PERKS} 포함 · 사전 예약자 우선 입장'
 
 HANDLE = '@BLACKOUTCREW_OFFICIAL'
 NOTE   = '예약 · 문의는 DM'
