@@ -1,5 +1,5 @@
 """
-포스터 다섯 시안을 영상으로 — 1080×1920 · 30fps · BGM 포함.
+포스터 다섯 시안을 영상으로 — 스토리 1080×1920 · 피드 1080×1350 · 30fps · BGM 포함.
 
 **소리에 실제로 반응합니다.** BPM 으로 박만 계산하면 화면은 규칙적으로 뛰지만
 곡이 하는 일과는 상관없이 움직입니다. 그래서 wav 를 읽어
@@ -24,8 +24,9 @@
 BGM 은 `audio_reel.py` 의 다섯 곡을 나눠 물립니다. wav 가 없으면 자동으로 만듭니다.
     A festival 128 · B techno 145 · C citypop 105 · D hard 155 · E bounce 132
 
-python poster_motion.py            다섯 개 전부
-python poster_motion.py neon grid  골라서
+python poster_motion.py                 다섯 시안 × 두 사이즈 전부
+python poster_motion.py neon grid       시안만 골라서 (두 사이즈)
+python poster_motion.py split story     사이즈까지 골라서
 """
 import os
 import sys
@@ -40,7 +41,10 @@ OUT = os.path.join(HERE, 'out', 'poster')
 REEL = os.path.join(HERE, 'out', 'reel')
 os.makedirs(OUT, exist_ok=True)
 
-W, H, FPS = 1080, 1920, 30
+FPS = 30
+# 두 사이즈. W·H 는 render() 가 매번 갈아 끼운다 — 아래 함수들이 전역으로 읽는다.
+CUTS = {'story': (1080, 1920, True), 'feed': (1080, 1350, False)}
+W, H = 1080, 1920
 
 # 시안 → (포스터 모듈, BGM 스타일, 움직임)
 SPECS = {
@@ -284,11 +288,13 @@ MOTION = {'water': m_water, 'strobe': m_strobe, 'card': m_card,
           'flicker': m_flicker, 'tiles': m_tiles}
 
 
-def render(key):
+def render(key, cut='story'):
+    global W, H
+    W, H, story = CUTS[cut]
     mod_name, style, motion = SPECS[key]
     mod = __import__(mod_name)
-    print(f'[{key}] 정지본 렌더…')
-    base = np.ascontiguousarray(mod.build(W, H, True).astype(np.float32))
+    print(f'[{key} · {cut}] 정지본 렌더…')
+    base = np.ascontiguousarray(mod.build(W, H, story).astype(np.float32))
 
     wav, bpmv, dur = bgm(style)
     nf = int(round(dur * FPS))
@@ -299,7 +305,7 @@ def render(key):
     extra = {}
     if motion == 'water':
         import poster_split as PS
-        seam = H * 0.44
+        seam = H * (0.44 if story else 0.46)
         extra['seam'] = seam
         extra['bands'] = [
             ('DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.212, 40, PS.MAGENTA, -PS.ANGLE, 150.0),
@@ -317,7 +323,8 @@ def render(key):
     if motion == 'strobe':
         extra['rng'] = rng
     if motion == 'card':
-        extra['bar'] = (H * 0.826, H * 0.826 + 52 * (H / 1350.0))
+        b0 = H * (0.826 if story else 0.850)
+        extra['bar'] = (b0, b0 + 52 * (H / 1350.0))
     if motion == 'flicker':
         lum = base @ np.float32([0.299, 0.587, 0.114])
         hi = np.clip(lum - 0.50, 0, 1) / 0.5
@@ -331,7 +338,7 @@ def render(key):
         extra['bpmv'] = bpmv
 
     fn = MOTION[motion]
-    raw = os.path.join(OUT, f'raw_{key}.mp4')
+    raw = os.path.join(OUT, f'raw_{key}_{cut}.mp4')
     p = subprocess.Popen(
         ['ffmpeg', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24',
          '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
@@ -351,20 +358,22 @@ def render(key):
         p.stdin.write((np.clip(img, 0, 1) * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()
 
-    final = os.path.join(OUT, f'motion_{key}.mp4')
+    final = os.path.join(OUT, f'motion_{key}_{cut}.mp4')
     subprocess.run(['ffmpeg', '-y', '-i', raw, '-i', wav,
                     '-c:v', 'libx264', '-preset', 'slow', '-crf', '22',
                     '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '224k',
                     '-shortest', '-movflags', '+faststart', final],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     os.remove(raw)
-    print(f'{final}  {dur:.1f}s  {style} {bpmv:.0f}BPM')
+    print(f'{final}  {W}x{H}  {dur:.1f}s  {style} {bpmv:.0f}BPM')
 
 
 if __name__ == '__main__':
-    keys = [k.lower() for k in sys.argv[1:]] or list(SPECS)
+    args = [a.lower() for a in sys.argv[1:]]
+    cuts = [c for c in args if c in CUTS] or list(CUTS)
+    keys = [k for k in args if k in SPECS] or list(SPECS)
+    for bad in [a for a in args if a not in CUTS and a not in SPECS]:
+        print(f'모르는 이름: {bad} — 시안 {", ".join(SPECS)} · 사이즈 {", ".join(CUTS)}')
     for k in keys:
-        if k not in SPECS:
-            print(f'모르는 시안: {k} — {", ".join(SPECS)}')
-            continue
-        render(k)
+        for c in cuts:
+            render(k, c)
