@@ -329,8 +329,8 @@ def build(W, H, story=False):
         paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
-    y0 = H * (0.585 if story else 0.605)
-    step = H * (0.036 if story else 0.038)
+    y0 = H * (0.578 if story else 0.592)
+    step = H * (0.033 if story else 0.034)
     lx = M + int(W * 0.215)                 # 값이 시작하는 열
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
@@ -343,17 +343,17 @@ def build(W, H, story=False):
     img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
 
     # ── 타임테이블 — 여덟 줄을 두 칸으로 접는다 ─────────────
-    ty = H * (0.725 if story else 0.759)
+    ty = H * (0.712 if story else 0.725)
     paint(img, tmask('TIME TABLE', BRAND, int(15 * V), 0.24), M, ty, color=CYAN, a=0.75)
-    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.034,
+    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.032,
               V, CYAN, WHITE, cols=2, ksize=14, vsize=18)
 
     # ── 협업 브랜드 ───────────────────────────────────────
     # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
     ps = EV.partner_paths()
     if ps:
-        partner_strip(img, ps, M, W - M, H * (0.905 if story else 0.927),
-                      H * 0.030, WHITE, a=0.85)
+        partner_strip(img, ps, M, W - M, H * (0.888 if story else 0.898),
+                      H * 0.045, WHITE, a=0.9)
 
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.955

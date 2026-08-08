@@ -97,7 +97,7 @@ def build(W, H, story=False):
     # 글자 높이가 바뀔 때 × 가 글자 위로 올라탄다 — 실제 높이에서 계산할 것.
     t1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, iw, 0.02), 0.02)
     t2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, iw, 0.02), 0.02)
-    ty = H * (0.125 if story else 0.128)
+    ty = H * (0.108 if story else 0.105)
     paint(img, t1, M, ty, color=INK, valign='t')
     my = ty + t1.shape[0] + 34 * U
     rule(img, my, M, Mx - int(74 * V), INK, 0.30, max(1, int(1 * V)))
@@ -105,8 +105,8 @@ def build(W, H, story=False):
     paint(img, t2, M, my + 34 * U, color=INK, valign='t')
 
     # ── 사진 창 — 신문처럼 잉크 한 색으로 ──────────────────
-    py0 = int(H * (0.320 if story else 0.325))
-    py1 = int(H * (0.455 if story else 0.462))
+    py0 = int(H * (0.312 if story else 0.320))
+    py1 = int(H * (0.420 if story else 0.425))
     ph = py1 - py0
     win = duotone(POOL, iw, ph, INK, PAPER, contrast=1.35, keep=0.0, focus=0.62, zoom=1.25)
     img[py0:py1, M:M + iw] = win
@@ -115,16 +115,21 @@ def build(W, H, story=False):
           M, py1 + 40 * U, color=INK, a=0.6)
     paint(img, tmask(SERIAL, BRAND, int(13 * V), 0.30), Mx, py1 + 40 * U, color=INK, a=0.6, anchor='r')
 
+    # 협업 브랜드는 위 스텁에 둔다 — 아래는 바코드가 차지해 자리가 안 난다
+    ps = EV.partner_paths()
+    if ps:
+        partner_strip(img, ps, M, Mx, H * (0.486 if story else 0.492), H * 0.034, INK, a=0.8)
+
     # ── 절취선 + 양 끝 홈 ─────────────────────────────────
-    ny = int(H * (0.500 if story else 0.512))
+    ny = int(H * (0.512 if story else 0.520))
     perforate(img, ny, M - int(24 * V), Mx + int(24 * V), INK, V)
     r = int(W * 0.028)
     cv2.circle(img, (cx0, ny), r, tuple(float(v) for v in BG), -1, cv2.LINE_AA)
     cv2.circle(img, (cx1, ny), r, tuple(float(v) for v in BG), -1, cv2.LINE_AA)
 
     # ── 정보 — 라벨 … 값 (영수증 조판) ─────────────────────
-    y0 = H * 0.540
-    step = H * 0.043
+    y0 = H * 0.556
+    step = H * 0.040
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
         lm = tmask(k, BRAND, int(14 * V), 0.24)
@@ -134,14 +139,14 @@ def build(W, H, story=False):
         dots(img, y + 4 * U, M + lm.shape[1] + int(16 * V), Mx - vm.shape[1] - int(16 * V), INK, 0.42, V)
 
     # ── 타임테이블 ────────────────────────────────────────
-    ty = H * 0.700
+    ty = H * 0.712
     rule(img, ty - 24 * U, M, Mx, INK, 0.30, max(1, int(1 * V)))
     paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.24), M, ty, color=BLUE, a=0.95)
-    timetable(img, EV.TIMETABLE, M, Mx, ty + H * 0.034, H * 0.033, V,
+    timetable(img, EV.TIMETABLE, M, Mx, ty + H * 0.034, H * 0.030, V,
               BLUE, INK, cols=2, ksize=13, vsize=17)
 
     # ── 바코드 + 발 ───────────────────────────────────────
-    by0 = int(H * (0.855 if story else 0.868))
+    by0 = int(H * (0.850 if story else 0.858))
     barcode(img, M, Mx - int(230 * V), by0, by0 + int(44 * U), INK, V)
     paint(img, tmask(NOTE, KR, int(19 * V), 0.02), Mx, by0 + 22 * U, color=BLUE, anchor='r')
     rule(img, cy1 - 74 * U, M, Mx, INK, 0.35, max(1, int(1 * V)))

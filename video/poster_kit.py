@@ -180,12 +180,20 @@ def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055):
     for p in paths:
         im = Image.open(p).convert('RGBA')
         arr = np.asarray(im).astype(np.float32)
-        # 검정 바탕에 얹힌 로고가 대부분이라 알파가 없으면 밝기를 알파로 쓴다
-        al = arr[..., 3] if arr[..., 3].min() < 250 else arr[..., :3].max(2)
-        ys, xs = np.where(al > 8)
+        # 검정 바탕에 얹힌 로고가 대부분이라 알파가 없으면 밝기를 알파로 쓴다.
+        # **알파의 최솟값으로 판단하면 안 된다** — 배경이 불투명한 PNG 라도
+        # 가장자리 안티에일리어싱 한 픽셀 때문에 최솟값이 250 밑으로 떨어져,
+        # 배경까지 알파 255 로 칠해진 흰 사각형이 나온다.
+        # 실제로 뚫린 픽셀이 5% 넘게 있을 때만 알파를 믿는다.
+        al = arr[..., 3]
+        if (al < 16).mean() < 0.05:
+            al = arr[..., :3].max(2)
+        # 문턱을 낮게 잡으면 배경 글로우와 바닥 반사까지 경계 상자에 들어와
+        # 로고가 실제보다 훨씬 커 보인다. 24 는 눈에 보이는 획만 남는 선.
+        ys, xs = np.where(al > 24)
         if len(ys) == 0:
             continue
-        al = al[ys.min():ys.max() + 1, xs.min():xs.max() + 1] / 255.0
+        al = np.clip((al[ys.min():ys.max() + 1, xs.min():xs.max() + 1] - 24) / 200.0, 0, 1)
         marks.append(al)
     if not marks:
         return

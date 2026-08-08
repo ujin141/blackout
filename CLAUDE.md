@@ -50,7 +50,7 @@ assets/css/styles.css   :root 에 디자인 토큰
 video/                  영상·카드뉴스·OG 생성 스크립트
 video/event.py          행사 정보 원본 — 날짜·시간·타임테이블·협업 브랜드. 시안 다섯이 여기서 가져감
 video/poster_kit.py     포스터 공통 도구 (C·D·E안이 씀. A·B안은 각자 복사본)
-assets/img/partners/    협업 브랜드 로고 — 넣으면 포스터에 자동으로 들어감 (README 참고)
+assets/img/partners/    협업 브랜드 로고 4종 — 포스터에 자동으로 들어감 (README 참고)
 proposal/               웨이비 스튜디오 제안서 (18p)
 proposal2/              디제이코리아 제안서 (15p) — style.css 는 proposal/ 것을 공유
 llms.txt robots.txt sitemap.xml   AI·검색 노출

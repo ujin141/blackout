@@ -42,6 +42,9 @@ BLK    = np.array([0.06, 0.05, 0.05], np.float32)
 # (이름, 비중) — 세로를 이 비율로 나눈다
 ROWS = [('head', 0.55), ('pool', 1.45), ('pair', 2.10), ('solo', 1.45),
         ('mix', 2.55), ('info', 1.80), ('foot', 0.55)]
+# 로고 칸은 파일이 있을 때만 넣는다. 비워 두면 빈 흰 칸이 남는다.
+if EV.partner_paths():
+    ROWS.insert(-1, ('partners', 0.75))
 
 
 def layout(W, H):
@@ -125,6 +128,13 @@ def build(W, H, story=False):
               bx, by + 32 * U, color=BLK)
     rule(img, y0 + (y1 - y0) * 0.44, M + px, W - M - px, BLK, 0.15)
     paint(img, tmask(FINE, KR, int(15 * V), 0.01), M + px, y1 - 22 * U, color=BLK, a=0.55)
+
+    # ── 협업 브랜드 칸 ────────────────────────────────────
+    if 'partners' in ys:
+        y0, y1 = ys['partners']
+        box(img, M, y0, W - M, y1, WHT)
+        partner_strip(img, EV.partner_paths(), M + px, W - M - px, (y0 + y1) / 2,
+                      (y1 - y0) * 0.70, BLK, a=0.85)
 
     # ── 발 ────────────────────────────────────────────────
     y0, y1 = ys['foot']

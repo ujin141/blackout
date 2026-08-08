@@ -189,7 +189,7 @@ def build(W, H, story=False):
     # 큰 낱말은 전폭 왼쪽, 작은 낱말은 60% 폭 오른쪽.
     # 전부 같은 폭으로 맞추면 네 줄이 다 커져서 세로가 넘치고,
     # 넘치지 않게 줄이면 오른쪽 여백이 남는다. 크기를 갈라 두 문제를 같이 푼다.
-    band0, band1 = H * 0.135, H * 0.575
+    band0, band1 = H * 0.130, H * 0.545
     colw = fx1 - fx0
     lead, divh = int(20 * U), int(104 * U)
     for _ in range(4):                                  # 칸에 맞을 때까지 폭을 줄인다
@@ -225,22 +225,22 @@ def build(W, H, story=False):
     cw = (fx1 - fx0) / 2
     for i, (k, val) in enumerate([*CELLS, ('VENUE', EV.VENUE), WIDE]):
         cx = fx0 + cw * (i % 2)
-        ry = H * 0.618 + H * 0.070 * (i // 2)
+        ry = H * 0.590 + H * 0.068 * (i // 2)
         rule(img, ry - 26 * U, cx, cx + cw - int(24 * V), WHITE, 0.18)
         paint(img, tmask(k, BRAND, int(13 * V), 0.26), cx, ry, color=RED, a=0.95)
         sz = min(int(24 * V), fit(val, KR, cw - int(30 * V)))
         paint(img, tmask(val, KR, sz, 0.01), cx, ry + 34 * U, a=0.97)
 
     # ── 타임테이블 ────────────────────────────────────────
-    ty = H * 0.752
+    ty = H * 0.722
     rule(img, ty - 26 * U, fx0, fx1, WHITE, 0.18)
     paint(img, tmask('TIME TABLE', BRAND, int(13 * V), 0.26), fx0, ty, color=RED, a=0.95)
-    timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.034, V,
+    timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.030, V,
               RED, WHITE, cols=2, ksize=13, vsize=17)
 
     ps = EV.partner_paths()
     if ps:
-        partner_strip(img, ps, fx0, fx1, H * (0.905 if story else 0.925), H * 0.028, WHITE, a=0.85)
+        partner_strip(img, ps, fx0, fx1, H * (0.896 if story else 0.905), H * 0.040, WHITE, a=0.9)
 
     # ── 하단 ──────────────────────────────────────────────
     fy = by - 30 * V
