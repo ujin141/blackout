@@ -57,7 +57,7 @@ PARTNERS = []
 
 # 협업 브랜드 이름. 로고를 섞으면 글자 붙은 것과 심볼만 있는 것이 따로 놀아서
 # 전부 이름으로 통일했다.
-PARTNER_NAMES = ['CLUB ACE SEOUL', 'Z SPOT LOUNGE', 'SPACE SEOUL', '어나더 라운지']
+PARTNER_NAMES = ['CLUB ACE SEOUL', 'Z SPOT LOUNGE', 'SPACE SEOUL', 'ANOTHER LOUNGE']
 PARTNERS_STR  = ' · '.join(PARTNER_NAMES)
 
 
