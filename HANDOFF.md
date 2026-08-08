@@ -77,7 +77,8 @@ python make_og.py                              # 링크 미리보기 카드
 python kakao_bg.py                             # 카톡 단톡방 배경
 python poster_pool.py                          # 파티 포스터 (스토리용)
 python poster_event.py                         # 행사 포스터 (범용)
-python poster_solo.py                          # 풀파티 × 솔로파티 포스터 (컨셉형)
+python poster_solo.py                          # 풀파티 × 솔로파티 티저 포스터
+python poster_ad.py                            # 같은 행사 판매용 포스터 (정보형)
 ```
 
 전부 `video/out/`에 저장됩니다. 한 편에 몇 분 걸립니다.
