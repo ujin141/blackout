@@ -210,22 +210,35 @@ def paint_split(dst, m, x, y, off, a=1.0):
     paint(dst, m, x, y, WHITE, a)
 
 
-def marquee(img, text, cy, bh, bg, fg, V, angle=None):
-    """눕혀 까는 흐르는 띠."""
+_STRIP = {}
+
+
+def marquee(img, text, cy, bh, bg, fg, V, angle=None, phase=0.0):
+    """눕혀 까는 흐르는 띠. phase 를 주면 글자가 흘러간다 (poster_motion.py 용).
+
+    띠를 매번 새로 조판하면 프레임마다 tmask 가 돌아 느려진다 —
+    한 번 만들어 캐시해 두고 np.roll 로만 밀어 준다."""
     angle = ANGLE if angle is None else angle
     H, W = img.shape[:2]
     LW = int(W * 2.2)
-    m = tmask(text, BRAND, int(21 * V), 0.36)
-    th, tw = m.shape
-    bh = max(bh, th + int(22 * V))
-    strip = np.zeros((bh, LW, 3), np.float32) + bg
-    ty = (bh - th) // 2
-    x, gap = 0, int(40 * V)
-    while x < LW:
-        w = min(tw, LW - x)
-        sub = (m[:, :w].astype(np.float32) / 255.0)[..., None]
-        strip[ty:ty + th, x:x + w] = strip[ty:ty + th, x:x + w] * (1 - sub) + fg * sub
-        x += tw + gap
+    key = (text, bh, V, bytes(bg), bytes(fg), LW)
+    if key not in _STRIP:
+        m = tmask(text, BRAND, int(21 * V), 0.36)
+        th, tw = m.shape
+        bh = max(bh, th + int(22 * V))
+        strip = np.zeros((bh, LW, 3), np.float32) + bg
+        ty = (bh - th) // 2
+        x, gap = 0, int(40 * V)
+        while x < LW:
+            w = min(tw, LW - x)
+            sub = (m[:, :w].astype(np.float32) / 255.0)[..., None]
+            strip[ty:ty + th, x:x + w] = strip[ty:ty + th, x:x + w] * (1 - sub) + fg * sub
+            x += tw + gap
+        _STRIP[key] = (strip, tw + gap)
+    strip, period = _STRIP[key]
+    if phase:
+        strip = np.roll(strip, int(phase) % period, axis=1)
+    bh = strip.shape[0]
     R = cv2.getRotationMatrix2D((LW / 2, bh / 2), angle, 1.0)
     R[0, 2] += W / 2 - LW / 2
     R[1, 2] += cy - bh / 2
