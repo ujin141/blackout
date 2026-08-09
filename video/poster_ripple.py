@@ -1,0 +1,106 @@
+"""
+L안 — **두 물결이 만난다.** 이 행사의 조합을 한 장치로 말하는 판입니다.
+
+수면을 위에서 내려다봅니다. 물에 닿은 자리가 **두 곳**이고, 거기서 퍼진 동심원이
+가운데에서 겹칩니다. 원은 물결이라 풀파티이고, 두 개라서 솔로파티입니다 —
+혼자 온 사람 둘이 만나는 지점이 화면 한가운데입니다.
+
+**겹치는 자리에 이름을 놓습니다.** 원 두 개를 그려 놓고 이름을 다른 데 두면
+그냥 무늬가 됩니다. 교차점에 놓아야 "여기서 만난다"가 그림의 뜻이 됩니다.
+
+원이 화면 밖으로 다 나가면 하나의 무늬로 보여 두 개인 게 안 읽힙니다 —
+**두 중심이 화면 안에 보여야** 합니다.
+
+python poster_ripple.py  →  out/poster/ripple_{feed,story}.png
+"""
+import numpy as np
+import cv2
+from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save
+from fest_kit import water, ripple, specks, vignette, justify, night
+from fonts import KR
+import event as EV
+
+DEEP    = (0.012, 0.030, 0.056)
+SHALLOW = (0.030, 0.075, 0.110)
+CYAN    = np.float32([0.42, 0.95, 1.00])
+WARM    = np.float32([1.00, 0.62, 0.34])
+PAPER   = np.float32([0.97, 0.99, 1.00])
+DIM     = np.float32([0.60, 0.74, 0.82])
+
+
+def build(W, H, story=False):
+    V = W / 1080.0
+    img = water(W, H, DEEP, SHALLOW, amp=0.13)
+
+    # 두 중심. 화면 안에 보여야 "둘"로 읽힌다
+    CYm = H * (0.470 if story else 0.480)
+    dx = W * 0.215
+    A = (W / 2 - dx, CYm - H * 0.035)
+    B = (W / 2 + dx, CYm + H * 0.035)
+
+    # 원을 11 개씩 옅게 깔았더니 물결이 아니라 배경 무늬가 됐다.
+    # **적게, 세게.** 셀 수 있어야 두 중심에서 퍼진 것으로 읽힌다.
+    ripple(img, A[0], A[1], W * 0.075, W * 0.62, 6, CYAN, 1.00, th=3.4 * V)
+    ripple(img, B[0], B[1], W * 0.075, W * 0.62, 6, WARM, 0.85, th=3.4 * V)
+    # 닿은 자리 — 점 하나. 여기서 시작했다는 표시
+    for (cx, cy), col in ((A, CYAN), (B, WARM)):
+        cv2.circle(img, (int(cx), int(cy)), max(2, int(7 * V)),
+                   tuple(float(v) for v in col), -1, cv2.LINE_AA)
+        d0 = np.sqrt((np.mgrid[0:H, 0:W][1].astype(np.float32) - cx) ** 2 +
+                     (np.mgrid[0:H, 0:W][0].astype(np.float32) - cy) ** 2)
+        img += cv2.GaussianBlur((d0 < 11 * V).astype(np.float32),
+                                (0, 0), 34 * V)[..., None] * col * 1.6
+
+    specks(img, 90, H * 0.08, H * 0.92, PAPER, 0.16, seed=21, rmax=1.8)
+
+    # **겹치는 자리를 눌러 글자 자리를 만든다.** 그림자가 아니라 배경을 죽인다
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    band = np.exp(-((yy - CYm) / (H * 0.085)) ** 2)
+    img *= (1 - 0.55 * band)[..., None]
+
+    M = int(W * 0.085)
+    CWD = W - M * 2
+    ns = justify(EV.NAME, CWD, 0.10, cap=int(140 * V))
+    paint(img, tmask(EV.NAME, BRAND, ns, 0.10), W / 2, CYm - 18 * V,
+          color=PAPER, anchor='c')
+    paint(img, tmask(EV.FORMAT, BRAND, int(23 * V), 0.34), W / 2, CYm + 44 * V,
+          color=CYAN, anchor='c')
+
+    # 머리 — 두 중심 위로 각각 한 낱말. 어느 원이 무엇인지 이름을 붙인다
+    ty = H * (0.150 if story else 0.145)
+    paint(img, tmask('POOL', BRAND, int(44 * V), 0.22), A[0], ty, color=CYAN, a=0.9, anchor='c')
+    paint(img, tmask('SOLO', BRAND, int(44 * V), 0.22), B[0], ty, color=WARM, a=0.9, anchor='c')
+    paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, int(17 * V), 0.42), W / 2,
+          ty - 52 * V, color=DIM, a=0.75, anchor='c')
+
+    # 라인업 — 아래쪽. 물결이 잦아든 자리
+    ly = H * (0.725 if story else 0.710)
+    paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD * 0.94, 0.14)), 0.14),
+          W / 2, ly, color=PAPER, a=0.92, anchor='c')
+    prog = '  ·  '.join(sorted(EV.PROGRAM))
+    paint(img, tmask(prog, BRAND, int(20 * V), 0.30), W / 2, ly + 46 * V,
+          color=WARM, a=0.90, anchor='c')
+
+    fy = H * (0.845 if story else 0.832)
+    rule(img, fy, M, W - M, PAPER, 0.18, max(1, int(2 * V)))
+    paint(img, tmask(EV.DATE, KR, int(32 * V), 0.02), W / 2, fy + 44 * V,
+          color=PAPER, anchor='c')
+    paint(img, tmask(f'{EV.TIME}   ·   {EV.VENUE}', KR, int(20 * V), 0.02),
+          W / 2, fy + 84 * V, color=DIM, a=0.95, anchor='c')
+    paint(img, tmask(EV.ADDR, KR, int(16 * V), 0.02), W / 2, fy + 114 * V,
+          color=DIM, a=0.70, anchor='c')
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), W / 2, H * 0.945,
+          color=DIM, a=0.55, anchor='c')
+    paint(img, tmask(EV.HANDLE, BRAND, int(14 * V), 0.26), W / 2, H * 0.972,
+          color=CYAN, a=0.80, anchor='c')
+
+    vignette(img, 0.44, 1.9)
+    grain(img, 0.007, 14)
+    return np.clip(img, 0, 1)
+
+
+if __name__ == '__main__':
+    for k, (w, h, st) in SIZES.items():
+        im = build(w, h, st)
+        night(im, f'ripple_{k}')
+        save(im, f'ripple_{k}')

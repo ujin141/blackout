@@ -93,6 +93,11 @@ python poster_sun.py                          # H안 지는 해 + 레트로 띠 
 python poster_crest.py                        # I안 원형 배지 · 금색
 python poster_stage.py                        # J안 무대 빔 + 관객 · 보라×자홍
 python poster_stack.py                        # K안 활판 밴드 · 라임 한 줄
+python poster_ripple.py                       # L안 두 물결이 만난다 · 시안×주황
+python poster_float.py                        # M안 겹친 튜브 두 개 · 아쿠아×핑크
+python poster_mirror.py                       # N안 혼자 왔는데 비친 건 둘 · 호박
+python poster_lane.py                         # O안 수영 레인 = 타임테이블 · 라임
+python poster_tag.py                          # P안 번호표 두 장 · 코랄×아쿠아
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서

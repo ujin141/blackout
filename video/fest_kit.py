@@ -1,9 +1,14 @@
 """
-페스티벌 포스터 공통 도구.
+페스티벌 · 풀파티 시안 공통 도구.
 
-기존 여섯 시안(A~F)은 **한 행사의 분위기**를 그리는 판이었습니다.
-이 다섯은 **페스티벌의 관습**을 씁니다 — 라인업 블록, 지는 해, 배지, 무대 빔, 활판 밴드.
+G~K(페스티벌)는 **페스티벌의 관습**을 씁니다 — 라인업 블록, 지는 해, 배지, 무대 빔, 활판.
 관습을 쓰는 이유는 하나입니다. 처음 보는 사람이 0.5초 안에 "축제구나"로 읽습니다.
+
+L~P(풀×솔로)는 **이 행사의 조합 자체**를 구조로 씁니다.
+페스티벌 관습만 쓰면 어느 행사에 갖다 붙여도 되는 판이 됩니다 —
+풀파티인 것도, 솔로파티인 것도 그림에서 안 나옵니다.
+그래서 **둘 다 한 장치로** 말합니다: 물 위의 원 두 개.
+원은 물결이자 튜브이고, 두 개가 겹치는 자리가 혼자 온 사람 둘이 만나는 지점입니다.
 
 `poster_kit.py` 를 그대로 쓰되, 여기 있는 건 페스티벌에만 필요한 것들입니다.
 밤 행사라 **전부 어둡습니다** — `night()` 로 재서 평균 0.12~0.21, 밝은 픽셀 7% 아래를 지킵니다.
@@ -216,3 +221,89 @@ def night(img, name=''):
         flag = ''
     print(f'    {name:14s} 평균 {m:.3f} · 밝은 픽셀 {br:.1f}%{flag}')
     return m, br
+
+
+# ── 풀 × 솔로 (L~P) ───────────────────────────────────────
+def water(W, H, deep, shallow, seed=4, scale=0.030, amp=0.16, t=0.0):
+    """밤의 수면. 그라데이션 위에 코스틱(물빛 그물)을 얹습니다.
+
+    **코스틱이 없으면 그냥 파란 판입니다.** 사인파 몇 개를 간섭시켜
+    마루만 남기면 물 밑에서 빛이 흔들리는 그 무늬가 나옵니다."""
+    img = sky(W, H, [(0.0, deep), (0.55, deep), (1.0, shallow)])
+    yq, xq = np.mgrid[0:H // 3, 0:W // 3].astype(np.float32)
+    x, y = xq * scale * 3, yq * scale * 3
+    f = (np.sin(x * 1.4 + 1.6 * np.sin(y * 0.42 + t)) +
+         np.sin(y * 1.1 + 1.3 * np.sin(x * 0.37 - t)) +
+         0.8 * np.sin((x + y) * 0.85 + t * 1.4))
+    k = np.clip(1 - np.abs(np.sin(f * 1.7)) * 6.5, 0, 1) ** 1.3
+    k = cv2.resize(cv2.GaussianBlur(k, (0, 0), 1.2), (W, H), interpolation=cv2.INTER_LINEAR)
+    add(img, k, 0, 0, np.float32([0.55, 0.90, 1.00]), amp)
+    return img
+
+
+def ripple(img, cx, cy, r0, r1, n, color, a=0.5, th=2.0, fade=True):
+    """한 점에서 퍼지는 동심원. **혼자 온 사람 하나가 물에 닿은 자리**입니다.
+
+    간격을 일정하게 두면 과녁이 됩니다 — 밖으로 갈수록 넓어지고 옅어져야
+    퍼져 나가는 것으로 보입니다."""
+    H, W = img.shape[:2]
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    d = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
+    acc = np.zeros((H, W), np.float32)
+    r, step = float(r0), (r1 - r0) / max(n, 1)
+    i = 0
+    while r < r1:
+        w = th * (1 + 1.4 * (r - r0) / max(r1 - r0, 1))
+        g = np.clip(1 - np.abs(d - r) / w, 0, 1)
+        acc += g * ((1 - (r - r0) / max(r1 - r0, 1)) ** 0.8 if fade else 1.0)
+        r += step * (1 + 0.10 * i)                 # 밖으로 갈수록 간격이 넓어진다
+        i += 1
+    add(img, np.clip(acc, 0, 1), 0, 0, np.float32(color), a)
+    return np.clip(acc, 0, 1)
+
+
+def torus(img, cx, cy, R, r, color, a=1.0, glow=0.0):
+    """수영장 튜브. **원 하나로 풀파티와 솔로파티를 동시에 말합니다** —
+    물에 뜬 물건이면서, 두 개가 겹치면 둘이 만나는 그림이 됩니다."""
+    H, W = img.shape[:2]
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    d = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
+    band = np.clip(1 - np.abs(d - R) / r, 0, 1) ** 0.6
+    if glow > 0:
+        add(img, cv2.GaussianBlur(band, (0, 0), r * 1.6), 0, 0, np.float32(color), glow)
+    m = band[..., None] * a
+    img[:] = img * (1 - m) + np.float32(color) * m
+    return band
+
+
+def reflect(img, y, depth, wob=6.0, damp=0.55, seed=2):
+    """수면에 비친 상. 위를 뒤집어 아래에 깔고 가로로 흔듭니다.
+
+    **흔들지 않으면 거울이지 물이 아닙니다.** 아래로 갈수록 더 흔들고 더 흐립니다."""
+    H, W = img.shape[:2]
+    y = int(y)
+    depth = int(min(depth, H - y, y))
+    if depth <= 4:
+        return
+    src = img[y - depth:y][::-1].copy()
+    rows = np.arange(depth, dtype=np.float32)
+    dx = (np.sin(rows * 0.13 + 1.1) * wob * (0.3 + rows / depth)).astype(np.float32)
+    gx, gy = np.meshgrid(np.arange(W, dtype=np.float32), rows)
+    src = cv2.remap(src, (gx + dx[:, None]).astype(np.float32), gy.astype(np.float32),
+                    cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    src = cv2.GaussianBlur(src, (0, 0), 1.6)
+    k = (damp * (1 - rows / depth) ** 1.2)[:, None, None]
+    img[y:y + depth] = img[y:y + depth] * (1 - k) + src * k
+
+
+def rope(img, y, W, color, bead, gap, a=1.0, alt=None):
+    """레인 로프. 구슬이 번갈아 꿰인 그 줄입니다.
+    구슬 없이 선만 그으면 레인이 아니라 밑줄입니다."""
+    x = 0
+    i = 0
+    while x < W:
+        c = color if (alt is None or i % 2 == 0) else alt
+        cv2.circle(img, (int(x + bead), int(y)), int(bead),
+                   tuple(float(v) for v in c), -1, cv2.LINE_AA)
+        x += bead * 2 + gap
+        i += 1
