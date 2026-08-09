@@ -300,14 +300,9 @@ def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5):
         g = np.exp(-(((xx - W * cx) / (W * rx)) ** 2 + ((yy - H * cy) / (H * ry)) ** 2))
         _add(img, g, np.float32(col) * warm, a)
 
-    # 물에 뜬 튜브 — 물건이 있어야 파티다. 가장자리에만, 정보줄은 피한다
-    for cx, cy, r, col in ((0.10, 0.70, 0.100, AQUA), (0.93, 0.55, 0.072, ROSE),
-                           (0.70, 0.17, 0.052, BULB)):
-        d = np.sqrt(((xx - W * cx) / (W * r)) ** 2 + ((yy - H * cy) / (W * r * 0.36)) ** 2)
-        img *= (1 - ((d < 1.0).astype(np.float32) * 0.42)[..., None])
-        ring = np.clip(1 - np.abs(d - 1.0) / 0.30, 0, 1) ** 0.8
-        _add(img, ring, col, 0.48)
-        _add(img, cv2.GaussianBlur(ring, (0, 0), W * r * 0.26), col, 0.38)
+    # **그려 넣은 튜브도 뺐다.** 네온 링은 아무리 작아도 그린 도형이고,
+    # 사진 위에 올라가면 그 자리만 일러스트가 된다 — 계속 "추상적" 이라는
+    # 지적을 받은 것도 결국 이것이다. 파티는 **조명만으로** 만든다.
 
     # 수면 반짝임
     rng = np.random.default_rng(seed)
