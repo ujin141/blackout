@@ -17,7 +17,7 @@ import numpy as np
 import cv2
 from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save, info_block
 from fest_kit import vignette, justify, night
-from scene_kit import poolscene
+from scene_kit import photoscene
 from fonts import KR
 import event as EV
 
@@ -49,7 +49,10 @@ def build(W, H, story=False):
     # "추상적"이라는 지적이 남는다. 밤 루프탑 수영장에 사람이 있고 디제이가
     # 틀고 있는 그림을 뒤에 두면, 앞의 도형이 무슨 얘기를 하든 일단
     # 무슨 행사인지가 먼저 보인다. 뒤로 물러나야 하니 한 단 눌러 둔다.
-    img = poolscene(W, H, story, wy=0.615 if story else 0.585, dj=0.80) * 0.84
+    # **그린 장면은 자연스럽지 않다.** 선으로 그린 실루엣은 도표로 읽히고
+    # 그 위에 네온을 얹으면 둘이 따로 논다. 자연스러움은 **사진의 결**에서
+    # 온다 — 헤이즈의 얼룩, 물결의 불규칙은 코드로 흉내 낼수록 가짜 티가 난다.
+    img = photoscene(W, H, story, wy=0.60 if story else 0.575) * 0.88
 
     CX = W / 2
     # 짧은 피드에서 고리 라벨이 아래 글자와 부딪힌다. 원을 줄이고 위로 올린다

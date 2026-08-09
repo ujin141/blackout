@@ -13,7 +13,7 @@ python poster_deck.py  →  out/poster/deck_{feed,story}.png
 import numpy as np
 from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save, info_block
 from fest_kit import vignette, justify, night
-from scene_kit import poolscene
+from scene_kit import photoscene
 from fonts import KR
 import event as EV
 
@@ -28,7 +28,10 @@ def build(W, H, story=False):
     CUT = int(H * (0.575 if story else 0.545))
 
     img = np.zeros((H, W, 3), np.float32) + PANEL
-    img[:CUT] = poolscene(W, CUT, story, wy=0.66, dj=0.74)
+    # **그린 장면은 자연스럽지 않다.** 선으로 그린 실루엣은 도표로 읽히고
+    # 그 위에 네온을 얹으면 둘이 따로 논다. 자연스러움은 **사진의 결**에서
+    # 온다 — 헤이즈의 얼룩, 물결의 불규칙은 코드로 흉내 낼수록 가짜 티가 난다.
+    img[:CUT] = photoscene(W, CUT, story, wy=0.60)
     # 장면 아래끝을 판 색으로 녹인다. **딱 자르면 두 장을 붙인 것처럼 보인다**
     fade = int(CUT * 0.13)
     k = np.linspace(0, 1, fade, dtype=np.float32)[:, None, None] ** 1.5

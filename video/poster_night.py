@@ -16,7 +16,7 @@ python poster_night.py  →  out/poster/night_{feed,story}.png
 import numpy as np
 from poster_kit import (BRAND, SIZES, tmask, paint, rule, grain, save, info_block)
 from fest_kit import vignette, justify, night
-from scene_kit import poolscene
+from scene_kit import photoscene
 from fonts import KR, KRD
 import event as EV
 
@@ -29,7 +29,10 @@ HEADLINE = '루프탑 풀파티'
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = poolscene(W, H, story, wy=0.615 if story else 0.585, dj=0.76)
+    # **그린 장면은 자연스럽지 않다.** 선으로 그린 실루엣은 도표로 읽히고
+    # 그 위에 네온을 얹으면 둘이 따로 논다. 자연스러움은 **사진의 결**에서
+    # 온다 — 헤이즈의 얼룩, 물결의 불규칙은 코드로 흉내 낼수록 가짜 티가 난다.
+    img = photoscene(W, H, story, wy=0.615 if story else 0.585)
     M = int(W * 0.075)
     CWD = W - M * 2
     yy = np.arange(H, dtype=np.float32)[:, None, None]

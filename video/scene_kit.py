@@ -1,5 +1,10 @@
 """
-**장면 그리기.** 도형이 아니라 그림입니다.
+**장면.** 도형이 아니라 그림입니다.
+
+두 가지 방법이 있고, **지금 쓰는 건 사진 쪽**입니다.
+
+    photoscene()  사진 두 장(클럽 · 수영장)을 물가에서 잇는다  ← 포스터가 쓰는 것
+    poolscene()   전부 그린다. 도표처럼 보여서 물러났다
 
 벤 다이어그램·물결·튜브는 컨셉을 **상징**으로 옮긴 것이라, 보는 사람이
 한 번 해석해야 뜻이 옵니다. 그게 "추상적"의 정체입니다.
@@ -222,7 +227,12 @@ def caustics(img, wy, W, H, amp=0.24):
 
 
 def poolscene(W, H, story=False, wy=0.52, dj=0.74):
-    """**밤 루프탑 풀파티 한 장면.** 겹의 순서가 전부다(파일 첫머리 참고)."""
+    """**밤 루프탑 풀파티 한 장면 — 그려서 만든 판.**
+
+    **지금 포스터는 이걸 안 씁니다.** 선으로 그린 실루엣이 도표로 읽혀
+    "자연스럽지 않다" 는 지적을 받았고, 사진을 합친 `photoscene()` 으로 갔습니다.
+    남겨 둔 이유는 겹의 순서와 각 겹의 규칙(파일 첫머리)이 여전히 유효해서고,
+    영상처럼 사진을 못 쓰는 자리에서 다시 필요할 수 있어서입니다."""
     V = W / 1080.0
     img = _grad(W, H, SKY_TOP, SKY_LOW, 1.6)
     WY = H * wy
@@ -257,4 +267,76 @@ def poolscene(W, H, story=False, wy=0.52, dj=0.74):
     swimmers(img, WY, V, W)
     floats(img, WY, V, W)
     caustics(img, WY, W, H, amp=0.16)
+    return np.clip(img, 0, 1)
+
+
+# ── 사진으로 만드는 장면 ───────────────────────────────────
+def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5):
+    """**사진 두 장으로 만든 장면.**
+
+    그린 사람은 아무리 다듬어도 자연스럽지 않습니다 — 선으로 그린 실루엣은
+    도표로 읽히고, 그 위에 네온을 얹으면 둘이 따로 놉니다.
+    자연스러움은 **실제 사진의 결**에서 옵니다. 헤이즈의 얼룩, 물결의 불규칙,
+    조명의 번짐은 코드로 흉내 낼수록 가짜 티가 납니다.
+
+        위  클럽 사진의 위 34% — 헤이즈 · 조명 · 디스코볼. 얼굴은 안 들어간다
+        아래 수영장 사진 — 진짜 물결과 반사
+
+    경계에 물가 선을 두고, **위를 아래에 비춥니다.** 비치지 않으면 두 장을
+    붙여 놓은 것이지 한 장면이 아닙니다.
+
+    두 사진 다 CC0 이고, 클럽 사진은 아래쪽에 얼굴이 다 나와서 `CLUB_SAFE`
+    크롭(위 34%)만 씁니다 — 이 값은 올리기만 할 것."""
+    from poster_kit import duotone, CLUB, CLUB_SAFE, POOL
+    V = W / 1080.0
+    WY = int(H * wy)
+
+    # **사진을 그대로 쓰면 낮이 된다.** 밝은 쪽을 반 이하로 내려야 밤이다 —
+    # 처음 값(클럽 0.86 · 물 0.74)으로는 평균 밝기가 0.387 이었다(기준 0.24).
+    top = duotone(CLUB, W, WY, np.float32([0.020, 0.010, 0.028]),
+                  np.float32([0.40 * warm, 0.14, 0.30]), contrast=1.34, keep=0.10,
+                  **CLUB_SAFE)
+    bot = duotone(POOL, W, H - WY, np.float32([0.008, 0.024, 0.040]),
+                  np.float32([0.15, 0.30, 0.37]), contrast=1.28, keep=0.09,
+                  focus=0.62, zoom=1.30)
+    img = np.empty((H, W, 3), np.float32)
+    img[:WY] = top
+    img[WY:] = bot
+
+    # 위를 아래에 비춘다 — **이게 없으면 두 장을 붙인 것이지 한 장면이 아니다**
+    d = min(WY, H - WY)
+    src = top[WY - d:][::-1].copy()
+    rows = np.arange(d, dtype=np.float32)
+    gx, gy = np.meshgrid(np.arange(W, dtype=np.float32), rows)
+    wob = (np.sin(rows * 0.09 + 0.4) * (10.0 * V) * (0.25 + rows / d))[:, None]
+    src = cv2.remap(src, (gx + wob).astype(np.float32), gy.astype(np.float32),
+                    cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    src = cv2.GaussianBlur(src, (0, 0), 3.0)
+    k = (0.46 * (1 - rows / d) ** 1.1)[:, None, None]
+    img[WY:WY + d] = img[WY:WY + d] * (1 - k) + src * k
+
+    # 물가 선 · 잔물결
+    for i in range(0, H - WY, max(3, int(H * 0.010))):
+        aa = 0.055 * (1 - i / (H - WY)) + 0.02
+        img[WY + i:WY + i + max(1, int(2 * V))] =             img[WY + i:WY + i + max(1, int(2 * V))] * (1 - aa) + np.float32([0.5, 0.85, 1.0]) * aa
+    img[WY:WY + max(2, int(3 * V))] = np.float32([0.60, 0.92, 1.00]) * 0.60
+
+    # 물에 뜬 튜브 — 물건이 있어야 파티다. 가장자리에만
+    rng = np.random.default_rng(seed)
+    for cx, cy, r, col in ((0.11, 0.66, 0.105, AQUA), (0.90, 0.80, 0.080, ROSE),
+                           (0.62, 0.58, 0.062, BULB)):
+        yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+        py = WY + (H - WY) * cy
+        d2 = np.sqrt(((xx - W * cx) / (W * r)) ** 2 + ((yy - py) / (W * r * 0.34)) ** 2)
+        img *= (1 - ((d2 < 1.0).astype(np.float32) * 0.45)[..., None])
+        ring = np.clip(1 - np.abs(d2 - 1.0) / 0.30, 0, 1) ** 0.8
+        _add(img, ring, col, 0.50)
+        _add(img, cv2.GaussianBlur(ring, (0, 0), W * r * 0.28), col, 0.40)
+
+    caustics(img, WY, W, H, amp=0.10)
+
+    # 위아래를 눌러 글자 자리를 만든다. 사진 판은 여기서 밤 톤이 정해진다
+    yv = np.arange(H, dtype=np.float32)[:, None, None] / H
+    img *= (1 - 0.55 * np.clip((0.30 - yv) / 0.30, 0, 1))
+    img *= (1 - 0.45 * np.clip((yv - 0.72) / 0.28, 0, 1))
     return np.clip(img, 0, 1)
