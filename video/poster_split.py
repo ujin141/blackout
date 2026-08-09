@@ -31,6 +31,7 @@
 python poster_split.py  →  out/poster/split_{feed,story}.png
 """
 import os
+import math
 import numpy as np
 import cv2
 from PIL import Image, ImageDraw, ImageFont
@@ -213,7 +214,7 @@ def paint_split(dst, m, x, y, off, a=1.0):
 _STRIP = {}
 
 
-def marquee(img, text, cy, bh, bg, fg, V, angle=None, phase=0.0):
+def marquee(img, text, cy, bh, bg, fg, V, angle=None, phase=0.0, repeats=None):
     """눕혀 까는 흐르는 띠. phase 를 주면 글자가 흘러간다 (poster_motion.py 용).
 
     띠를 매번 새로 조판하면 프레임마다 tmask 가 돌아 느려진다 —
@@ -221,14 +222,31 @@ def marquee(img, text, cy, bh, bg, fg, V, angle=None, phase=0.0):
     angle = ANGLE if angle is None else angle
     H, W = img.shape[:2]
     LW = int(W * 2.2)
-    key = (text, bh, V, bytes(bg), bytes(fg), LW)
+    # repeats 를 주면 **화면 폭에 반복이 정확히 n 번 들어가게** 글자 크기를 맞춘다.
+    # 안 맞추면 반복 주기와 화면 폭이 어긋나 단어 한가운데가 잘린 채 끝난다 —
+    # 마퀴는 잘려도 되지만 낱말 중간이 아니라 **낱말 사이**에서 잘려야 한다.
+    vis = W / math.cos(math.radians(abs(angle)))
+    gap0 = int(40 * V)
+    if repeats:
+        lo, hi = 6.0, 64.0
+        for _ in range(18):
+            mid = (lo + hi) / 2
+            if tmask(text, BRAND, int(mid), 0.36).shape[1] + gap0 > vis / repeats:
+                hi = mid
+            else:
+                lo = mid
+        size = int(lo)
+    else:
+        size = int(21 * V)
+
+    key = (text, bh, V, bytes(bg), bytes(fg), LW, size)
     if key not in _STRIP:
-        m = tmask(text, BRAND, int(21 * V), 0.36)
+        m = tmask(text, BRAND, size, 0.36)
         th, tw = m.shape
         bh = max(bh, th + int(22 * V))
         strip = np.zeros((bh, LW, 3), np.float32) + bg
         ty = (bh - th) // 2
-        x, gap = 0, int(40 * V)
+        x, gap = 0, gap0
         while x < LW:
             w = min(tw, LW - x)
             sub = (m[:, :w].astype(np.float32) / 255.0)[..., None]
@@ -236,6 +254,9 @@ def marquee(img, text, cy, bh, bg, fg, V, angle=None, phase=0.0):
             x += tw + gap
         _STRIP[key] = (strip, tw + gap)
     strip, period = _STRIP[key]
+    if repeats:
+        # 보이는 창의 왼쪽 끝이 반복 경계와 맞도록 위상을 민다
+        phase += -((LW / 2 - vis / 2) % period)
     if phase:
         strip = np.roll(strip, int(phase) % period, axis=1)
     bh = strip.shape[0]
@@ -311,7 +332,9 @@ def build(W, H, story=False):
 
     # ── 행사 이름 — 제일 큰 글자여야 한다. 형식(풀파티×솔로파티)은
     #    아래 타이틀과 경계 마퀴가 이미 말하고 있다. ──────────
-    nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, int(W - M * 1.25), 0.04), 0.04)
+    # 이름은 오른쪽 여백 안에서 끝난다. 여백을 넘겨 흘리면 잘린 것처럼 보인다 —
+    # 흘려도 되는 건 마퀴처럼 반복되는 것뿐이다.
+    nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, int(W - M * 2), 0.04), 0.04)
     ny = H * (0.168 if story else 0.175)
     glow(img, nm, M, ny, CYAN, 0.22, 30 * V)
     paint(img, nm, M, ny)
@@ -330,7 +353,7 @@ def build(W, H, story=False):
     # 위쪽에도 띠가 하나 더 있었는데 뺐다 — 물만 있던 빈 자리를 메우려던 것이고,
     # 행사 이름이 들어오면서 그 자리를 차지했다. 이름 위에 띠까지 얹으면
     # 이름이 장식에 묻힌다.
-    marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V)
+    marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V, repeats=2)
 
     # ── 한 줄 — 이 포스터에서 제일 중요한 문장 ─────────────
     if HOOK:
