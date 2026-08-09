@@ -272,71 +272,54 @@ def poolscene(W, H, story=False, wy=0.52, dj=0.74):
 
 # ── 사진으로 만드는 장면 ───────────────────────────────────
 def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5):
-    """**사진 두 장으로 만든 장면.**
+    """**사진 한 장.** 밤 수영장 수면 위에 파티 조명이 떨어진 그림입니다.
 
-    그린 사람은 아무리 다듬어도 자연스럽지 않습니다 — 선으로 그린 실루엣은
-    도표로 읽히고, 그 위에 네온을 얹으면 둘이 따로 놉니다.
-    자연스러움은 **실제 사진의 결**에서 옵니다. 헤이즈의 얼룩, 물결의 불규칙,
-    조명의 번짐은 코드로 흉내 낼수록 가짜 티가 납니다.
+    처음엔 클럽 사진과 수영장 사진을 물가에서 이어 붙였는데, 서로 다른 장소라
+    **한 장면이 아니라 콜라주**로 보였습니다. 위는 실내 천장, 아래는 야외 물이라
+    아무리 톤을 맞춰도 두 장을 테이프로 붙인 티가 납니다.
 
-        위  클럽 사진의 위 34% — 헤이즈 · 조명 · 디스코볼. 얼굴은 안 들어간다
-        아래 수영장 사진 — 진짜 물결과 반사
+    **장소가 하나여야 장면입니다.** 수영장 사진 한 장을 물만 나오게 잘라
+    전면에 깔고, 파티는 **조명으로** 만듭니다 — 물 색이 아니라 조명 색이
+    파티를 만든다는 규칙은 여기서도 같습니다.
 
-    경계에 물가 선을 두고, **위를 아래에 비춥니다.** 비치지 않으면 두 장을
-    붙여 놓은 것이지 한 장면이 아닙니다.
-
-    두 사진 다 CC0 이고, 클럽 사진은 아래쪽에 얼굴이 다 나와서 `CLUB_SAFE`
-    크롭(위 34%)만 씁니다 — 이 값은 올리기만 할 것."""
-    from poster_kit import duotone, CLUB, CLUB_SAFE, POOL
+    `wy` 는 남겨 뒀지만 이제 이음새가 없어 안 씁니다(호출부를 안 고치려고 둡니다)."""
+    from poster_kit import duotone, POOL
     V = W / 1080.0
-    WY = int(H * wy)
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 
-    # **사진을 그대로 쓰면 낮이 된다.** 밝은 쪽을 반 이하로 내려야 밤이다 —
-    # 처음 값(클럽 0.86 · 물 0.74)으로는 평균 밝기가 0.387 이었다(기준 0.24).
-    top = duotone(CLUB, W, WY, np.float32([0.020, 0.010, 0.028]),
-                  np.float32([0.40 * warm, 0.14, 0.30]), contrast=1.34, keep=0.10,
-                  **CLUB_SAFE)
-    bot = duotone(POOL, W, H - WY, np.float32([0.008, 0.024, 0.040]),
-                  np.float32([0.15, 0.30, 0.37]), contrast=1.28, keep=0.09,
-                  focus=0.62, zoom=1.30)
-    img = np.empty((H, W, 3), np.float32)
-    img[:WY] = top
-    img[WY:] = bot
+    # **거의 물만.** 다이빙대가 크게 들어오면 사진이 주인공이 되어 앞의 글자가 진다.
+    # zoom 2.4 · focus 0.30 이 물이 제일 많이 나오는 자리다(왼쪽 아래에 판 모서리만).
+    img = duotone(POOL, W, H, np.float32([0.006, 0.020, 0.034]),
+                  np.float32([0.115, 0.235, 0.290]), contrast=1.34, keep=0.07,
+                  focus=0.20, zoom=2.4)
 
-    # 위를 아래에 비춘다 — **이게 없으면 두 장을 붙인 것이지 한 장면이 아니다**
-    d = min(WY, H - WY)
-    src = top[WY - d:][::-1].copy()
-    rows = np.arange(d, dtype=np.float32)
-    gx, gy = np.meshgrid(np.arange(W, dtype=np.float32), rows)
-    wob = (np.sin(rows * 0.09 + 0.4) * (10.0 * V) * (0.25 + rows / d))[:, None]
-    src = cv2.remap(src, (gx + wob).astype(np.float32), gy.astype(np.float32),
-                    cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-    src = cv2.GaussianBlur(src, (0, 0), 3.0)
-    k = (0.46 * (1 - rows / d) ** 1.1)[:, None, None]
-    img[WY:WY + d] = img[WY:WY + d] * (1 - k) + src * k
+    # 파티 조명이 물에 떨어진다. **한 색이면 수영장이고 두 색이 섞여야 파티다**
+    for cx, cy, rx, ry, col, a in ((0.92, 0.12, 0.52, 0.30, (1.00, 0.22, 0.62), 0.30),
+                                   (0.05, 0.80, 0.46, 0.28, (1.00, 0.55, 0.18), 0.16),
+                                   (0.46, 0.03, 0.70, 0.15, (0.55, 0.32, 1.00), 0.13)):
+        g = np.exp(-(((xx - W * cx) / (W * rx)) ** 2 + ((yy - H * cy) / (H * ry)) ** 2))
+        _add(img, g, np.float32(col) * warm, a)
 
-    # 물가 선 · 잔물결
-    for i in range(0, H - WY, max(3, int(H * 0.010))):
-        aa = 0.055 * (1 - i / (H - WY)) + 0.02
-        img[WY + i:WY + i + max(1, int(2 * V))] =             img[WY + i:WY + i + max(1, int(2 * V))] * (1 - aa) + np.float32([0.5, 0.85, 1.0]) * aa
-    img[WY:WY + max(2, int(3 * V))] = np.float32([0.60, 0.92, 1.00]) * 0.60
+    # 물에 뜬 튜브 — 물건이 있어야 파티다. 가장자리에만, 정보줄은 피한다
+    for cx, cy, r, col in ((0.10, 0.70, 0.100, AQUA), (0.93, 0.55, 0.072, ROSE),
+                           (0.70, 0.17, 0.052, BULB)):
+        d = np.sqrt(((xx - W * cx) / (W * r)) ** 2 + ((yy - H * cy) / (W * r * 0.36)) ** 2)
+        img *= (1 - ((d < 1.0).astype(np.float32) * 0.42)[..., None])
+        ring = np.clip(1 - np.abs(d - 1.0) / 0.30, 0, 1) ** 0.8
+        _add(img, ring, col, 0.48)
+        _add(img, cv2.GaussianBlur(ring, (0, 0), W * r * 0.26), col, 0.38)
 
-    # 물에 뜬 튜브 — 물건이 있어야 파티다. 가장자리에만
+    # 수면 반짝임
     rng = np.random.default_rng(seed)
-    for cx, cy, r, col in ((0.11, 0.66, 0.105, AQUA), (0.90, 0.80, 0.080, ROSE),
-                           (0.62, 0.58, 0.062, BULB)):
-        yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-        py = WY + (H - WY) * cy
-        d2 = np.sqrt(((xx - W * cx) / (W * r)) ** 2 + ((yy - py) / (W * r * 0.34)) ** 2)
-        img *= (1 - ((d2 < 1.0).astype(np.float32) * 0.45)[..., None])
-        ring = np.clip(1 - np.abs(d2 - 1.0) / 0.30, 0, 1) ** 0.8
-        _add(img, ring, col, 0.50)
-        _add(img, cv2.GaussianBlur(ring, (0, 0), W * r * 0.28), col, 0.40)
+    sp = np.zeros((H, W), np.float32)
+    for _ in range(70):
+        cv2.circle(sp, (int(rng.integers(0, W)), int(rng.integers(0, H))),
+                   int(rng.uniform(1, 3)), float(rng.uniform(0.5, 1.0)), -1, cv2.LINE_AA)
+    _add(img, cv2.GaussianBlur(sp, (0, 0), 1.3), np.float32([0.85, 0.98, 1.00]), 0.45)
 
-    caustics(img, WY, W, H, amp=0.10)
-
-    # 위아래를 눌러 글자 자리를 만든다. 사진 판은 여기서 밤 톤이 정해진다
-    yv = np.arange(H, dtype=np.float32)[:, None, None] / H
-    img *= (1 - 0.55 * np.clip((0.30 - yv) / 0.30, 0, 1))
-    img *= (1 - 0.45 * np.clip((yv - 0.72) / 0.28, 0, 1))
+    # 위아래를 눌러 글자 자리를 만든다 — 여기서 밤 톤이 정해진다
+    yv = yy / H
+    img *= (1 - 0.52 * np.clip((0.28 - yv) / 0.28, 0, 1))[..., None]
+    # 아래쪽에 다이빙대 모서리가 들어온다. 밝은 판이라 정보줄을 먹으므로 세게 누른다
+    img *= (1 - 0.62 * np.clip((yv - 0.66) / 0.34, 0, 1))[..., None]
     return np.clip(img, 0, 1)
