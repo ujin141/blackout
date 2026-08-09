@@ -187,13 +187,13 @@ def build(W, H, story=False):
 
     # ── 행사 이름 — 쌓은 타이포보다 위에, 제일 먼저 읽히게 ──
     nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, fx1 - fx0, 0.04), 0.04)
-    paint(img, nm, fx0, H * (0.140 if story else 0.148))
+    paint(img, nm, fx0, H * (0.132 if story else 0.140))
 
     # ── 쌓아 올린 타이포 ──────────────────────────────────
     # 큰 낱말은 전폭 왼쪽, 작은 낱말은 60% 폭 오른쪽.
     # 전부 같은 폭으로 맞추면 네 줄이 다 커져서 세로가 넘치고,
     # 넘치지 않게 줄이면 오른쪽 여백이 남는다. 크기를 갈라 두 문제를 같이 푼다.
-    band0, band1 = H * 0.195, H * 0.560
+    band0, band1 = H * 0.222, H * 0.548
     colw = fx1 - fx0
     lead, divh = int(20 * U), int(104 * U)
     for _ in range(4):                                  # 칸에 맞을 때까지 폭을 줄인다
