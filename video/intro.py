@@ -1,5 +1,5 @@
 """
-행사 인트로 — AFTER SUNSET. 30fps · 16초.
+행사 인트로 — AFTER SUNSET. 30fps · 20초.
 
     stage  1920×1080  **행사장 스크린·프로젝터용.** 이게 기본이다
     story  1080×1920  인스타 스토리·릴스용
@@ -19,8 +19,9 @@
     11.0      판이 걸린다 — AFTER SUNSET. 기계 음성이 이름을 부른다
     11.0–14.8 이름만 두고, 기계가 화면의 글자를 읽는다
     14.8–16.75 다시 올린다. 3 · 2 · 1 카운트다운
+    16.46–16.75 소리도 화면도 통째로 비운다. **정적이 한 방의 크기를 만든다**
     16.75     마지막 한 방. **여기서 디제이가 건다**
-    16.75–18  잔향만 남기고 끊는다
+    16.75–20  고동이 울리는 동안 이름만 남기고 나머지를 걷는다
 
 **끝은 페이드가 아니라 한 방입니다.** 페이드로 끝나면 디제이가 언제 걸어야 할지
 모릅니다. 카운트다운 뒤 한 방이면 그 프레임에 정확히 걸 수 있습니다.
@@ -50,7 +51,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'intro')
 os.makedirs(OUT, exist_ok=True)
 
-FPS, DUR = 30, 18.0
+FPS, DUR = 30, 20.0
 CUTS = {'stage': (1920, 1080), 'story': (1080, 1920)}
 W, H = 1920, 1080                      # render() 가 매번 갈아 끼운다
 M = int(W * 0.062)
@@ -63,6 +64,7 @@ AMBER = np.array([1.00, 0.74, 0.22], np.float32)
 # 소리의 마디. audio_intro.py 와 같은 값이어야 그림이 소리에 붙는다
 T_POWER, T_HIT, T_RUN, T_CHARGE, T_LOCK = 1.2, 4.3, 4.8, 8.6, 11.0
 T_BUILD, T_GO = 14.8, 16.75        # 다시 올리는 구간과 마지막 한 방
+T_SETTLE = 17.5                    # 한 방 뒤 — 이름만 남기고 나머지를 지운다
 
 
 def analyze(path, nf):
@@ -177,6 +179,10 @@ def frame(t, i, A, rng):
 
     # ── 전원이 들어온 뒤 공통 바닥 ─────────────────────────
     on = np.clip((t - T_POWER) / 1.4, 0, 1)
+    # 한 방 뒤에는 격자·머리글·형식 줄을 걷어 낸다. **이름 하나만 남기는 게 목적이다** —
+    # 고동이 3초 넘게 울리는 동안 화면에 다른 글자가 남아 있으면 시선이 나뉜다.
+    st = np.clip((t - T_SETTLE) / 1.7, 0, 1) ** 0.8
+    on *= 1 - st
     grid(img, 0.028 * on)
     scanlines(img, t, 0.020 + 0.10 * hhit)
 
@@ -223,11 +229,11 @@ def frame(t, i, A, rng):
         # 가로판은 폭이 넉넉해서 이름을 꽉 채우면 오히려 싸 보인다. 62% 까지만.
         nw = int((W - M * 2) * (0.62 if W > H else 1.0))
         nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, nw, 0.06), 0.06)
-        ny = H * (0.30 if W > H else 0.40)
+        ny = H * (0.36 if W > H else 0.40)
         paint(img, nm, M, ny, color=WHITE, a=k)
-        rule(img, ny + 62 * S, M, M + (W - M * 2) * k, AMBER, 0.75, int(3 * S))
+        rule(img, ny + 62 * S, M, M + (W - M * 2) * k, AMBER, 0.75 * (1 - st), int(3 * S))
         paint(img, tmask(EV.FORMAT, BRAND, int(30 * S), 0.10), M, ny + 108 * S,
-              color=AMBER, a=k * 0.95)
+              color=AMBER, a=k * 0.95 * (1 - st))
 
         # 여기서 끝이다. 날짜·주소를 붙이면 인트로가 아니라 포스터가 된다.
         # 이름이 걸린 뒤에는 화면을 비워 두는 게 이름을 더 오래 남긴다.
@@ -235,7 +241,10 @@ def frame(t, i, A, rng):
 
         # ── 14.8–16.75 다시 올린다 ────────────────────────
         if t >= T_BUILD:
-            rz = np.clip((t - T_BUILD) / (T_GO - T_BUILD), 0, 1)
+            # 차오른 호박빛은 **한 방과 함께 빠져야 한다.** 안 빼면 그대로 남아
+            # 검정이 갈색이 되고, 밤 행사 화면이 흙빛으로 보인다.
+            rz = (np.clip((t - T_BUILD) / (T_GO - T_BUILD), 0, 1)
+                  * (1 - np.clip((t - T_GO) / 0.8, 0, 1)))
             img += (rz ** 3) * 0.26 * AMBER
             # 3 · 2 · 1 — 크게 떴다가 줄어들며 사라진다. 디제이가 볼 시계다
             for num, t0 in (('3', 15.35), ('2', 15.90), ('1', 16.42)):
@@ -246,6 +255,12 @@ def frame(t, i, A, rng):
                     paint(img, tmask(num, BRAND, sz), W / 2, H * (0.68 if W > H else 0.68),
                           color=WHITE, a=(1 - q) ** 0.55, anchor='c')
 
+        # ── 16.46–16.75 소리가 통째로 비는 구간 ───────────
+        # 화면도 같이 끈다. **정적과 암전이 겹쳐야 다음 한 방이 두 배로 크다** —
+        # 소리만 비우고 화면을 켜 두면 그냥 음이 끊긴 것처럼 들린다.
+        if T_GO - 0.29 <= t < T_GO:
+            img *= max(0.0, 1.0 - (t - (T_GO - 0.29)) / 0.09)
+
         # ── 16.75 마지막 한 방 ────────────────────────────
         if t >= T_GO:
             g = np.clip((t - T_GO) / 0.32, 0, 1)
@@ -255,8 +270,8 @@ def frame(t, i, A, rng):
         img = slices(img, hhit if t < T_LOCK else hhit * 0.5, rng)
     img += rng.standard_normal((H, W, 1)).astype(np.float32) * 0.010
     tail = DUR - t
-    if tail < 0.30:                       # 짧게 끊는다. 길게 끌면 시작 자리가 흐려진다
-        img *= max(0.0, tail / 0.30)
+    if tail < 0.55:                       # 고동 꼬리와 같이 걷힌다
+        img *= max(0.0, tail / 0.55)
     return np.clip(img, 0, 1)
 
 
