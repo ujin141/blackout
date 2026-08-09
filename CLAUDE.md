@@ -103,6 +103,11 @@ python poster_heat.py                         # R안 열화상 · 자홍→주�
 python poster_shred.py                        # S안 찢겨 어긋난 판 · 독성 마젠타
 python poster_splash.py                       # T안 물튀김 정지 · 전기 시안
 python poster_scream.py                       # U안 판을 넘치는 글자 · 형광 오렌지
+python poster_venn.py                         # V안 삼중 벤 — 풀×솔로×일렉
+python poster_prism.py                        # W안 세 빛이 한 점으로
+python poster_misreg.py                       # X안 삼색 판 어긋남(인쇄)
+python poster_mixer.py                        # Y안 믹서 3채널 다 열림
+python poster_orbit.py                        # Z안 세 궤도가 한 점에서 교차
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
