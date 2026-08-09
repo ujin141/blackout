@@ -147,6 +147,22 @@ def shutter(img, k):
         rule(img, H - h, 0, W, AMBER, 0.8, 3)
 
 
+def converge(img, p, k):
+    """양쪽에서 다가오는 두 줄. **초반 집중은 여기서 만든다.**
+
+    줄은 일정한 속도로 오는데 딸깍은 남은 거리의 0.62 배마다 나므로
+    자연히 점점 빨라진다 — 사람은 언제 만나는지 세기 시작한다.
+    소리(`audio_intro.py` 의 가속 박)와 같은 식에서 나온 값이라 저절로 맞는다."""
+    x0, x1 = int(W / 2 - p * W * 0.44), int(W / 2 + p * W * 0.44)
+    y0, y1 = int(H * 0.44), int(H * 0.56)
+    a = 0.30 + 0.55 * (1 - p) + 0.45 * k
+    w = max(2, int(3 * S))
+    for x in (x0, x1):
+        box(img, x - w, y0, x + w, y1, AMBER, min(1.0, a))
+    # 가운데 만나는 자리를 미리 찍어 둔다. 목표가 보여야 기다려진다
+    box(img, W / 2 - 1, H * 0.487, W / 2 + 1, H * 0.513, WHITE, 0.30)
+
+
 def horizon(img, y, k):
     """해가 진 자리. **행사 이름이 AFTER SUNSET 이라 이 한 겹이 그림을 설명한다.**
 
@@ -210,6 +226,10 @@ def frame(t, i, A, rng):
     # ── 1.2–4.3 게이지가 찬다 ─────────────────────────────
     if t < T_LOCK:
         gauge(img, np.clip((t - T_POWER) / (T_CHARGE + 2.4 - T_POWER), 0, 1), 1.0)
+
+    # ── 2.4–4.3 두 줄이 다가온다. 딸깍이 빨라지는 구간 ─────
+    if T_HIT - 1.90 < t < T_HIT:
+        converge(img, np.clip((T_HIT - t) / 1.90, 0, 1), hhit)
 
     # ── 4.8–11.0 기계가 돈다 ──────────────────────────────
     if T_RUN - 0.4 < t < T_LOCK:
