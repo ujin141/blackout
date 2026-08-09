@@ -61,6 +61,13 @@
    **뺄 것을 정하는 게 이 판의 설계입니다.** 25mm 안에서 층이 늘어날수록
    전부 같은 크기가 되고, 같은 크기면 아무것도 안 읽힙니다.
 
+**4-1. 크기·자간·여백을 눈대중으로 고르지 않는다**
+   크기는 하나의 기준(18)과 비율(1.30)에서 뽑습니다 — 18 · 23 · 30 · 40 · 51.
+   서로 관계가 있는 숫자라야 넷이 한 판으로 읽힙니다.
+   자간은 **크기에 반비례**합니다. 작은 글자일수록 벌려야 읽히고, 큰 글자에
+   같은 자간을 주면 흩어집니다. 여백은 한 단위(16px)의 배수로만 씁니다 —
+   `U` 하나만 바꾸면 판 전체의 숨이 같이 바뀝니다.
+
 **5. 재단 여유(±1mm)를 먹고 들어간다**
    위아래 4mm(=48px, `SAFE`)는 비웁니다. 여기 글자를 걸면 잘려 나옵니다.
 
@@ -105,7 +112,27 @@ UNIT = PRINT // 2
 HAIR = 3                               # 최소 획 3px = 0.25mm. 더 얇으면 인쇄에서 사라진다
 
 # 두 줄의 베이스라인. 형식·시간을 빼면서 줄이 하나 줄었고, 그만큼 이름을 키웠다.
-BL1, BL2 = 150, 230
+# ── 타이포 체계 ───────────────────────────────────────────
+# 크기를 눈대중으로 고르면 넷이 서로 아무 관계가 없어 보인다.
+# **하나의 기준(BASE)과 비율(RATIO)에서 전부 뽑는다.**
+BASE, RATIO = 18, 1.30
+
+
+def step(n):
+    return int(round(BASE * RATIO ** n))          # 18 · 23 · 30 · 40 · 51
+
+
+def track(size):
+    """자간은 크기에 **반비례**한다.
+
+    작은 글자일수록 더 벌려야 읽히고, 큰 글자에 같은 자간을 주면 흩어져 보인다.
+    처음엔 이게 거꾸로 들어가 있었다 — 제일 작은 협업 브랜드 줄의 자간이
+    제일 좁았고, 그래서 25mm 에서 뭉쳐 보였다."""
+    return round(0.34 - size * 0.0040, 3)         # 18→0.268 · 30→0.220 · 51→0.136
+
+
+U = 16                                            # 여백 한 단위. 이것만 바꾸면 판 전체 숨이 같이 바뀐다
+BL1, BL2 = 150, 150 + U * 5
 
 # 세 등급은 **색상환에서 멀리 떨어뜨린다.** 남색·청록처럼 이웃한 색으로 나누면
 # 조명 아래에서 둘이 같아 보인다. 파랑(220°) · 분홍(335°) · 호박(42°) 로 벌렸다.
@@ -141,18 +168,19 @@ def tier_chip(u, word, n, bg, fg):
 
     색을 못 믿는 상황(밤·조명·색약)을 위해 **세는 막대**를 같이 넣습니다.
     막대 수가 곧 출입 등급이라 문에서 세기만 하면 됩니다."""
-    wm = tmask_bl(word, BRAND, 30, 0.22)
-    bw, gap = 10, 10
+    ws = step(2)
+    wm = tmask_bl(word, BRAND, ws, track(ws))
+    bw = gap = U - 6
     bars_w = n * bw + (n - 1) * gap
-    pad = 32
-    cw = pad + bars_w + 26 + wm[0].shape[1] + pad
-    x1 = UNIT - 86
+    pad = U * 2
+    cw = pad + bars_w + int(U * 1.5) + wm[0].shape[1] + pad
+    x1 = UNIT - U * 5
     x0 = x1 - cw
-    y0, y1 = BL1 - 52, BL1 + 30
+    y0, y1 = BL1 - U * 3.25, BL1 + U * 1.875
     box(u, x0, y0, x1, y1, fg)                       # 칩은 글자색으로 채운다(반전)
     bx = x0 + pad
     for i in range(n):
-        box(u, bx + i * (bw + gap), y0 + 16, bx + i * (bw + gap) + bw, y1 - 16, bg)
+        box(u, bx + i * (bw + gap), y0 + U, bx + i * (bw + gap) + bw, y1 - U, bg)
     # 칩 안에서도 글자는 광학 중심에 — 상자 정가운데로 두면 아래로 처져 보인다
     paint_bl(u, wm, x1 - pad, (y0 + y1) / 2 + wm[0].shape[0] * 0.5, color=bg, anchor='r')
     return x0
@@ -163,9 +191,9 @@ def tier_marks(u, n, fg, x, cy):
 
     막대 자리는 **등급과 상관없이 폭을 고정**한다(4개 기준). 개수에 따라 폭이
     달라지면 밴드마다 로고 위치가 어긋나 네 종이 다른 판처럼 보인다."""
-    bw, gap = 10, 10
+    bw = gap = U - 6
     for i in range(n):
-        box(u, x + i * (bw + gap), cy - 26, x + i * (bw + gap) + bw, cy + 26, fg, 0.85)
+        box(u, x + i * (bw + gap), cy - U * 1.6, x + i * (bw + gap) + bw, cy + U * 1.6, fg, 0.85)
     return x + 4 * bw + 3 * gap                      # 항상 4개분을 비워 둔다
 
 
@@ -173,12 +201,12 @@ def draw_unit(u, bg, fg, word, n):
     u[:] = bg
 
     # ── 윗줄 · 정체, 오른쪽 끝에 등급 ─────────────────────
-    x = 96
-    x = tier_marks(u, n, fg, x, BL1 - 14) + 34
-    lg = logo(94)
+    x = U * 6
+    x = tier_marks(u, n, fg, x, BL1 - U) + U * 2
+    lg = logo(U * 6)
     # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다. 조금 올린다.
-    paint(u, lg, x, BL1 - 18, color=fg, a=0.95)
-    x += lg.shape[1] + 48
+    paint(u, lg, x, BL1 - U, color=fg, a=0.95)
+    x += lg.shape[1] + U * 3
 
     # 등급 낱말 길이가 달라(GUEST · VIP · VVIP · STAFF) 칩 폭이 등급마다 다르다.
     # 이름을 고정 크기로 두면 칩이 넓은 등급에서 겹친다 —
@@ -186,15 +214,15 @@ def draw_unit(u, bg, fg, word, n):
     chip_x = tier_chip(u, word, n, bg, fg)
 
     # 자간을 넓게 준다. 브랜드 톤이 '여백 넓게'라 밴드에서도 글자를 붙이지 않는다.
-    ns = min(50, fit(EV.NAME, BRAND, chip_x - 128 - x, 0.16))
-    name = tmask_bl(EV.NAME, BRAND, ns, 0.16)
+    ns = min(step(4), fit(EV.NAME, BRAND, chip_x - U * 8 - x, track(step(4))))
+    name = tmask_bl(EV.NAME, BRAND, ns, track(ns))
     paint_bl(u, name, x, BL1, color=fg)
 
     # ── 아랫줄 · 협업 브랜드. 제일 작게 ────────────────────
     # 넣어야 하는 정보지만 이름보다 커지면 밴드가 협찬 스티커가 된다.
-    pw = UNIT - 86 - x
-    ps = min(18, fit(EV.PARTNERS_STR, BRAND, pw, 0.08))
-    paint_bl(u, tmask_bl(EV.PARTNERS_STR, BRAND, ps, 0.08), x, BL2, color=fg, a=0.55)
+    pw = UNIT - U * 5 - x
+    ps = min(step(0), fit(EV.PARTNERS_STR, BRAND, pw, track(step(0))))
+    paint_bl(u, tmask_bl(EV.PARTNERS_STR, BRAND, ps, track(ps)), x, BL2, color=fg, a=0.55)
 
 
 def build(word, n, bg, fg):
