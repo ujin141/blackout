@@ -1,22 +1,23 @@
 """
-입장 밴드(밴딩) 인쇄용 원고 — GUEST · ARTIST · STAFF 3종.
+입장 밴드(밴딩) 인쇄용 원고 — GUEST · VIP · VVIP · STAFF 4종.
 
     크기   3000 × 300 px = 254 × 25 mm @300dpi (타이벡 밴드 표준)
-    출력   out/band/band_{guest,artist,staff}.png
+    출력   out/band/band_{guest,vip,vvip,staff}.png
 
 밴드는 포스터가 아닙니다. 25mm 짜리 띠에서 지켜야 하는 게 따로 있습니다.
 
 **1. 등급을 색으로만 나누면 안 된다**
    행사는 밤이고, 클럽 조명 아래에서 색은 뒤집힙니다 — 붉은 조명에서 호박색은
    흰색으로 보입니다. 색약(남성 약 5%)도 있습니다.
-   그래서 **세는 막대**를 넣었습니다. GUEST 1개 · ARTIST 2개 · STAFF 3개.
-   색을 못 믿는 상황에서도 개수는 셀 수 있습니다.
+   그래서 **세는 막대**를 넣었습니다. 막대 수가 곧 출입 등급입니다 —
+   GUEST 1 · VIP 2 · VVIP 3 · STAFF 4. 색을 못 믿어도 개수는 셀 수 있습니다.
+   등급 표기는 영문으로 통일합니다. '일반'·'직원'을 섞으면 밴드가 안내문이 됩니다.
 
 **2. 색상도 밝기도 둘 다 갈라 놓는다**
-   색상환에서 이웃한 색(남색·청록)으로 나누면 조명 아래에서 둘이 같아 보입니다.
-   파랑(220°) · 분홍(335°) · 호박(42°) 으로 벌렸습니다.
-   밝기도 세 단 — 어두움(GUEST) → 중간(ARTIST) → 밝음(STAFF).
-   흑백으로 인쇄되거나 어두운 데서 봐도 구분됩니다.
+   색상환에서 이웃한 색으로 나누면 조명 아래에서 둘이 같아 보입니다.
+   파랑(220°) · 분홍(335°) · 호박(42°) 로 벌리고, STAFF 만 **무채색(흰 바탕)** 입니다 —
+   손님 등급 셋과 한눈에 갈려야 하기 때문입니다.
+   밝기도 네 단으로 계단을 만듭니다. 흑백으로 봐도 구분됩니다.
 
 **2-1. 위아래 가로선은 뺐다**
    장식 괘선이었는데 가장자리와 나란해서 재단선으로 오해를 샀습니다.
@@ -27,10 +28,13 @@
    손목에 감기니까 같은 덩어리를 두 번 반복합니다. 접착 탭이 한쪽 반복을
    덮어도 나머지 하나가 통째로 남습니다 — 반복하는 이유가 이것입니다.
 
-**4. 위계는 넷, 그 이상은 안 된다**
-   이름(AFTER SUNSET) → 형식(풀파티×솔로파티) → 날짜·시간 → 협업 브랜드.
-   협업 브랜드는 **제일 작게** 둡니다. 넣어야 하는 정보지만 이름보다 커지면
-   밴드가 협찬 스티커가 됩니다. 여기에 장소·가격·핸들까지 더하면 25mm 안에서
+**4. 밴드에 없어도 되는 건 전부 뺀다**
+   남긴 것 — 이름(AFTER SUNSET) · 날짜 · 등급 · 협업 브랜드.
+   뺀 것과 이유:
+       형식(풀파티×솔로파티)   이름이 이미 그 행사를 가리킨다. 중복이다.
+       시간(19:00–24:00)      밴드를 찬 사람은 이미 들어와 있다. 필요 없다.
+       장소·주소              마찬가지. 도착한 사람에게 주소는 정보가 아니다.
+   **뺄 것을 정하는 게 이 판의 설계입니다.** 25mm 안에서 층이 늘어날수록
    전부 같은 크기가 되고, 같은 크기면 아무것도 안 읽힙니다.
 
 **5. 재단 여유(±1mm)를 먹고 들어간다**
@@ -53,7 +57,7 @@
     · 가장 가는 선이 3px(=0.25mm)입니다. 이보다 얇게 고치지 마세요 — 인쇄에서 사라집니다.
     · 일련번호가 필요하면 인쇄소 넘버링 옵션으로. 여기서 그리면 전부 같은 번호입니다.
 
-python band.py  →  out/band/band_{guest,artist,staff}.png
+python band.py  →  out/band/band_{guest,vip,vvip,staff}.png
 """
 import os
 import numpy as np
@@ -73,28 +77,28 @@ PRINT = W - TAB
 UNIT = PRINT // 2
 HAIR = 3                               # 최소 획 3px = 0.25mm. 더 얇으면 인쇄에서 사라진다
 
-# 세 줄의 베이스라인. 좌우 블록이 공유한다.
-# 가로 괘선을 빼면서 생긴 자리에 협업 브랜드 줄이 들어갔다.
-BL1, BL2, BL3 = 126, 180, 234
+# 두 줄의 베이스라인. 형식·시간을 빼면서 줄이 하나 줄었고, 그만큼 이름을 키웠다.
+BL1, BL2 = 150, 230
 
 # 세 등급은 **색상환에서 멀리 떨어뜨린다.** 남색·청록처럼 이웃한 색으로 나누면
 # 조명 아래에서 둘이 같아 보인다. 파랑(220°) · 분홍(335°) · 호박(42°) 로 벌렸다.
 NAVY  = np.array([0.03, 0.05, 0.16], np.float32)
 PINK  = np.array([0.93, 0.20, 0.50], np.float32)
 AMBER = np.array([1.00, 0.72, 0.18], np.float32)
+PAPER = np.array([0.97, 0.97, 0.95], np.float32)
 INK   = np.array([0.06, 0.03, 0.10], np.float32)
 WHITE = np.array([1.00, 1.00, 1.00], np.float32)
 
 DATE_SHORT = '08.29 SAT'               # 밴드에서 '8월 29일 토요일'은 자리를 너무 먹는다
-# 붙임표 규칙: **숫자 구간은 붙인 en dash(–), 글로 쓴 시간은 띄운 em dash(—)**.
-# 포스터 타임테이블도 같은 규칙이라 밴드만 다르면 눈에 걸린다.
-TIME_SHORT = '19:00–24:00'
 
-# (등급, 세는 막대 수, 배경, 글자, 강조)  — 배경 밝기를 세 단으로 벌린다
+# (등급, 막대 수, 배경, 글자)
+# 막대 수 = 출입 등급. 색은 색상환에서 벌리고, 밝기는 네 단으로 계단을 만든다.
+# STAFF 만 무채색(흰 바탕)이다 — 손님 등급과 한눈에 갈려야 한다.
 TIERS = [
-    ('GUEST',  1, NAVY,  WHITE, AMBER),
-    ('ARTIST', 2, PINK,  INK,   WHITE),
-    ('STAFF',  3, AMBER, INK,   INK),
+    ('GUEST', 1, NAVY,  WHITE),
+    ('VIP',   2, PINK,  INK),
+    ('VVIP',  3, AMBER, INK),
+    ('STAFF', 4, PAPER, INK),
 ]
 
 
@@ -107,7 +111,7 @@ def tier_chip(u, word, n, bg, fg):
     cw = pad + bars_w + 22 + wm[0].shape[1] + pad
     x1 = UNIT - 70
     x0 = x1 - cw
-    y0, y1 = BL1 - 42, BL2 + 16
+    y0, y1 = BL1 - 48, BL1 + 22
     box(u, x0, y0, x1, y1, fg)                       # 칩은 글자색으로 채운다(반전)
     bx = x0 + pad
     for i in range(n):
@@ -116,52 +120,45 @@ def tier_chip(u, word, n, bg, fg):
     return x0
 
 
-def draw_unit(u, bg, fg, accent, word, n):
+def draw_unit(u, bg, fg, word, n):
     u[:] = bg
 
-    # ── 왼쪽 · 정체 ───────────────────────────────────────
+    # ── 윗줄 · 정체와 날짜, 오른쪽 끝에 등급 ───────────────
     x = 80
-    lg = logo(82)
-    # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다. 2px 올린다.
-    paint(u, lg, x, (BL1 + BL2) / 2 - 22, color=fg, a=0.95)
-    x += lg.shape[1] + 46
+    lg = logo(96)
+    # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다. 조금 올린다.
+    paint(u, lg, x, BL1 - 18, color=fg, a=0.95)
+    x += lg.shape[1] + 48
 
-    # STAFF 는 강조색이 글자색과 같다(밝은 바탕이라 쓸 색이 없다).
-    # 그대로 두면 둘째 줄이 첫째 줄과 같은 무게로 읽히므로 알파로 단을 만든다.
-    aa = 0.68 if np.allclose(accent, fg) else 0.95
-
-    name = tmask_bl(EV.NAME, BRAND, 42, 0.10)
-    paint_bl(u, name, x, BL1, color=fg)
-    fmt = tmask_bl(EV.FORMAT, BRAND, 19, 0.14)
-    paint_bl(u, fmt, x, BL2, color=accent, a=aa)
-    left_end = x + max(name[0].shape[1], fmt[0].shape[1])
-
-    # ── 협업 브랜드 — 제일 작게, 전폭 한 줄 ────────────────
-    # 넣어야 하지만 이름·날짜보다 커지면 안 된다. 폭에 맞춰 자동으로 줄인다.
-    pw = UNIT - 70 - x
-    # 형식 줄(19)보다 작아야 한다. 폭이 남는다고 키우면 위계가 뒤집힌다.
-    ps = min(17, fit(EV.PARTNERS_STR, BRAND, pw, 0.05))
-    paint_bl(u, tmask_bl(EV.PARTNERS_STR, BRAND, ps, 0.05), x, BL3, color=fg, a=0.62)
-
-    # ── 오른쪽 끝 · 등급 ──────────────────────────────────
+    # 등급 낱말 길이가 달라(GUEST · VIP · VVIP · STAFF) 칩 폭이 등급마다 다르다.
+    # 이름 크기를 고정하면 칩이 넓은 등급에서 이름이 날짜를 밀고 들어간다 —
+    # 실제로 STAFF·VVIP 에서 겹쳤다. **오른쪽부터 자리를 잡고 이름을 역산한다.**
     chip_x = tier_chip(u, word, n, bg, fg)
 
-    # ── 가운데 오른쪽 · 날짜·시간 ─────────────────────────
-    rx = chip_x - 44
-    d1 = tmask_bl(DATE_SHORT, BRAND, 27, 0.14)
-    d2 = tmask_bl(TIME_SHORT, BRAND, 19, 0.18)
+    rx = chip_x - 46
+    d1 = tmask_bl(DATE_SHORT, BRAND, 32, 0.14)
     paint_bl(u, d1, rx, BL1, color=fg, anchor='r')
-    paint_bl(u, d2, rx, BL2, color=accent, a=aa, anchor='r')
-    right_start = rx - max(d1[0].shape[1], d2[0].shape[1])
+    right_start = rx - d1[0].shape[1]
+
+    ns = min(52, fit(EV.NAME, BRAND, right_start - 64 - x, 0.10))
+    name = tmask_bl(EV.NAME, BRAND, ns, 0.10)
+    paint_bl(u, name, x, BL1, color=fg)
+    left_end = x + name[0].shape[1]
 
     # 가르는 선 — 남는 폭 한가운데. 고정 좌표로 박으면 한쪽에 붙는다.
-    vrule(u, (left_end + right_start) / 2, BL1 - 36, BL2 + 12, fg, 0.35, HAIR)
+    vrule(u, (left_end + right_start) / 2, BL1 - 42, BL1 + 16, fg, 0.32, HAIR)
+
+    # ── 아랫줄 · 협업 브랜드. 제일 작게 ────────────────────
+    # 넣어야 하는 정보지만 이름보다 커지면 밴드가 협찬 스티커가 된다.
+    pw = UNIT - 70 - x
+    ps = min(18, fit(EV.PARTNERS_STR, BRAND, pw, 0.05))
+    paint_bl(u, tmask_bl(EV.PARTNERS_STR, BRAND, ps, 0.05), x, BL2, color=fg, a=0.60)
 
 
-def build(word, n, bg, fg, accent):
+def build(word, n, bg, fg):
     img = np.zeros((H, W, 3), np.float32)
     u = np.zeros((H, UNIT, 3), np.float32)
-    draw_unit(u, bg, fg, accent, word, n)
+    draw_unit(u, bg, fg, word, n)
     img[:, :UNIT] = u
     img[:, UNIT:UNIT * 2] = u
     img[:, UNIT * 2:] = bg          # 나머지는 탭까지 바탕으로
@@ -179,5 +176,5 @@ def save(img, name):
 
 
 if __name__ == '__main__':
-    for word, n, bg, fg, accent in TIERS:
-        save(build(word, n, bg, fg, accent), f'band_{word.lower()}')
+    for word, n, bg, fg in TIERS:
+        save(build(word, n, bg, fg), f'band_{word.lower()}')
