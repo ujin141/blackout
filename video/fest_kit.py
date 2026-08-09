@@ -307,3 +307,56 @@ def rope(img, y, W, color, bead, gap, a=1.0, alt=None):
                    tuple(float(v) for v in c), -1, cv2.LINE_AA)
         x += bead * 2 + gap
         i += 1
+
+
+def poolbg(W, H, deep=(0.006, 0.024, 0.046), shallow=(0.030, 0.090, 0.130),
+           amp=0.46, tiles=True, seed=4, glow=0.5, horizon=0.10):
+    """밤 수영장 배경.
+
+    **코스틱만으로는 '어두운 물'이지 수영장이 아닙니다.**
+    바다와 수영장을 가르는 건 물이 아니라 **바닥**입니다 —
+    타일 격자가 물결에 일렁이며 보여야 그제야 수영장으로 읽힙니다.
+
+    격자는 픽셀로 찍지 말고 **선으로 그립니다.** 픽셀로 찍었더니 세로줄이
+    한 픽셀씩 흩어져 거의 안 보였습니다. 그리고 **물에 잠긴 격자는 직선이면
+    안 됩니다** — 사인으로 밀어 줘야 물 밑에 있는 것으로 보입니다."""
+    img = sky(W, H, [(0.0, deep), (0.55, deep), (1.0, shallow)])
+    H_, W_ = H, W
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+
+    if tiles:
+        # **수영장 바닥은 정사각 타일이다.** 소실점으로 모으면 터널이나 분수가 되고,
+        # 곧은 격자를 물결로만 흔들어야 "물에 잠긴 타일" 로 읽힌다.
+        lay = np.zeros((H, W), np.float32)
+        th = max(1, int(W * 0.0026))
+        g = W * 0.105                                 # 타일 한 칸
+        x = g * 0.5
+        while x < W + g:
+            cv2.line(lay, (int(x), 0), (int(x), H), 1.0, th, cv2.LINE_AA)
+            x += g
+        y = H * horizon
+        while y < H + g:
+            cv2.line(lay, (0, int(y)), (W, int(y)), 1.0, th, cv2.LINE_AA)
+            y += g * (1.0 + 0.10 * (y / H))           # 아래로 갈수록 아주 살짝 벌어진다
+        # 물결에 일렁이게 민다. 두 방향 다 밀어야 잠긴 것으로 보인다
+        dx = (np.sin(yy * 0.026 + np.sin(xx * 0.009) * 2.2) * (W * 0.018)).astype(np.float32)
+        dy = (np.sin(xx * 0.021 + np.sin(yy * 0.011) * 1.9) * (W * 0.010)).astype(np.float32)
+        lay = cv2.remap(lay, (xx + dx).astype(np.float32), (yy + dy).astype(np.float32),
+                        cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+        lay = cv2.GaussianBlur(lay, (0, 0), 1.1)
+        depth = np.clip((yy / H - horizon) / (1 - horizon), 0, 1) ** 0.7
+        add(img, lay * depth, 0, 0, np.float32([0.40, 0.80, 1.00]), 0.42)
+
+    # 물빛 그물 — 잘게. 성기면 등고선이 되고 촘촘해야 물이다
+    yq, xq = np.mgrid[0:H // 2, 0:W // 2].astype(np.float32)
+    x, y = xq * 0.052, yq * 0.052
+    f = (np.sin(x * 1.7 + 1.8 * np.sin(y * 0.55)) +
+         np.sin(y * 1.35 + 1.5 * np.sin(x * 0.48)) +
+         0.9 * np.sin((x + y) * 1.05))
+    k = np.clip(1 - np.abs(np.sin(f * 2.1)) * 8.0, 0, 1) ** 1.1
+    k = cv2.resize(cv2.GaussianBlur(k, (0, 0), 0.9), (W, H), interpolation=cv2.INTER_LINEAR)
+    lit = np.clip((yy / H - 0.10) / 0.90, 0, 1) ** 0.6     # 아래로 갈수록 밝다
+    add(img, k * lit, 0, 0, np.float32([0.60, 0.95, 1.00]), amp)
+    add(img, cv2.GaussianBlur(k * lit, (0, 0), W * 0.022), 0, 0,
+        np.float32([0.30, 0.72, 0.98]), amp * glow)
+    return img

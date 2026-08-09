@@ -15,8 +15,8 @@ python poster_ripple.py  →  out/poster/ripple_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save
-from fest_kit import water, ripple, specks, vignette, justify, night
+from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save, info_block
+from fest_kit import poolbg, ripple, specks, vignette, justify, night
 from fonts import KR
 import event as EV
 
@@ -30,7 +30,7 @@ DIM     = np.float32([0.60, 0.74, 0.82])
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = water(W, H, DEEP, SHALLOW, amp=0.13)
+    img = poolbg(W, H, DEEP, SHALLOW, amp=0.34, glow=0.45)
 
     # 두 중심. 화면 안에 보여야 "둘"로 읽힌다
     CYm = H * (0.470 if story else 0.480)
@@ -74,25 +74,23 @@ def build(W, H, story=False):
           ty - 52 * V, color=DIM, a=0.75, anchor='c')
 
     # 라인업 — 아래쪽. 물결이 잦아든 자리
-    ly = H * (0.725 if story else 0.710)
+    # 라인업도 발치에서 역산한다
+    fy = H - 352 * V
+    ly = fy - 110 * V
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD * 0.94, 0.14)), 0.14),
           W / 2, ly, color=PAPER, a=0.92, anchor='c')
     prog = '  ·  '.join(sorted(EV.PROGRAM))
     paint(img, tmask(prog, BRAND, int(20 * V), 0.30), W / 2, ly + 46 * V,
           color=WARM, a=0.90, anchor='c')
 
-    fy = H * (0.845 if story else 0.832)
     rule(img, fy, M, W - M, PAPER, 0.18, max(1, int(2 * V)))
-    paint(img, tmask(EV.DATE, KR, int(32 * V), 0.02), W / 2, fy + 44 * V,
-          color=PAPER, anchor='c')
-    paint(img, tmask(f'{EV.TIME}   ·   {EV.VENUE}', KR, int(20 * V), 0.02),
-          W / 2, fy + 84 * V, color=DIM, a=0.95, anchor='c')
-    paint(img, tmask(EV.ADDR, KR, int(16 * V), 0.02), W / 2, fy + 114 * V,
-          color=DIM, a=0.70, anchor='c')
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), W / 2, H * 0.945,
-          color=DIM, a=0.55, anchor='c')
-    paint(img, tmask(EV.HANDLE, BRAND, int(14 * V), 0.26), W / 2, H * 0.972,
-          color=CYAN, a=0.80, anchor='c')
+    # 정보는 **event.INFO 형식 그대로**. 순서·표기를 판마다 바꾸지 않는다
+    yb = info_block(img, M, fy + 44 * V, CWD, V, CYAN, PAPER, head_color=PAPER)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
+          color=DIM, a=0.60)
+    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
+          color=CYAN, a=0.90)
+
 
     vignette(img, 0.44, 1.9)
     grain(img, 0.007, 14)

@@ -48,11 +48,8 @@ import event as EV
 from poster_kit import timetable, partner_strip, tmask_bl, paint_bl
 
 HOOK   = ''                                # 한 줄 카피. 비우면 아예 안 그린다
-ROWS   = [('DATE',    EV.DATE),
-          ('TIME',    EV.TIME),
-          ('VENUE',   EV.VENUE),
-          ('ADDRESS', EV.ADDR),
-          ('ENTRY',   EV.ENTRY)]
+# 표기는 **event.INFO 한 곳에서 온다.** 여기서 다시 적으면 판마다 형식이 갈린다.
+ROWS   = [(k or 'DATE', v) for k, v in EV.INFO]
 
 OUT = os.path.join(HERE, 'out', 'poster')
 os.makedirs(OUT, exist_ok=True)

@@ -15,8 +15,9 @@ python poster_stage.py  →  out/poster/stage_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import BRAND, SIZES, tmask, paint, rule, box, grain, save
+from poster_kit import BRAND, SIZES, tmask, paint, rule, box, grain, save, info_block
 from fest_kit import sky, beams, haze, crowd, specks, vignette, justify, night
+import cv2 as _cv
 from fonts import KR
 import event as EV
 
@@ -49,7 +50,7 @@ def build(W, H, story=False):
     img = sky(W, H, [(0.0, TOP), (0.55, TOP), (0.86, HORZ), (1.0, (0.03, 0.01, 0.03))])
 
     TY = H * (0.300 if story else 0.285)            # 트러스 높이
-    CY = H * (0.760 if story else 0.745)            # 관객 머리 높이
+    CY = H * (0.610 if story else 0.596)            # 관객 머리 높이
 
     haze(img, TY, CY, np.float32([0.35, 0.22, 0.55]), 0.30, seed=5)
     # 빔 두 벌 — 색이 하나면 조명이 아니라 안개다. 각도를 달리해 겹친다
@@ -73,6 +74,23 @@ def build(W, H, story=False):
     # 관객이 얇으면 바닥 무늬가 된다. 덩어리로 차야 사람이 모인 것으로 보인다
     crowd(img, CY, H * 0.30, np.float32([0.010, 0.008, 0.016]), seed=11)
 
+    # **무대 앞에 물을 깐다.** 클럽 무대만 그리면 어느 파티인지 안 보인다 —
+    # 관객 앞에 수면이 있으면 그 한 겹으로 풀파티가 된다.
+    WY = int(H * (0.865 if story else 0.858))
+    src = img[max(0, WY - int(H * 0.16)):WY][::-1].copy()
+    dh = min(src.shape[0], H - WY)
+    rows = np.arange(dh, dtype=np.float32)
+    gx, gy = np.meshgrid(np.arange(W, dtype=np.float32), rows)
+    wob = (np.sin(rows * 0.16) * (7.0 * V) * (0.3 + rows / max(dh, 1)))[:, None]
+    src = _cv.remap(src[:dh], (gx + wob).astype(np.float32), gy.astype(np.float32),
+                    _cv.INTER_LINEAR, borderMode=_cv.BORDER_REPLICATE)
+    k = (0.55 * (1 - rows / max(dh, 1)) ** 1.1)[:, None, None]
+    img[WY:WY + dh] = img[WY:WY + dh] * (1 - k) + _cv.GaussianBlur(src, (0, 0), 2.0) * k
+    for i in range(0, dh, max(3, int(H * 0.009))):        # 잔물결
+        rule(img, WY + i, 0, W, np.float32([0.45, 0.80, 0.95]),
+             0.06 * (1 - i / max(dh, 1)) + 0.02, max(1, int(2 * V)))
+    rule(img, WY, 0, W, np.float32([0.40, 0.85, 1.00]), 0.35, max(1, int(2 * V)))
+
     # ── 글자 ─────────────────────────────────────────────
     M = int(W * 0.085)
     CWD = W - M * 2
@@ -91,16 +109,15 @@ def build(W, H, story=False):
          max(1, int(2 * V)))
 
     # 날짜는 관객 위 어두운 자리에 — 실루엣이 배경을 죽여 놨다
-    dy = H * (0.880 if story else 0.872)
-    paint(img, tmask(EV.DATE, KR, int(38 * V), 0.02), W / 2, dy, color=PAPER, anchor='c')
-    paint(img, tmask(f'{EV.TIME}   ·   {EV.VENUE}', KR, int(21 * V), 0.02),
-          W / 2, dy + 44 * V, color=DIM, a=0.95, anchor='c')
-    paint(img, tmask(EV.ADDR, KR, int(16 * V), 0.02), W / 2, dy + 74 * V,
-          color=DIM, a=0.68, anchor='c')
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), W / 2, H * 0.958,
-          color=DIM, a=0.55, anchor='c')
-    paint(img, tmask(EV.HANDLE, BRAND, int(14 * V), 0.26), W / 2, H * 0.980,
-          color=np.float32([1.0, 0.55, 0.80]), a=0.75, anchor='c')
+    # **발치는 비율이 아니라 바닥에서 역산한다.** 0.79H 로 잡았더니 피드(1350)에서
+    # 정보 네 줄 + 협업 + 핸들이 캔버스를 넘어갔다. 블록 높이가 정해져 있으니
+    # 아래에서 빼는 게 맞다 — 두 사이즈에서 같은 자리에 앉는다.
+    dy = H - 308 * V
+    yb = info_block(img, M, dy, CWD, V, np.float32([1.0, 0.55, 0.80]), PAPER)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
+          color=DIM, a=0.60)
+    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
+          color=np.float32([1.0, 0.55, 0.80]), a=0.90)
 
     vignette(img, 0.40, 2.0)
     grain(img, 0.007, 10)

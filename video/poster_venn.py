@@ -15,8 +15,8 @@ python poster_venn.py  →  out/poster/venn_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save
-from fest_kit import vignette, justify, night
+from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save, info_block
+from fest_kit import poolbg, vignette, justify, night
 from fonts import KR
 import event as EV
 
@@ -42,11 +42,14 @@ def disc(H, W, cx, cy, R):
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = np.zeros((H, W, 3), np.float32) + INK
+    # **배경이 검정이면 어느 행사에나 붙는 판이다.** 밤 수영장을 깔면
+    # 도형이 무슨 얘기를 하든 일단 풀파티인 게 먼저 보인다.
+    img = poolbg(W, H, amp=0.30, glow=0.42)
 
     CX = W / 2
-    CY = H * (0.435 if story else 0.430)
-    R = W * 0.235
+    # 짧은 피드에서 고리 라벨이 아래 글자와 부딪힌다. 원을 줄이고 위로 올린다
+    CY = H * (0.400 if story else 0.360)
+    R = W * (0.235 if story else 0.196)
     d = R * 0.60                                   # 원 사이 거리
     t = R * 0.085                                  # 테두리 두께
 
@@ -78,34 +81,43 @@ def build(W, H, story=False):
     # ── 가운데 : 이름 ────────────────────────────────────
     M = int(W * 0.075)
     CWD = W - M * 2
-    ns = justify(EV.NAME, R * 1.30, 0.06, cap=int(74 * V))
+    ns = justify(EV.NAME, R * 1.24, 0.06, cap=int(74 * V))
     paint(img, tmask(EV.NAME, BRAND, ns, 0.06), CX, CY - 14 * V, color=INK, anchor='c')
-    paint(img, tmask(EV.DATE, KR, int(22 * V), 0.02), CX, CY + 28 * V, color=INK, anchor='c')
+    # 한 판 안에서 날짜 표기가 두 가지면 안 된다 — 발치와 같은 형식으로
+    paint(img, tmask(EV.DATE_EN, BRAND, int(19 * V), 0.14), CX, CY + 28 * V,
+          color=INK, anchor='c')
 
     # ── 머리 · 발 ────────────────────────────────────────
     ty = H * (0.070 if story else 0.062)
     paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, int(17 * V), 0.42), W / 2, ty,
           color=DIM, a=0.85, anchor='c')
-    ny = H * (0.775 if story else 0.760)
-    big = justify(EV.NAME, CWD, 0.10, cap=int(120 * V))
-    paint(img, tmask(EV.NAME, BRAND, big, 0.10), W / 2, ny, color=PAPER, anchor='c')
-    paint(img, tmask(EV.FORMAT, BRAND, int(22 * V), 0.34), W / 2, ny + big * 0.82,
-          color=AQUA, anchor='c')
+    # **발치는 비율이 아니라 바닥에서 역산한다.** 0.79H 로 잡았더니 피드(1350)에서
+    # 정보 네 줄 + 협업 + 핸들이 캔버스를 넘어갔다. 블록 높이가 정해져 있으니
+    # 아래에서 빼는 게 맞다 — 두 사이즈에서 같은 자리에 앉는다.
+    fy = H - 352 * V
+    # 정보는 **event.INFO 형식 그대로**. 순서·표기를 판마다 바꾸지 않는다
+    yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER, head_color=PAPER)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
+          color=DIM, a=0.60)
+    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
+          color=AQUA, a=0.90)
 
-    ly = ny + big * 0.82 + 52 * V
+    # **이름을 아래에 또 쓰지 않는다.** 가운데 교집합에 이미 있고, 두 번 쓰면
+    # 큰 글자가 둘이 되어 어느 쪽을 봐야 할지 모르게 된다. 그 자리를 비우니
+    # 짧은 피드(1350)에서 고리 라벨과 발치가 안 부딪힌다.
+    ly = fy - 96 * V
+    paint(img, tmask(EV.FORMAT, BRAND, int(22 * V), 0.34), W / 2, ly - 48 * V,
+          color=AQUA, anchor='c')
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD * 0.94, 0.14)), 0.14),
           W / 2, ly, color=PAPER, a=0.92, anchor='c')
 
-    fy = H * (0.888 if story else 0.878)
-    rule(img, fy, M, W - M, PAPER, 0.18, max(1, int(2 * V)))
-    paint(img, tmask(f'{EV.DATE}   ·   {EV.TIME}', KR, int(24 * V), 0.02), W / 2, fy + 38 * V,
-          color=PAPER, anchor='c')
-    paint(img, tmask(f'{EV.VENUE}   {EV.ADDR}', KR, int(16 * V), 0.02), W / 2, fy + 70 * V,
-          color=DIM, a=0.90, anchor='c')
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), W / 2, fy + 100 * V,
-          color=DIM, a=0.55, anchor='c')
-    paint(img, tmask(EV.HANDLE, BRAND, int(14 * V), 0.26), W / 2, H * 0.976,
-          color=LIME, a=0.85, anchor='c')
+    yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER, head_color=PAPER)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
+          color=DIM, a=0.60)
+    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
+          color=AQUA, a=0.90)
+
+
 
     vignette(img, 0.42, 2.0)
     grain(img, 0.007, 34)

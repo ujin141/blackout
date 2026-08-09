@@ -18,6 +18,7 @@ ROOT = os.path.dirname(HERE)
 IMG = os.path.join(ROOT, 'assets', 'img')
 STOCK = os.path.join(IMG, 'stock')
 BRAND = os.path.join(HERE, 'assets', 'Michroma-Regular.ttf')
+from fonts import KR as KRF          # 정보 블록의 한글 값에 쓴다
 OUT = os.path.join(HERE, 'out', 'poster')
 os.makedirs(OUT, exist_ok=True)
 
@@ -273,6 +274,40 @@ def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055,
         r = cv2.resize(m, (w, h), interpolation=cv2.INTER_AREA)
         paint(img, (r * 255).astype(np.uint8), x, cy, color=color, a=a)
         x += w + gap
+
+
+def info_block(img, x, y, width, V, key_color, val_color, head_color=None,
+               head=34, key=15, val=21, step=None, kw=0.17, rules=True, a=1.0):
+    """행사 정보 네 줄. **형식은 `event.INFO` 가 정한다** — 여기서 순서를 바꾸지 않는다.
+
+    첫 줄(날짜)은 라벨이 없고 크게, 나머지는 라벨 + 값 두 열입니다.
+    라벨과 값은 크기가 달라서 가운데를 맞추면 한 줄로 안 읽힙니다 —
+    **베이스라인을 맞춥니다**(표에서 이 한 끗이 제일 크게 보입니다).
+
+    돌려주는 값은 블록의 아래 y. 다음 요소를 여기서 이어 내리면
+    사이즈가 달라져도 발치가 안 겹칩니다."""
+    import event as _EV
+    head_color = head_color if head_color is not None else val_color
+    step = step if step is not None else 46 * V
+    yb = y
+    for i, (k, v) in enumerate(_EV.INFO):
+        if not k:                                     # 날짜 줄 — 라벨 없이 크게
+            paint_bl(img, tmask_bl(v, BRAND, int(head * V), 0.16), x, yb,
+                     color=head_color, a=a)
+            yb += step * 1.28
+            if rules:
+                rule(img, yb - step * 0.62, x, x + width, val_color, 0.22 * a,
+                     max(1, int(2 * V)))
+            continue
+        paint_bl(img, tmask_bl(k, BRAND, int(key * V), 0.24), x, yb,
+                 color=key_color, a=0.95 * a)
+        paint_bl(img, tmask_bl(v, KRF, int(val * V), 0.01), x + width * kw, yb,
+                 color=val_color, a=a)
+        if rules and i < len(_EV.INFO) - 1:
+            rule(img, yb + step * 0.28, x, x + width, val_color, 0.10 * a,
+                 max(1, int(1 * V)))
+        yb += step
+    return yb
 
 
 def grain(img, amt, seed=3):

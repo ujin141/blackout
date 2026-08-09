@@ -14,8 +14,8 @@ python poster_tag.py  →  out/poster/tag_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import BRAND, SIZES, tmask, paint, rule, box, grain, save
-from fest_kit import water, reflect, specks, vignette, justify, night
+from poster_kit import BRAND, SIZES, tmask, paint, rule, box, grain, save, info_block
+from fest_kit import poolbg, reflect, specks, vignette, justify, night
 from fonts import KR
 import event as EV
 
@@ -71,7 +71,7 @@ def tag(img, cx, cy, w, h, face, ink, num, label, accent, V, tilt=0.0):
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = water(W, H, DEEP, SHALLOW, amp=0.11, seed=10)
+    img = poolbg(W, H, DEEP, SHALLOW, amp=0.32, glow=0.45)
 
     CYm = H * (0.410 if story else 0.405)
     tw, th = W * 0.290, W * 0.290 * 1.42
@@ -95,29 +95,27 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, int(17 * V), 0.42), W / 2, ty,
           color=DIM, a=0.80, anchor='c')
 
-    ny = CYm + th * 0.62 + 74 * V
+    # 자리는 **발치에서 역산한다** — 비율로 두면 짧은 피드에서 정보와 겹친다
+    fy = H - 352 * V
+    ny = fy - 168 * V
     img *= (1 - 0.55 * np.exp(-((yy - (ny + 26 * V)) / (H * 0.070)) ** 2))[..., None]
     ns = justify(EV.NAME, CWD, 0.10, cap=int(138 * V))
     paint(img, tmask(EV.NAME, BRAND, ns, 0.10), W / 2, ny, color=PAPER, anchor='c')
     paint(img, tmask(EV.FORMAT, BRAND, int(23 * V), 0.34), W / 2, ny + 56 * V,
           color=AQUA, anchor='c')
 
-    ly = ny + 124 * V
+    ly = fy - 52 * V
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD * 0.94, 0.14)), 0.14),
           W / 2, ly, color=PAPER, a=0.90, anchor='c')
 
-    fy = H * (0.858 if story else 0.848)
     rule(img, fy, M, W - M, PAPER, 0.18, max(1, int(2 * V)))
-    paint(img, tmask(EV.DATE, KR, int(32 * V), 0.02), W / 2, fy + 44 * V,
-          color=PAPER, anchor='c')
-    paint(img, tmask(f'{EV.TIME}   ·   {EV.VENUE}', KR, int(20 * V), 0.02),
-          W / 2, fy + 84 * V, color=DIM, a=0.95, anchor='c')
-    paint(img, tmask(EV.ADDR, KR, int(16 * V), 0.02), W / 2, fy + 114 * V,
-          color=DIM, a=0.70, anchor='c')
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), W / 2, H * 0.950,
-          color=DIM, a=0.55, anchor='c')
-    paint(img, tmask(EV.HANDLE, BRAND, int(14 * V), 0.26), W / 2, H * 0.975,
-          color=CORAL, a=0.85, anchor='c')
+    # 정보는 **event.INFO 형식 그대로**. 순서·표기를 판마다 바꾸지 않는다
+    yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER, head_color=PAPER)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
+          color=DIM, a=0.60)
+    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
+          color=AQUA, a=0.90)
+
 
     vignette(img, 0.42, 2.0)
     grain(img, 0.007, 22)
