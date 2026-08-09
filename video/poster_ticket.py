@@ -1,8 +1,9 @@
 """
 풀파티 × 솔로파티 — 티켓 시안 (C안).
 
-다섯 시안 중 **유일하게 밝은 판**입니다. 인스타 피드는 대부분 어두운 사진이라
-흰 종이 한 장이 스크롤에서 제일 먼저 걸립니다. 그게 이 안의 전부입니다.
+**검은 입장권**입니다. 처음엔 흰 종이였는데 — 피드에서 제일 먼저 걸린다는 이유였습니다 —
+밤 행사 포스터가 밝으면 낮 행사처럼 보입니다. 눈에 띄는 건 밝기가 아니라
+**주변과 다른 것**이라, 어두운 판에서도 절취선·홈·바코드라는 형태가 그 일을 합니다.
 
 입장권처럼 읽히게 하는 장치 — 이 넷이 다 있어야 티켓으로 읽힙니다.
     · 절취선(점선)과 양 끝 반원 홈
@@ -36,10 +37,13 @@ HANDLE = EV.HANDLE
 NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
 
-BG    = np.array([0.07, 0.07, 0.08], np.float32)   # 카드 바깥. 홈이 보이려면 있어야 한다
-PAPER = np.array([0.95, 0.94, 0.92], np.float32)
-INK   = np.array([0.07, 0.07, 0.09], np.float32)
-BLUE  = np.array([0.09, 0.29, 1.00], np.float32)
+# 밤 행사다. 흰 종이 입장권은 낮 행사처럼 보인다 —
+# 같은 티켓 구조를 그대로 두고 **검은 입장권**으로 뒤집었다.
+# 절취선·홈·바코드는 색이 아니라 형태라서 어둠 위에서도 그대로 읽힌다.
+BG    = np.array([0.02, 0.02, 0.03], np.float32)   # 카드 바깥. 홈이 보이려면 있어야 한다
+PAPER = np.array([0.11, 0.11, 0.13], np.float32)   # 카드 — 검은 종이
+INK   = np.array([0.90, 0.90, 0.88], np.float32)   # 글자
+BLUE  = np.array([0.32, 0.58, 1.00], np.float32)   # 어두운 바탕에서 밝게 뜨는 파랑
 
 
 def dots(img, y, x0, x1, color, a, V, gap=9):
@@ -108,7 +112,10 @@ def build(W, H, story=False):
     py0 = int(H * 0.300)
     py1 = int(H * 0.395)
     ph = py1 - py0
-    win = duotone(POOL, iw, ph, INK, PAPER, contrast=1.35, keep=0.0, focus=0.62, zoom=1.25)
+    # 사진도 어둡게. INK/PAPER 를 그대로 넘기면 밝기가 뒤집혀 사진만 하얘진다.
+    win = duotone(POOL, iw, ph, np.array([0.04, 0.05, 0.08], np.float32),
+                  np.array([0.44, 0.54, 0.62], np.float32),
+                  contrast=1.35, keep=0.0, focus=0.62, zoom=1.25)
     img[py0:py1, M:M + iw] = win
     rule(img, py1 + 16 * U, M, Mx, INK, 0.35, max(1, int(1 * V)))
     paint(img, tmask('SEOUL  ·  DAY TO NIGHT', BRAND, int(13 * V), 0.30),
@@ -157,7 +164,7 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUTSOUND.COM', BRAND, int(16 * V), 0.16), Mx, cy1 - 44 * U,
           color=INK, a=0.85, anchor='r')
 
-    grain(img, 0.010, 6)
+    grain(img, 0.012, 6)
     return np.clip(img, 0, 1)
 
 

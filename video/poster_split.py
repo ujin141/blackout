@@ -278,10 +278,12 @@ def build(W, H, story=False):
     # 다이빙대 끝만 삼각형처럼 삐져나와 무슨 물체인지 안 읽힌다 —
     # zoom 1.25 · focus 0.62 가 보드가 대각선으로 통째로 들어오는 자리다.
     ph = int(SEAM + 80 * U)
+    # 밤 행사다. 낮 물색으로 두면 포스터와 실제가 어긋난다 —
+    # 수면을 짙은 남색으로 내리고 하이라이트만 시안으로 남긴다.
     pband = duotone(os.path.join(STOCK, 'pool-cc0.jpg'), W, ph,
-                    np.array([0.00, 0.30, 0.80], np.float32),
-                    np.array([0.82, 1.00, 1.00], np.float32),
-                    contrast=1.30, keep=0.10, focus=0.62, zoom=1.25)
+                    np.array([0.00, 0.08, 0.26], np.float32),
+                    np.array([0.34, 0.72, 0.86], np.float32),
+                    contrast=1.38, keep=0.06, focus=0.62, zoom=1.25)
     pool = np.concatenate([pband, np.tile(pband[-1:], (H - ph, 1, 1))], 0)
     # 클럽 사진은 가로로 넓다. 세로 캔버스 전체에 맞추면 가운데 빈 곳만 잘려
     # 보라색 덩어리가 된다 — 실제로 보이는 아래 띠 높이에만 맞춰 자른다.
@@ -315,7 +317,7 @@ def build(W, H, story=False):
     p = (np.clip((yy - SEAM * 0.44) / (SEAM * 0.56), 0, 1) ** 1.15 * top[..., 0] * 0.62)[..., None]
     img = img * (1 - p) + INK * p
     # 밤 행사다. 낮 물색으로 두면 포스터와 실제가 어긋난다.
-    img = img * 0.82 + INK * 0.18
+    img = img * 0.74 + INK * 0.26
 
     # ── 빛 알갱이 — 누른 뒤에 더한다. 먼저 얹으면 같이 죽는다 ──
     lum = img[..., 0] * .299 + img[..., 1] * .587 + img[..., 2] * .114

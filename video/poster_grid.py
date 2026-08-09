@@ -34,10 +34,14 @@ HANDLE = EV.HANDLE
 NOTE   = EV.NOTE
 # ──────────────────────────────────────────────────────────
 
-INK    = np.array([0.04, 0.04, 0.05], np.float32)   # 칸 사이로 보이는 바탕
-WHT    = np.array([0.97, 0.97, 0.96], np.float32)
+# 밤 행사다. 흰 칸이 많으면 낮 포스터가 된다 —
+# 칸은 전부 어둠으로 두고 **오렌지 한 칸만** 밝게 남긴다.
+# 밝은 칸이 하나뿐이면 그 칸이 시선을 독점한다. 여럿이면 아무 데도 안 간다.
+INK    = np.array([0.02, 0.02, 0.03], np.float32)   # 칸 사이로 보이는 바탕
+TILE   = np.array([0.12, 0.12, 0.14], np.float32)   # 칸
+WHT    = np.array([0.95, 0.95, 0.94], np.float32)
 ORANGE = np.array([1.00, 0.42, 0.05], np.float32)
-BLK    = np.array([0.06, 0.05, 0.05], np.float32)
+BLK    = np.array([0.05, 0.04, 0.04], np.float32)
 
 # (이름, 비중) — 세로를 이 비율로 나눈다
 ROWS = [('head', 1.25), ('pool', 1.35), ('pair', 2.00), ('solo', 1.35),
@@ -88,17 +92,19 @@ def build(W, H, story=False):
 
     # ── POOL PARTY — 흰 칸에 검은 글자 ─────────────────────
     y0, y1 = ys['pool']
-    box(img, M, y0, W - M, y1, WHT)
+    box(img, M, y0, W - M, y1, TILE)
     paint(img, tw('POOL PARTY', BRAND, iw - int(52 * V)), M + int(26 * V), (y0 + y1) / 2,
-          color=BLK)
+          color=WHT)
 
     # ── 사진 두 칸 ────────────────────────────────────────
     y0, y1 = ys['pair']
     h = int(y1) - int(y0)
     img[int(y0):int(y0) + h, M:M + cw] = duotone(
-        POOL, cw, h, BLK, WHT, contrast=1.32, keep=0.0, focus=0.62, zoom=1.35)
+        POOL, cw, h, BLK, np.array([0.46, 0.52, 0.58], np.float32),
+        contrast=1.36, keep=0.0, focus=0.62, zoom=1.35)
     img[int(y0):int(y0) + h, M + cw + G:M + cw + G + cw] = duotone(
-        CLUB, cw, h, BLK, ORANGE, contrast=1.40, keep=0.10, **CLUB_SAFE)
+        CLUB, cw, h, BLK, np.array([0.72, 0.30, 0.04], np.float32),
+        contrast=1.44, keep=0.08, **CLUB_SAFE)
 
     # ── SOLO PARTY — 오렌지 칸 ────────────────────────────
     y0, y1 = ys['solo']
@@ -111,7 +117,7 @@ def build(W, H, story=False):
 
     # ── 타임테이블 칸 — 여덟 줄이라 칸 하나를 통째로 쓴다 ───
     y0, y1 = ys['mix']
-    box(img, M, y0, W - M, y1, BLK)
+    box(img, M, y0, W - M, y1, TILE)
     px = int(26 * V)
     paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.26), M + px, y0 + 32 * U,
           color=ORANGE)
@@ -121,27 +127,27 @@ def build(W, H, story=False):
 
     # ── 정보 칸 — 2×2 ─────────────────────────────────────
     y0, y1 = ys['info']
-    box(img, M, y0, W - M, y1, WHT)
+    box(img, M, y0, W - M, y1, TILE)
     px = int(26 * V)
     for i, (k, v) in enumerate(CELLS):
         bx = M + px + (cw + G) * (i % 2)
         by = y0 + (y1 - y0) * (0.22 if i < 2 else 0.56)
         paint(img, tmask(k, BRAND, int(13 * V), 0.26), bx, by, color=ORANGE)
         paint(img, tmask(v, KR, min(int(22 * V), fit(v, KR, cw - px * 2)), 0.01),
-              bx, by + 32 * U, color=BLK)
-    rule(img, y0 + (y1 - y0) * 0.48, M + px, W - M - px, BLK, 0.15)
-    paint(img, tmask(FINE, KR, int(15 * V), 0.01), M + px, y1 - 22 * U, color=BLK, a=0.55)
+              bx, by + 32 * U, color=WHT)
+    rule(img, y0 + (y1 - y0) * 0.48, M + px, W - M - px, WHT, 0.15)
+    paint(img, tmask(FINE, KR, int(15 * V), 0.01), M + px, y1 - 22 * U, color=WHT, a=0.5)
 
     # ── 협업 브랜드 칸 ────────────────────────────────────
     if 'partners' in ys:
         y0, y1 = ys['partners']
-        box(img, M, y0, W - M, y1, WHT)
+        box(img, M, y0, W - M, y1, TILE)
         cy = (y0 + y1) / 2
         lb = tmask('PARTNERS', BRAND, int(13 * V), 0.26)
         paint(img, lb, M + px, cy, color=ORANGE)
         nx = M + px + lb.shape[1] + int(34 * V)
         sz = min(int(19 * V), fit(EV.PARTNERS_STR, KR, W - M - px - nx))
-        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), nx, cy, color=BLK, a=0.9)
+        paint(img, tmask(EV.PARTNERS_STR, KR, sz, 0.01), nx, cy, color=WHT, a=0.85)
 
     # ── 발 ────────────────────────────────────────────────
     y0, y1 = ys['foot']
