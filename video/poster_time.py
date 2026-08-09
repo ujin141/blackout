@@ -16,7 +16,6 @@ python poster_time.py  →  out/poster/time_{feed,story}.png
 import numpy as np
 from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
                         rule, box, duotone, grain, save)
-from scene_kit import photoscene
 from fest_kit import vignette, justify, night
 from fonts import KR
 import event as EV
@@ -32,10 +31,8 @@ DIM   = np.float32([0.58, 0.70, 0.78])
 def build(W, H, story=False):
     V = W / 1080.0
     # 사진은 **아주 옅게.** 표를 읽는 게 목적이라 배경은 배경이어야 한다
-    # **도형을 빼고 사진 + 글자만 남긴다.** 네온 원·물결·번호표는 컨셉을 상징으로
-    # 옮긴 것이라 계속 "추상적" 이라는 지적을 받았다. 배경도 같은 사진 한 장으로
-    # 통일해 판마다 장소가 달라 보이지 않게 한다.
-    img = photoscene(W, H, story) * 0.55        # 표를 읽는 게 목적이라 배경은 더 죽인다
+    img = duotone(POOL, W, H, DEEP, LIT, contrast=1.10, keep=0.10, focus=0.62, zoom=1.30)
+    img *= 0.34
     # 발치는 더 눌러 둔다. 표 아래 한글이 사진 위에 뜨면 흐릿하게 읽힌다
     yv = np.arange(H, dtype=np.float32)[:, None, None] / H
     img *= (1 - 0.72 * np.clip((yv - (0.790 if story else 0.770)) / 0.20, 0, 1))
@@ -78,12 +75,11 @@ def build(W, H, story=False):
     fy = bot + 44 * V
     paint_bl(img, tmask_bl(f'{EV.VENUE}   {EV.ADDR}', KR, int(19 * V), 0.01), M, fy,
              color=PAPER, a=0.96)
-    # 32px 씩 균등하게 쌓았더니 크기가 다른 줄이 붙어 보였다 — 줄마다 제 크기만큼
-    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 38 * V,
+    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 32 * V,
              color=AQUA, a=0.95)
-    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 78 * V,
+    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 64 * V,
           color=AQUA, a=0.98)
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 114 * V,
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 96 * V,
           color=DIM, a=0.65)
 
     vignette(img, 0.26, 2.5)

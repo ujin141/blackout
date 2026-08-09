@@ -16,8 +16,8 @@ python poster_real.py  →  out/poster/real_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import (BRAND, SIZES, tmask, paint, rule, grain, save, info_block)
-from scene_kit import photoscene
+from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
+                        rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
 from fonts import KR
 import event as EV
@@ -40,10 +40,7 @@ ROWS = [('일시', f'{EV.DATE}  {EV.TIME}'),
 def build(W, H, story=False):
     V = W / 1080.0
     # 물 사진. zoom·focus 는 다이빙대가 대각선으로 들어오는 자리
-    # **도형을 빼고 사진 + 글자만 남긴다.** 네온 원·물결·번호표는 컨셉을 상징으로
-    # 옮긴 것이라 계속 "추상적" 이라는 지적을 받았다. 배경도 같은 사진 한 장으로
-    # 통일해 판마다 장소가 달라 보이지 않게 한다.
-    img = photoscene(W, H, story)
+    img = duotone(POOL, W, H, DEEP, LIT, contrast=1.20, keep=0.14, focus=0.62, zoom=1.25)
 
     # **아래를 확실히 눌러 정보 자리를 만든다.** 그림자가 아니라 사진을 죽인다
     yy = np.arange(H, dtype=np.float32)[:, None, None]
@@ -63,16 +60,26 @@ def build(W, H, story=False):
     paint(img, tmask(EV.FORMAT, BRAND, int(23 * V), 0.30), M, ny + ns * 0.80,
           color=AQUA, a=0.98)
 
-    # 정보는 **event.INFO 형식 그대로**. 순서·표기를 판마다 바꾸지 않는다
-    fy = H - 352 * V
-    yy = np.arange(H, dtype=np.float32)[:, None, None]
-    img *= (1 - 0.70 * np.clip((yy - (fy - 34 * V)) / (68 * V), 0, 1))
-    rule(img, fy, M, W - M, PAPER, 0.20, max(1, int(2 * V)))
-    yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER)
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
-          color=DIM, a=0.62)
-    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
-          color=AQUA, a=0.92)
+    # ── 한글 정보 네 줄 ──────────────────────────────────
+    y0 = ny + ns * 0.80 + 74 * V
+    step = 60 * V
+    rule(img, y0 - 30 * V, M, W - M, PAPER, 0.22, max(1, int(2 * V)))
+    for i, (k, v) in enumerate(ROWS):
+        yb = y0 + step * i
+        paint_bl(img, tmask_bl(k, KR, int(20 * V), 0.06), M, yb, color=AQUA, a=1.0)
+        paint_bl(img, tmask_bl(v, KR, int(23 * V), 0.01), M + CWD * 0.20, yb,
+                 color=PAPER, a=0.98)
+        if i < len(ROWS) - 1:
+            rule(img, yb + 20 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
+
+    fy = y0 + step * len(ROWS) + 26 * V
+    paint(img, tmask(EV.NOTE, KR, int(19 * V), 0.01), M, fy, color=DIM, a=0.95)
+    # **핸들을 다른 줄과 같은 y 에 두지 않는다.** 오른쪽 정렬이라 값이 길어지면
+    # 왼쪽 줄과 부딪힌다 — 실제로 협업 줄과 겹쳤다. 한 줄을 따로 준다.
+    paint(img, tmask(EV.HANDLE, BRAND, int(19 * V), 0.24), M, fy + 38 * V,
+          color=AQUA, a=0.98)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, fy + 74 * V,
+          color=DIM, a=0.65)
 
     vignette(img, 0.34, 2.2)
     grain(img, 0.007, 44)

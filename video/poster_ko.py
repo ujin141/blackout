@@ -16,8 +16,8 @@ AE안 — **한글 헤드라인.** 한국 사람이 보는 포스터라 한국�
 python poster_ko.py  →  out/poster/ko_{feed,story}.png
 """
 import numpy as np
-from poster_kit import (BRAND, SIZES, tmask, paint, rule, grain, save, info_block)
-from scene_kit import photoscene
+from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
+                        rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
 from fonts import KR, KRD
 import event as EV
@@ -36,10 +36,7 @@ SUB  = '풀파티 × 솔로파티'
 
 def build(W, H, story=False):
     V = W / 1080.0
-    # **도형을 빼고 사진 + 글자만 남긴다.** 네온 원·물결·번호표는 컨셉을 상징으로
-    # 옮긴 것이라 계속 "추상적" 이라는 지적을 받았다. 배경도 같은 사진 한 장으로
-    # 통일해 판마다 장소가 달라 보이지 않게 한다.
-    img = photoscene(W, H, story)
+    img = duotone(POOL, W, H, DEEP, LIT, contrast=1.18, keep=0.13, focus=0.62, zoom=1.22)
 
     # 위에서 아래로 눌러 글자 자리를 만든다. 위쪽이 헤드라인 자리다
     yy = np.arange(H, dtype=np.float32)[:, None, None] / H
@@ -74,18 +71,21 @@ def build(W, H, story=False):
     paint(img, tmask(EV.FORMAT, BRAND, int(18 * V), 0.30), M, ny + 38 * V,
           color=PAPER, a=0.80)
 
-    # ── 발 ──────────────────────────────────────────────
-    # 여섯 줄을 32px 씩 쌓았더니 붙어 보였다. **정보는 한 블록으로** 묶는다
-    fy = H - 322 * V
-    img *= (1 - 0.70 * np.clip((yy * H - (fy - 30 * V)) / (60 * V), 0, 1))
-    rule(img, fy, M, W - M, PAPER, 0.20, max(1, int(2 * V)))
+    # ── 발 : 장소 · 라인업 · 입장 ────────────────────────
+    fy = H * (0.746 if story else 0.728)
+    paint_bl(img, tmask_bl(EV.VENUE, KR, int(28 * V), 0.01), M, fy, color=PAPER)
+    paint_bl(img, tmask_bl(EV.ADDR, KR, int(17 * V), 0.01), M, fy + 34 * V,
+             color=DIM, a=0.95)
+    # **줄 간격은 글자 크기에서 나온다.** 32px 씩 균등하게 뒀더니 큰 줄과 작은 줄이
+    # 같은 간격이 되어 발치가 뭉쳤다. 줄마다 제 크기만큼 띄운다.
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD, 0.12)), 0.12),
-          M, fy - 44 * V, color=PAPER, a=0.96)
-    yb = info_block(img, M, fy + 42 * V, CWD, V, AQUA, PAPER, step=42 * V)
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, yb + 30 * V,
-          color=DIM, a=0.62)
-    paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 64 * V,
-          color=AQUA, a=0.92)
+          M, fy + 88 * V, color=PAPER, a=0.96)
+    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 140 * V,
+             color=AQUA, a=0.95)
+    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 180 * V,
+          color=AQUA, a=0.98)
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 216 * V,
+          color=DIM, a=0.65)
 
     vignette(img, 0.30, 2.3)
     grain(img, 0.007, 52)
