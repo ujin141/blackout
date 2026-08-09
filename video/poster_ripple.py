@@ -16,7 +16,8 @@ python poster_ripple.py  →  out/poster/ripple_{feed,story}.png
 import numpy as np
 import cv2
 from poster_kit import BRAND, SIZES, tmask, paint, rule, grain, save, info_block
-from fest_kit import poolbg, ripple, specks, vignette, justify, night
+from fest_kit import ripple, specks, vignette, justify, night
+from scene_kit import poolscene
 from fonts import KR
 import event as EV
 
@@ -30,7 +31,11 @@ DIM     = np.float32([0.60, 0.74, 0.82])
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = poolbg(W, H, DEEP, SHALLOW, amp=0.34, glow=0.45)
+    # **배경은 무늬가 아니라 장면이다.** 물결·타일만 깔면 여전히 상징이라
+    # "추상적"이라는 지적이 남는다. 밤 루프탑 수영장에 사람이 있고 디제이가
+    # 틀고 있는 그림을 뒤에 두면, 앞의 도형이 무슨 얘기를 하든 일단
+    # 무슨 행사인지가 먼저 보인다. 뒤로 물러나야 하니 한 단 눌러 둔다.
+    img = poolscene(W, H, story, wy=0.560 if story else 0.530, dj=0.78) * 0.80
 
     # 두 중심. 화면 안에 보여야 "둘"로 읽힌다
     CYm = H * (0.470 if story else 0.480)
