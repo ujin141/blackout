@@ -83,6 +83,10 @@ def build(W, H, story=False):
     paint(img, tmask(prog, BRAND, int(20 * V), 0.30), W / 2, ly + 46 * V,
           color=WARM, a=0.90, anchor='c')
 
+    # **바쁜 배경에서는 발치를 눌러야 글자가 산다.** 그림자를 덧대면 지저분해지고,
+    # 배경을 죽이면 깨끗하다 — 이 판 전체에서 지켜 온 규칙과 같다.
+    _fy = np.arange(H, dtype=np.float32)[:, None, None]
+    img *= (1 - 0.68 * np.clip((_fy - (fy - 30 * V)) / (60 * V), 0, 1))
     rule(img, fy, M, W - M, PAPER, 0.18, max(1, int(2 * V)))
     # 정보는 **event.INFO 형식 그대로**. 순서·표기를 판마다 바꾸지 않는다
     yb = info_block(img, M, fy + 44 * V, CWD, V, CYAN, PAPER, head_color=PAPER)

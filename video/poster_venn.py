@@ -96,6 +96,10 @@ def build(W, H, story=False):
     # 아래에서 빼는 게 맞다 — 두 사이즈에서 같은 자리에 앉는다.
     fy = H - 352 * V
     # 정보는 **event.INFO 형식 그대로**. 순서·표기를 판마다 바꾸지 않는다
+    # **바쁜 배경에서는 발치를 눌러야 글자가 산다.** 그림자를 덧대면 지저분해지고,
+    # 배경을 죽이면 깨끗하다 — 이 판 전체에서 지켜 온 규칙과 같다.
+    _fy = np.arange(H, dtype=np.float32)[:, None, None]
+    img *= (1 - 0.68 * np.clip((_fy - (fy - 30 * V)) / (60 * V), 0, 1))
     yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER, head_color=PAPER)
     paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
           color=DIM, a=0.60)

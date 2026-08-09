@@ -310,26 +310,31 @@ def rope(img, y, W, color, bead, gap, a=1.0, alt=None):
 
 
 def poolbg(W, H, deep=(0.006, 0.024, 0.046), shallow=(0.030, 0.090, 0.130),
-           amp=0.46, tiles=True, seed=4, glow=0.5, horizon=0.10):
-    """밤 수영장 배경.
+           amp=0.46, tiles=True, seed=4, glow=0.5, horizon=0.10,
+           lights=True, props=True, party=True, edge=True):
+    """밤 수영장 배경. **어두운 물과 수영장은 다릅니다.**
 
-    **코스틱만으로는 '어두운 물'이지 수영장이 아닙니다.**
-    바다와 수영장을 가르는 건 물이 아니라 **바닥**입니다 —
-    타일 격자가 물결에 일렁이며 보여야 그제야 수영장으로 읽힙니다.
+    물결과 타일만 깔면 "밤바다" 나 "어두운 물" 입니다. 수영장이 되려면
+    사람이 수영장에서 실제로 보는 것들이 있어야 합니다 —
 
-    격자는 픽셀로 찍지 말고 **선으로 그립니다.** 픽셀로 찍었더니 세로줄이
-    한 픽셀씩 흩어져 거의 안 보였습니다. 그리고 **물에 잠긴 격자는 직선이면
-    안 됩니다** — 사인으로 밀어 줘야 물 밑에 있는 것으로 보입니다."""
+        벽면 수중 조명   물 속에서 번지는 둥근 빛. 이게 없으면 밤 수영장이 아니다
+        수면 반짝임      표면에서 튀는 작은 빛. 물이 정지해 있지 않다는 신호
+        떠 있는 튜브     실루엣 + 가장자리 빛. **물건이 있어야 파티다**
+        풀 가장자리      위쪽의 데크와 물가 선. 물이 어디서 끝나는지 보인다
+        파티 조명 번짐   물빛(청록) 하나만 두면 수영장이지 파티가 아니다.
+                       한쪽에서 들어오는 자홍·주황이 섞여야 파티가 된다
+
+    **강한 건 전부 가장자리에 둡니다.** 가운데는 글자 자리라 어두워야 합니다."""
     img = sky(W, H, [(0.0, deep), (0.55, deep), (1.0, shallow)])
-    H_, W_ = H, W
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    rng = np.random.default_rng(seed)
 
     if tiles:
         # **수영장 바닥은 정사각 타일이다.** 소실점으로 모으면 터널이나 분수가 되고,
         # 곧은 격자를 물결로만 흔들어야 "물에 잠긴 타일" 로 읽힌다.
         lay = np.zeros((H, W), np.float32)
         th = max(1, int(W * 0.0026))
-        g = W * 0.105                                 # 타일 한 칸
+        g = W * 0.105
         x = g * 0.5
         while x < W + g:
             cv2.line(lay, (int(x), 0), (int(x), H), 1.0, th, cv2.LINE_AA)
@@ -337,8 +342,7 @@ def poolbg(W, H, deep=(0.006, 0.024, 0.046), shallow=(0.030, 0.090, 0.130),
         y = H * horizon
         while y < H + g:
             cv2.line(lay, (0, int(y)), (W, int(y)), 1.0, th, cv2.LINE_AA)
-            y += g * (1.0 + 0.10 * (y / H))           # 아래로 갈수록 아주 살짝 벌어진다
-        # 물결에 일렁이게 민다. 두 방향 다 밀어야 잠긴 것으로 보인다
+            y += g * (1.0 + 0.10 * (y / H))
         dx = (np.sin(yy * 0.026 + np.sin(xx * 0.009) * 2.2) * (W * 0.018)).astype(np.float32)
         dy = (np.sin(xx * 0.021 + np.sin(yy * 0.011) * 1.9) * (W * 0.010)).astype(np.float32)
         lay = cv2.remap(lay, (xx + dx).astype(np.float32), (yy + dy).astype(np.float32),
@@ -346,6 +350,16 @@ def poolbg(W, H, deep=(0.006, 0.024, 0.046), shallow=(0.030, 0.090, 0.130),
         lay = cv2.GaussianBlur(lay, (0, 0), 1.1)
         depth = np.clip((yy / H - horizon) / (1 - horizon), 0, 1) ** 0.7
         add(img, lay * depth, 0, 0, np.float32([0.40, 0.80, 1.00]), 0.42)
+
+    if lights:
+        # 벽면 수중 조명 — 물 속에서 번지는 둥근 빛. **밤 수영장의 표식이다**
+        for cx, cy, r, k in ((0.16, 0.30, 0.085, 1.00), (0.84, 0.30, 0.085, 0.85),
+                             (0.50, 0.90, 0.11, 0.60)):
+            d = np.sqrt(((xx - W * cx) / (W * r)) ** 2 + ((yy - H * cy) / (W * r)) ** 2)
+            core = np.clip(1 - d, 0, 1) ** 2
+            add(img, core, 0, 0, np.float32([0.55, 0.92, 1.00]), 0.55 * k)
+            add(img, cv2.GaussianBlur(core, (0, 0), W * 0.075), 0, 0,
+                np.float32([0.28, 0.72, 1.00]), 1.30 * k)
 
     # 물빛 그물 — 잘게. 성기면 등고선이 되고 촘촘해야 물이다
     yq, xq = np.mgrid[0:H // 2, 0:W // 2].astype(np.float32)
@@ -355,8 +369,54 @@ def poolbg(W, H, deep=(0.006, 0.024, 0.046), shallow=(0.030, 0.090, 0.130),
          0.9 * np.sin((x + y) * 1.05))
     k = np.clip(1 - np.abs(np.sin(f * 2.1)) * 8.0, 0, 1) ** 1.1
     k = cv2.resize(cv2.GaussianBlur(k, (0, 0), 0.9), (W, H), interpolation=cv2.INTER_LINEAR)
-    lit = np.clip((yy / H - 0.10) / 0.90, 0, 1) ** 0.6     # 아래로 갈수록 밝다
+    lit = np.clip((yy / H - 0.10) / 0.90, 0, 1) ** 0.6
     add(img, k * lit, 0, 0, np.float32([0.60, 0.95, 1.00]), amp)
     add(img, cv2.GaussianBlur(k * lit, (0, 0), W * 0.022), 0, 0,
         np.float32([0.30, 0.72, 0.98]), amp * glow)
+
+    if party:
+        # **파티 조명이 물에 번진다.** 청록 하나면 수영장이고, 자홍·주황이
+        # 한쪽에서 섞여야 파티다 — 물 색이 아니라 조명 색이 파티를 만든다
+        for cx, cy, rx, ry, col, a in (
+                # 세기는 한 단 낮춘다 — 배경이 세면 위에 얹는 그림이 진다
+                (0.94, 0.08, 0.50, 0.30, (1.00, 0.20, 0.62), 0.20),
+                (0.04, 0.76, 0.44, 0.26, (1.00, 0.52, 0.16), 0.13),
+                (0.50, 0.02, 0.70, 0.14, (0.55, 0.30, 1.00), 0.10)):
+            gg = np.exp(-(((xx - W * cx) / (W * rx)) ** 2 + ((yy - H * cy) / (H * ry)) ** 2))
+            add(img, gg, 0, 0, np.float32(col), a)
+        # 조명이 물결에 부서진 자국
+        add(img, k * cv2.GaussianBlur(
+            np.exp(-(((xx - W * 0.9) / (W * 0.5)) ** 2 + ((yy - H * 0.15) / (H * 0.3)) ** 2)),
+            (0, 0), 8), 0, 0, np.float32([1.00, 0.35, 0.70]), 0.36)
+
+    if props:
+        # 떠 있는 튜브 — 실루엣에 가장자리 빛. **물건이 있어야 파티다**
+        # **바닥 근처에는 두지 않는다** — 거기는 정보줄 자리다.
+        # 실제로 튜브가 "사전예매제 + Welcome Drink" 위에 앉았다.
+        for cx, cy, r, col in ((0.09, 0.70, 0.090, (0.30, 0.95, 1.00)),
+                               (0.94, 0.58, 0.068, (1.00, 0.35, 0.66)),
+                               (0.74, 0.19, 0.050, (0.85, 1.00, 0.35))):
+            d = np.sqrt(((xx - W * cx) / (W * r)) ** 2 + ((yy - H * cy) / (W * r * 0.42)) ** 2)
+            ring = np.clip(1 - np.abs(d - 1.0) / 0.34, 0, 1) ** 0.8
+            body = (d < 1.0).astype(np.float32)
+            img[:] = img * (1 - (body * 0.55)[..., None])       # 물에 진 그림자
+            add(img, ring, 0, 0, np.float32(col), 0.42)
+            add(img, cv2.GaussianBlur(ring, (0, 0), W * 0.014), 0, 0, np.float32(col), 0.34)
+
+    if edge:
+        # 풀 가장자리 — 위쪽 물가 선. 물이 어디서 끝나는지 보여야 수영장이다
+        ey = H * (horizon - 0.045)
+        img[:max(0, int(ey))] *= 0.42
+        add(img, np.exp(-((yy - ey) / (H * 0.006)) ** 2), 0, 0,
+            np.float32([0.70, 0.98, 1.00]), 0.55)
+        add(img, np.exp(-((yy - ey) / (H * 0.030)) ** 2), 0, 0,
+            np.float32([0.30, 0.75, 1.00]), 0.30)
+
+    # 수면 반짝임 — 물이 정지해 있지 않다는 신호
+    sp = np.zeros((H, W), np.float32)
+    for _ in range(90):
+        sx, sy = int(rng.integers(0, W)), int(rng.integers(int(H * horizon), H))
+        cv2.circle(sp, (sx, sy), int(rng.uniform(1, 3)), float(rng.uniform(0.5, 1.0)), -1,
+                   cv2.LINE_AA)
+    add(img, cv2.GaussianBlur(sp, (0, 0), 1.3), 0, 0, np.float32([0.85, 0.98, 1.00]), 0.55)
     return img
