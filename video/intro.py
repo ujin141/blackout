@@ -17,7 +17,13 @@
     4.8–10.4  기계가 돈다. 가운데 조리개 링이 돌고 글자가 찍힌다
     8.6–11.0  충전. 링이 빨라지고 빛이 차오른다
     11.0      판이 걸린다 — AFTER SUNSET. 기계 음성이 이름을 부른다
-    11.0–16   이름만 두고 잦아든다
+    11.0–14.8 이름만 두고, 기계가 화면의 글자를 읽는다
+    14.8–16.75 다시 올린다. 3 · 2 · 1 카운트다운
+    16.75     마지막 한 방. **여기서 디제이가 건다**
+    16.75–18  잔향만 남기고 끊는다
+
+**끝은 페이드가 아니라 한 방입니다.** 페이드로 끝나면 디제이가 언제 걸어야 할지
+모릅니다. 카운트다운 뒤 한 방이면 그 프레임에 정확히 걸 수 있습니다.
 
 **인트로는 포스터가 아닙니다.** 날짜·주소·협업 브랜드는 넣지 않습니다 —
 그건 포스터가 하는 일이고, 행사장에서 트는 화면에 주소를 띄울 이유가 없습니다.
@@ -44,7 +50,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'intro')
 os.makedirs(OUT, exist_ok=True)
 
-FPS, DUR = 30, 16.0
+FPS, DUR = 30, 18.0
 CUTS = {'stage': (1920, 1080), 'story': (1080, 1920)}
 W, H = 1920, 1080                      # render() 가 매번 갈아 끼운다
 M = int(W * 0.062)
@@ -56,6 +62,7 @@ AMBER = np.array([1.00, 0.74, 0.22], np.float32)
 
 # 소리의 마디. audio_intro.py 와 같은 값이어야 그림이 소리에 붙는다
 T_POWER, T_HIT, T_RUN, T_CHARGE, T_LOCK = 1.2, 4.3, 4.8, 8.6, 11.0
+T_BUILD, T_GO = 14.8, 16.75        # 다시 올리는 구간과 마지막 한 방
 
 
 def analyze(path, nf):
@@ -226,12 +233,30 @@ def frame(t, i, A, rng):
         # 이름이 걸린 뒤에는 화면을 비워 두는 게 이름을 더 오래 남긴다.
         img *= 0.94 + 0.10 * A['rms'][i]
 
+        # ── 14.8–16.75 다시 올린다 ────────────────────────
+        if t >= T_BUILD:
+            rz = np.clip((t - T_BUILD) / (T_GO - T_BUILD), 0, 1)
+            img += (rz ** 3) * 0.26 * AMBER
+            # 3 · 2 · 1 — 크게 떴다가 줄어들며 사라진다. 디제이가 볼 시계다
+            for num, t0 in (('3', 15.35), ('2', 15.90), ('1', 16.42)):
+                q = (t - t0) / 0.48
+                if 0 <= q < 1:
+                    # 이름·형식 줄 아래에 놓는다. 가운데에 크게 두면 이름을 덮는다
+                    sz = int(min(W, H) * 0.34 * (1.20 - 0.20 * q))
+                    paint(img, tmask(num, BRAND, sz), W / 2, H * (0.68 if W > H else 0.68),
+                          color=WHITE, a=(1 - q) ** 0.55, anchor='c')
+
+        # ── 16.75 마지막 한 방 ────────────────────────────
+        if t >= T_GO:
+            g = np.clip((t - T_GO) / 0.32, 0, 1)
+            img += ((1 - g) ** 2) * 1.15 * WHITE
+
     if t > 10.4:
         img = slices(img, hhit if t < T_LOCK else hhit * 0.5, rng)
     img += rng.standard_normal((H, W, 1)).astype(np.float32) * 0.010
     tail = DUR - t
-    if tail < 0.6:
-        img *= max(0.0, tail / 0.6)
+    if tail < 0.30:                       # 짧게 끊는다. 길게 끌면 시작 자리가 흐려진다
+        img *= max(0.0, tail / 0.30)
     return np.clip(img, 0, 1)
 
 
