@@ -80,6 +80,7 @@ python poster_ad.py                           # 같은 행사 판매용 포스�
 python poster_loud.py                         # 직설 버전 — 컬러 일러스트
 python poster_photo.py                        # F안 실사 물 사진 — 밤 버전 (CC0)
 python band.py                                # 입장 밴드 인쇄 원고 4종 (GUEST · VIP · VVIP · STAFF)
+python audio_intro.py && python intro.py      # 행사 인트로 — 기계음. 가로(행사장)·세로(인스타)
 python poster_split.py                        # A안 물×클럽, 기울인 축 · 시안×마젠타
 python poster_club.py                         # B안 클럽, 직각 격자 + 쌓은 타이포 · 검정×레드
 python poster_ticket.py                       # C안 입장권, 유일한 밝은 판 · 파랑

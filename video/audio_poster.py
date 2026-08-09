@@ -13,6 +13,7 @@
     C     garage      136  2스텝 — 킥 1·3&, 스네어 2·4, 하이햇에 구멍을 낸다
     D     synthwave   118  게이트 아르페지오 + 리버브 큰 스네어. 드롭 없이 흐른다
     E     breaks      110  브레이크비트 — 4온플로어를 안 쓴다. 고스트 스네어로 채운다
+    F     dubtechno   126  긴 잔향의 코드 스탭이 오프비트에만. 스네어 없음. 물속 같은 판
 
 릴스 쪽:  festival 128 · techno 145 · bounce 132 · hard 155 · citypop 105
 겹치는 BPM도, 조성도 없다.
@@ -38,6 +39,7 @@ STYLES = {
     'garage':     (136.0, 8),
     'synthwave':  (118.0, 8),
     'breaks':     (110.0, 7),
+    'dubtechno':  (126.0, 8),
 }
 
 # 조성도 다르게. 같은 조면 결국 비슷하게 들린다
@@ -45,7 +47,8 @@ ROOT = {'afro':       43.65,   # F1
         'industrial': 41.20,   # E1
         'garage':     49.00,   # G1
         'synthwave':  46.25,   # F#1
-        'breaks':     51.91}   # G#1
+        'breaks':     51.91,   # G#1
+        'dubtechno':  38.89}   # D#1 — 제일 낮게. 밤 수영장 판이라 바닥이 깊어야 한다
 
 
 # ── 이 파일에서만 쓰는 소리 ────────────────────────────────
@@ -212,6 +215,21 @@ def build(style):
                                       0.16, 0.20, 3800), T(b, i * 0.25))
         place(fx, rev_tail(bar * 0.5, 0.18), T(bars, 2))
 
+    # ── DUB TECHNO — 스네어가 없다. 잔향이 리듬을 만든다 ────
+    elif style == 'dubtechno':
+        for b in range(1, bars + 1):
+            g = 0.82 if b < DROP else 1.0
+            for x in range(4):
+                place(drums, soft_kick(0.46, g), T(b, x)); kicks.append(T(b, x))
+                # 오프비트에만 코드 스탭. 이게 이 장르의 전부다.
+                place(lead, stab([R * 4, R * 4.76, R * 6], beat * 0.30,
+                                 0.20 if b < DROP else 0.28, 1400, 0.55), T(b, x + 0.5))
+                place(drums, hat(0.05, 0.09), T(b, x + 0.75))
+            place(bass, subf(R, bar * 0.96, 0.72 * g), T(b))
+            if b % 4 == 0:
+                place(fx, rev_tail(bar * 0.6, 0.16), T(b, 2))
+        place(fx, impact(2.4, 0.5), T(DROP))
+
     # ── BREAKS — 4온플로어를 안 쓴다 ───────────────────────
     else:
         for b in range(1, bars + 1):
@@ -236,8 +254,8 @@ def build(style):
 
     # 사이드체인 — 스타일마다 세기를 다르게
     depth = {'afro': 0.30, 'industrial': 0.34, 'garage': 0.26,
-             'synthwave': 0.42, 'breaks': 0.28}[style]
-    hold = 0.20 if style in ('industrial', 'garage') else 0.26
+             'synthwave': 0.42, 'breaks': 0.28, 'dubtechno': 0.48}[style]
+    hold = 0.20 if style in ('industrial', 'garage') else (0.30 if style == 'dubtechno' else 0.26)
     duck = np.ones(N); tt = np.arange(N) / SR
     for at in kicks:
         i = int(at * SR); j = min(N, i + int(hold * SR))
@@ -246,11 +264,11 @@ def build(style):
         seg = np.clip((tt[i:j] - at) / hold, 0, 1)
         duck[i:j] = np.minimum(duck[i:j], depth + (1 - depth) * seg ** 0.6)
     bass *= duck
-    lead *= duck ** (0.45 if style == 'synthwave' else 0.85)
+    lead *= duck ** (0.45 if style in ('synthwave', 'dubtechno') else 0.85)
 
     mix = drums + bass + reverb(lead, 1.3, 0.28) * 0.85 + reverb(fx, 1.7, 0.32) * 0.7
     mix = hp(mix, 28, 2)
-    mix = sat(mix * 0.9, 1.2 if style == 'synthwave' else 1.5)
+    mix = sat(mix * 0.9, 1.2 if style in ('synthwave', 'dubtechno') else 1.5)
     mix /= (np.abs(mix).max() + 1e-9)
     mix *= 0.95
     f = int(0.3 * SR)

@@ -1,0 +1,274 @@
+"""
+행사 인트로 — AFTER SUNSET. 30fps · 16초.
+
+    stage  1920×1080  **행사장 스크린·프로젝터용.** 이게 기본이다
+    story  1080×1920  인스타 스토리·릴스용
+
+**소리가 먼저 있고 그림이 따라갑니다.** `audio_intro.py` 가 만든 기계음의
+저역·고역·어택을 프레임마다 읽어서 그 값으로 그립니다 —
+릴레이가 딸깍하면 화면이 튀고, 금속이 울리면 셔터가 닫힙니다.
+그림을 먼저 짜고 소리를 맞추면 항상 어긋납니다.
+
+이야기는 **기계에 전원이 들어오는 과정**입니다.
+
+    0.0–1.2   접점이 하나씩 붙는다. 검은 화면에 가로줄만 튄다
+    1.2–3.6   전원이 들어온다. 하단 게이지가 차고 숫자가 올라간다
+    3.6–4.4   배기 → 금속 타격. 셔터가 한 번 닫혔다 열린다
+    4.8–10.4  기계가 돈다. 가운데 조리개 링이 돌고 글자가 찍힌다
+    8.6–11.0  충전. 링이 빨라지고 빛이 차오른다
+    11.0      판이 걸린다 — AFTER SUNSET
+    11.0–16   정보가 한 줄씩 찍히고 잦아든다
+
+색은 검정 · 흰색 · 호박색 하나. 브랜드가 흑백이라 색은 강조 하나만 씁니다.
+
+행사장에서는 **가로**가 기본입니다. 스크린·프로젝터·LED 가 전부 16:9 라
+세로로만 만들어 두면 양옆이 검게 비거나 잘립니다.
+
+python intro.py            둘 다
+python intro.py stage      행사장용만
+"""
+import os
+import wave
+import subprocess
+import numpy as np
+import cv2
+from scipy import signal
+from poster_kit import BRAND, tmask, tmask_bl, fit, paint, paint_bl, rule, box, logo
+from fonts import KR
+import event as EV
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, 'out', 'intro')
+os.makedirs(OUT, exist_ok=True)
+
+FPS, DUR = 30, 16.0
+CUTS = {'stage': (1920, 1080), 'story': (1080, 1920)}
+W, H = 1920, 1080                      # render() 가 매번 갈아 끼운다
+M = int(W * 0.062)
+S = 1.0                                # 글자 배율. 짧은 변 기준이다
+
+INK   = np.array([0.02, 0.02, 0.03], np.float32)
+WHITE = np.array([0.96, 0.96, 0.95], np.float32)
+AMBER = np.array([1.00, 0.74, 0.22], np.float32)
+
+# 소리의 마디. audio_intro.py 와 같은 값이어야 그림이 소리에 붙는다
+T_POWER, T_HIT, T_RUN, T_CHARGE, T_LOCK = 1.2, 4.3, 4.8, 8.6, 11.0
+
+
+def analyze(path, nf):
+    with wave.open(path, 'rb') as w:
+        sr, n = w.getframerate(), w.getnframes()
+        x = np.frombuffer(w.readframes(n), '<i2').astype(np.float32) / 32768.0
+        x = x.reshape(-1, 2).mean(1)
+    lo = signal.sosfilt(signal.butter(4, 160, 'lp', fs=sr, output='sos'), x)
+    hi = signal.sosfilt(signal.butter(4, 3500, 'hp', fs=sr, output='sos'), x)
+    hop = len(x) / nf
+
+    def env(v):
+        e = np.array([np.sqrt(np.mean(v[int(i * hop):int((i + 1) * hop)] ** 2))
+                      for i in range(nf)], np.float32)
+        return np.clip(e / (np.percentile(e, 97) + 1e-9), 0, 1.6)
+
+    A = {'low': env(lo), 'high': env(hi), 'rms': env(x)}
+    for k in ('low', 'high'):
+        d = np.clip(np.diff(A[k], prepend=A[k][0]), 0, None)
+        A[k + '_hit'] = np.clip(d / (np.percentile(d, 97) + 1e-9), 0, 1.6)
+    return A
+
+
+def setcut(w, h):
+    """판을 갈아 끼운다. 글자 배율은 **짧은 변** 기준 —
+    긴 변으로 잡으면 가로판에서 글자가 두 배로 커진다."""
+    global W, H, M, S
+    W, H = w, h
+    M = int(W * (0.062 if W > H else 0.088))
+    S = min(W, H) / 1080.0
+
+
+def scanlines(img, t, amt):
+    """가로줄. 기계 화면의 기본 질감이자, 릴레이가 붙을 때 튀는 자리."""
+    y = np.arange(H, dtype=np.float32)
+    g = (np.sin(y * 0.9 - t * 30.0) * 0.5 + 0.5) ** 3
+    img += g[:, None, None] * WHITE * amt
+
+
+def grid(img, a):
+    """전원이 들어온 뒤 바닥에 깔리는 격자. 아주 옅게."""
+    for x in range(M, W - M + 1, int(W * 0.104)):
+        img[:, x:x + 1] += WHITE * a
+    for y in range(int(H * 0.10), int(H * 0.92), int(W * 0.104)):
+        img[y:y + 1, M:W - M] += WHITE * a
+
+
+def gauge(img, k, V):
+    """하단 게이지 + 숫자. 차오르는 걸 보여 주는 게 목적이라 눈금을 촘촘히 둔다."""
+    y = int(H * 0.86)
+    x0, x1 = M, W - M
+    rule(img, y, x0, x1, WHITE, 0.22, 2)
+    box(img, x0, y - 14 * S, x0 + (x1 - x0) * k, y, AMBER, 0.9)
+    for i in range(21):                                   # 눈금
+        gx = x0 + (x1 - x0) * i / 20
+        rule(img, y + 8 * S, gx, gx + 2, WHITE, 0.30 if i % 5 else 0.6, int(8 * S))
+    paint(img, tmask(f'{int(k * 100):03d}', BRAND, int(30 * S), 0.18), x1, y - 34 * S,
+          color=AMBER, anchor='r')
+    paint(img, tmask('POWER', BRAND, int(20 * S), 0.30), x0, y - 34 * S, color=WHITE, a=0.55)
+
+
+def ring(img, cy, r, ang, seg, a, th=3):
+    """점선 조리개 링. 실선으로 그리면 도는 게 안 보인다."""
+    for i in range(seg):
+        a0 = ang + i * 2 * np.pi / seg
+        a1 = a0 + 2 * np.pi / seg * 0.55
+        p = np.linspace(a0, a1, 14)
+        pts = np.stack([W / 2 + np.cos(p) * r, cy + np.sin(p) * r], 1).astype(np.int32)
+        cv2.polylines(img, [pts], False, tuple(float(v * a) for v in WHITE), th, cv2.LINE_AA)
+
+
+def shutter(img, k):
+    """위아래에서 닫히는 판. k=1 이면 완전히 닫힌다."""
+    h = int(H * 0.5 * k)
+    if h > 0:
+        box(img, 0, 0, W, h, INK)
+        box(img, 0, H - h, W, H, INK)
+        rule(img, h - 3, 0, W, AMBER, 0.8, 3)
+        rule(img, H - h, 0, W, AMBER, 0.8, 3)
+
+
+def typed(img, text, path, size, track, x, y, k, color=WHITE, a=1.0):
+    """글자가 하나씩 찍힌다. 기계가 치는 것처럼 보이려면 통째로 나타나면 안 된다."""
+    n = int(len(text) * np.clip(k, 0, 1))
+    if n <= 0:
+        return
+    paint(img, tmask(text[:n], path, size, track), x, y, color=color, a=a)
+
+
+def slices(img, amt, rng):
+    if amt < 0.3:
+        return img
+    out = img.copy()
+    for _ in range(int(2 + amt * 6)):
+        y = int(rng.integers(0, H - 60))
+        h = int(rng.integers(12, 110))
+        out[y:y + h] = np.roll(out[y:y + h], int(rng.integers(-1, 2) * amt * 120), axis=1)
+    return out
+
+
+def frame(t, i, A, rng):
+    img = np.zeros((H, W, 3), np.float32) + INK
+    lo, hi = A['low'][i], A['high'][i]
+    hit, hhit = A['low_hit'][i], A['high_hit'][i]
+
+    # ── 0.0–1.2 접점 ──────────────────────────────────────
+    if t < T_POWER:
+        scanlines(img, t, 0.05 + 0.55 * hhit)
+        if hhit > 0.5:                                     # 딸깍할 때만 로고가 한 번 스친다
+            paint(img, logo(int(120 * S)), W / 2, H * 0.5, color=WHITE, a=0.35 * hhit, anchor='c')
+        return np.clip(img, 0, 1)
+
+    # ── 전원이 들어온 뒤 공통 바닥 ─────────────────────────
+    on = np.clip((t - T_POWER) / 1.4, 0, 1)
+    grid(img, 0.028 * on)
+    scanlines(img, t, 0.020 + 0.10 * hhit)
+
+    # 상단 고정 표식
+    hy = H * (0.085 if W > H else 0.062)
+    paint(img, logo(int(46 * S)), M, hy, color=WHITE, a=0.85 * on)
+    paint(img, tmask('BLACKOUT CREW', BRAND, int(18 * S), 0.30), M + int(64 * S), hy,
+          color=WHITE, a=0.75 * on)
+    paint(img, tmask('SEOUL', BRAND, int(18 * S), 0.30), W - M, hy,
+          color=AMBER, a=0.7 * on, anchor='r')
+
+    # ── 1.2–4.3 게이지가 찬다 ─────────────────────────────
+    if t < T_LOCK:
+        gauge(img, np.clip((t - T_POWER) / (T_CHARGE + 2.4 - T_POWER), 0, 1), 1.0)
+
+    # ── 4.8–11.0 기계가 돈다 ──────────────────────────────
+    if T_RUN - 0.4 < t < T_LOCK:
+        k = np.clip((t - T_RUN + 0.4) / 0.6, 0, 1)
+        spin = 1.0 + 4.5 * np.clip((t - T_CHARGE) / (T_LOCK - T_CHARGE), 0, 1) ** 2
+        # 링 반지름은 **짧은 변** 기준. 긴 변으로 잡으면 가로판에서 화면 밖으로 나간다
+        cy = H * (0.46 if W > H else 0.44)
+        R = min(W, H)
+        ring(img, cy, R * 0.30 * k, t * 0.9 * spin, 12, (0.30 + 0.45 * lo) * k)
+        ring(img, cy, R * 0.24 * k, -t * 1.4 * spin, 8, (0.22 + 0.35 * lo) * k, 2)
+        ring(img, cy, R * 0.10 * k, t * 2.2 * spin, 4, (0.35 + 0.5 * lo) * k, 4)
+        # 상태 문구가 한 줄씩 찍힌다
+        for j, (txt, t0) in enumerate((('SYSTEM ONLINE', 5.2), ('SOUND CHECK', 6.6),
+                                       ('DOORS ARMED', 8.0))):
+            typed(img, txt, BRAND, int(24 * S), 0.28, M,
+                  H * ((0.615 if W > H else 0.655) + j * (0.048 if W > H else 0.035)),
+                  (t - t0) / 0.5, WHITE, 0.55)
+        # 충전 구간 — 빛이 차오른다
+        ch = np.clip((t - T_CHARGE) / (T_LOCK - T_CHARGE), 0, 1)
+        img += (ch ** 3) * 0.18 * AMBER
+
+    # ── 4.3 금속 타격에 셔터가 한 번 닫힌다 ────────────────
+    if T_HIT - 0.02 < t < T_HIT + 0.42:
+        shutter(img, 1 - abs(t - (T_HIT + 0.2)) / 0.22)
+
+    # ── 11.0 판이 걸린다 ──────────────────────────────────
+    if t >= T_LOCK:
+        k = np.clip((t - T_LOCK) / 0.5, 0, 1)
+        img += (1 - k) ** 2 * 0.9 * WHITE                  # 터지는 순간의 백색
+        # 가로판은 폭이 넉넉해서 이름을 꽉 채우면 오히려 싸 보인다. 62% 까지만.
+        nw = int((W - M * 2) * (0.62 if W > H else 1.0))
+        nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, nw, 0.06), 0.06)
+        ny = H * (0.30 if W > H else 0.40)
+        paint(img, nm, M, ny, color=WHITE, a=k)
+        rule(img, ny + 62 * S, M, M + (W - M * 2) * k, AMBER, 0.75, int(3 * S))
+        paint(img, tmask(EV.FORMAT, BRAND, int(30 * S), 0.10), M, ny + 108 * S,
+              color=AMBER, a=k * 0.95)
+
+        r0 = 0.470 if W > H else 0.560
+        dy = 0.060 if W > H else 0.038
+        for j, txt in enumerate((EV.DATE, EV.TIME, EV.VENUE, EV.ADDR)):
+            typed(img, txt, KR, int(26 * S), 0.01, M, H * (r0 + j * dy),
+                  (t - T_LOCK - 0.55 - j * 0.28) / 0.45, WHITE, 0.92)
+        typed(img, EV.PARTNERS_STR, BRAND, int(17 * S), 0.16, M, H * (r0 + 4.5 * dy),
+              (t - T_LOCK - 1.9) / 0.8, WHITE, 0.55)
+        paint(img, tmask(EV.HANDLE, BRAND, int(20 * S), 0.16), M, H * 0.935, color=WHITE,
+              a=0.9 * np.clip((t - T_LOCK - 2.6) / 0.6, 0, 1))
+        img *= 0.94 + 0.10 * A['rms'][i]
+
+    if t > 10.4:
+        img = slices(img, hhit if t < T_LOCK else hhit * 0.5, rng)
+    img += rng.standard_normal((H, W, 1)).astype(np.float32) * 0.010
+    tail = DUR - t
+    if tail < 0.6:
+        img *= max(0.0, tail / 0.6)
+    return np.clip(img, 0, 1)
+
+
+def render(cut):
+    setcut(*CUTS[cut])
+    wav = os.path.join(OUT, 'bgm_intro.wav')
+    if not os.path.exists(wav):
+        raise SystemExit('먼저 python audio_intro.py 를 돌리세요')
+    nf = int(round(DUR * FPS))
+    A = analyze(wav, nf)
+    rng = np.random.default_rng(5)
+
+    raw = os.path.join(OUT, f'raw_{cut}.mp4')
+    p = subprocess.Popen(
+        ['ffmpeg', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}',
+         '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'medium',
+         '-crf', '19', '-pix_fmt', 'yuv420p', raw],
+        stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for i in range(nf):
+        p.stdin.write((frame(i / FPS, i, A, rng) * 255).astype(np.uint8).tobytes())
+    p.stdin.close(); p.wait()
+
+    final = os.path.join(OUT, f'intro_{cut}.mp4')
+    subprocess.run(['ffmpeg', '-y', '-i', raw, '-i', wav, '-c:v', 'libx264',
+                    '-preset', 'slow', '-crf', '22', '-pix_fmt', 'yuv420p',
+                    '-c:a', 'aac', '-b:a', '224k', '-shortest',
+                    '-movflags', '+faststart', final],
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+    os.remove(raw)
+    print(f'{final}  {W}x{H}  {DUR:.1f}s')
+
+
+if __name__ == '__main__':
+    import sys
+    for c in ([a for a in sys.argv[1:] if a in CUTS] or list(CUTS)):
+        render(c)

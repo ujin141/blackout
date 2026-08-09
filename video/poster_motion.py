@@ -20,9 +20,11 @@
     C ticket  종이가 기울며 빛을 받고, 바코드 위로 스캐너 선이 지나간다
     D neon    켜질 때 깜빡이고, 그 뒤엔 저역에 후광이 부푼다. 고역 어택에 관이 튄다
     E grid    칸이 밀려 들어온 뒤, 박마다 칸 하나씩 돌아가며 튄다
+    F photo   수면이 천천히 일렁이고 수중 조명이 저역에 맞춰 부푼다. 제일 조용한 판
 
 BGM 은 **포스터 전용 음원**(`audio_poster.py`)입니다. 멤버 릴스 곡과 한 곡도 안 겹칩니다.
-    A afro 122 · B industrial 138 · C garage 136 · D synthwave 118 · E breaks 110
+    A afro 122 · B industrial 138 · C garage 136 · D synthwave 118
+    E breaks 110 · F dubtechno 126
 
 python poster_motion.py                 다섯 시안 × 두 사이즈 전부
 python poster_motion.py neon grid       시안만 골라서 (두 사이즈)
@@ -52,6 +54,7 @@ SPECS = {
     'ticket': ('poster_ticket', 'garage',     'card'),
     'neon':   ('poster_neon',   'synthwave',  'flicker'),
     'grid':   ('poster_grid',   'breaks',     'tiles'),
+    'photo':  ('poster_photo',  'dubtechno',  'night'),
 }
 
 
@@ -286,8 +289,31 @@ def m_tiles(base, t, i, dur, A, G, rects=None, bpmv=None):
     return img * (0.95 + 0.09 * A['rms'][i])
 
 
+def m_night(base, t, i, dur, A, G, glow=None):
+    """F안 — 밤 수영장. 여섯 중 제일 조용하다.
+
+    사진 한 장짜리 판이라 화면을 흔들면 금방 싼티가 난다.
+    수면만 천천히 일렁이고, 수중 조명이 저역에 맞춰 부푼다."""
+    gx, gy = G
+    lo = A['low'][i]
+    amp = 3.0 + 7.0 * lo
+    # 글자가 앉은 아래쪽은 흔들지 않는다 — 흔들면 읽기가 힘들어진다
+    fade = np.clip(1 - (gy / H - 0.40) / 0.08, 0, 1)
+    dx = (np.sin(gy * 0.018 + t * 2.1) * amp * fade).astype(np.float32)
+    dy = (np.sin(gx * 0.011 + t * 1.5) * amp * 0.5 * fade).astype(np.float32)
+    img = cv2.remap(base, (gx + dx).astype(np.float32), (gy + dy).astype(np.float32),
+                    cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+    cw = cv2.resize(caustics(t, lo, W // 3, H // 3), (W, H), interpolation=cv2.INTER_LINEAR)
+    img = img + (cw * fade)[..., None] * np.float32([0.42, 0.78, 1.00]) * 0.8
+    if glow is not None:
+        img = img + glow * (0.12 + 0.60 * lo)
+    img = cam(img, 1.015 + 0.035 * (t / dur) + 0.014 * lo, rot=np.sin(t * 0.31) * 0.16)
+    return img * (0.93 + 0.11 * A['rms'][i])
+
+
 MOTION = {'water': m_water, 'strobe': m_strobe, 'card': m_card,
-          'flicker': m_flicker, 'tiles': m_tiles}
+          'flicker': m_flicker, 'tiles': m_tiles, 'night': m_night}
 
 
 def render(key, cut='story'):
@@ -328,6 +354,9 @@ def render(key, cut='story'):
         # 포스터 쪽 by0 · 바코드 높이와 같아야 스캐너 선이 바코드 위를 지나간다
         b0 = H * 0.850
         extra['bar'] = (b0, b0 + 44 * (H / 1350.0))
+    if motion == 'night':
+        lum = base @ np.float32([0.299, 0.587, 0.114])
+        extra['glow'] = cv2.GaussianBlur(np.clip(lum - 0.42, 0, 1) / 0.58, (0, 0), 24)[..., None] *             np.float32([0.30, 0.72, 1.00]) * 0.5
     if motion == 'flicker':
         lum = base @ np.float32([0.299, 0.587, 0.114])
         hi = np.clip(lum - 0.50, 0, 1) / 0.5
