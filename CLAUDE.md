@@ -108,6 +108,11 @@ python poster_prism.py                        # W안 세 빛이 한 점으로
 python poster_misreg.py                       # X안 삼색 판 어긋남(인쇄)
 python poster_mixer.py                        # Y안 믹서 3채널 다 열림
 python poster_orbit.py                        # Z안 세 궤도가 한 점에서 교차
+python poster_real.py                         # AA안 실사 한 장 + 한글 정보 네 줄
+python poster_half.py                         # AB안 위=물 / 아래=클럽, 사진 두 장
+python poster_card.py                         # AC안 사진 + 정보판 (제일 정보형)
+python poster_time.py                         # AD안 타임테이블이 주인공
+python poster_ko.py                           # AE안 한글 헤드라인이 제일 큼
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
