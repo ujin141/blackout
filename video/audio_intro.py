@@ -203,6 +203,7 @@ def build():
     hm = hum(DUR - 1.2, 60.0, 0.5)
     hm *= np.clip(np.linspace(0, 1, len(hm)) * 2.2, 0, 1) ** 0.7
     place(b, hm, 1.2)
+    HUM_START = 1.2
 
     # 1.4–3.6  모터가 돈다
     place(m, servo(2.2, 130, 760, 0.34), 1.4)
@@ -214,13 +215,18 @@ def build():
     place(b, thump(0.6, 0.55), 4.30)
 
     # 4.8–10.4 기계가 규칙적으로 돈다. 0.6초 간격 = 100BPM 느낌이지만 악기는 없다
+    # **음성이 나올 구간(5.1–6.3)에는 아예 안 친다.** 소리를 줄이는 것보다
+    # 비우는 게 확실하다 — 사람은 빈자리에 들어온 소리를 놓치지 않는다.
+    VOICE_GAPS = ((5.05, 6.35),)
     at = 4.8
     k = 0
     while at < 10.4:
-        place(b, thump(0.5, 0.42 + 0.03 * k), at)
-        place(m, relay(0.30, 20 + k), at + 0.30)
-        if k % 2 == 1:
-            place(m, metal(0.5, 0.16, 30 + k, 320), at + 0.45)
+        quiet = any(g0 <= at <= g1 for g0, g1 in VOICE_GAPS)
+        if not quiet:
+            place(b, thump(0.5, 0.42 + 0.03 * k), at)
+            place(m, relay(0.30, 20 + k), at + 0.30)
+            if k % 2 == 1:
+                place(m, metal(0.5, 0.16, 30 + k, 320), at + 0.45)
         at += 0.6
         k += 1
 
@@ -231,15 +237,15 @@ def build():
         place(m, glitch(0.16, 0.30, 40 + i), at)
 
     # 11.0  판이 걸린다 — 여기가 이름이 나오는 자리
-    place(m, metal(1.8, 0.95, 7, 150), 11.0)
-    place(m, air(1.1, 0.40, 8), 11.0)
+    place(m, metal(1.3, 0.95, 7, 150), 11.0)
+    place(m, air(0.7, 0.34, 8), 11.0)
     place(b, thump(1.4, 1.0), 11.0)
     place(b, thump(1.2, 0.55), 11.02)
 
     # ── 기계 음성 두 마디 ─────────────────────────────────
     # 화면에 같은 글자가 뜨는 프레임에 정확히 얹는다.
-    place(vo, say(SYSTEM_ONLINE, 104, 0.72, 11), 5.20)
-    place(vo, say(AFTER_SUNSET, 96, 1.00, 12), 11.15)
+    place(vo, say(SYSTEM_ONLINE, 104, 1.00, 11), 5.20)
+    place(vo, say(AFTER_SUNSET, 96, 1.00, 12), 11.95)   # 금속 꼬리가 다 죽은 뒤에
 
     # **말이 나올 땐 기계를 눌러야 한다.** 안 누르면 음성이 기계음에 묻혀
     # 무슨 말인지도 모르고 소리만 지저분해진다 — 실제로 처음엔 안 들렸다.
@@ -248,15 +254,15 @@ def build():
     k = int(0.05 * SR)
     env = np.convolve(env, np.ones(k) / k, mode='same')
     env = np.clip(env / (env.max() + 1e-9), 0, 1) ** 0.5
-    m *= 1 - 0.62 * env
-    b *= 1 - 0.30 * env
+    m *= 1 - 0.92 * env
+    b *= 1 - 0.72 * env
 
     # 11.0–16  험만 남기고 접점이 가끔 튄다
     for i, at in enumerate((12.6, 14.1, 15.2)):
         place(m, relay(0.24, 60 + i), at)
     place(f, air(2.4, 0.10, 9), 13.6)
 
-    mix = (m + b * 1.15 + vo * 1.05 + reverb(vo, 1.1, 0.16) * 0.35
+    mix = (m + b * 1.15 + vo * 2.30 + reverb(vo, 1.1, 0.16) * 0.30
            + reverb(m, 1.8, 0.20) * 0.55 + reverb(f, 2.6, 0.35) * 0.5)
     mix = hp(mix, 26, 2)
     mix = np.tanh(mix * 1.25) / np.tanh(1.25)
