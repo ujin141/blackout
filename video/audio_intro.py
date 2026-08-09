@@ -37,6 +37,7 @@ os.makedirs(OUT, exist_ok=True)
 
 DUR = 24.0
 T_GAP, T_GO = 16.35, 16.75        # 정적이 시작하는 자리 · 마지막 한 방
+T_SAY = 9.50                      # 기계가 BLACKOUT 을 부르는 자리
 N = int(DUR * SR)
 
 
@@ -207,6 +208,28 @@ def bell(dur=4.5, gain=1.0, base=228.0, seed=8):
     return x / 2.4 * gain
 
 
+def voxchord(dur=5.0, gain=1.0, hold=2.0):
+    """**기계가 화음으로 소리를 낸다.** 끝을 더 크게 만드는 마지막 수단이다.
+
+    같은 성대·입 모양 합성기를 말이 아니라 **한 모음을 길게 끄는 데** 쓴다.
+    뜻은 없고 크기만 남는다 — 합창이 웅장한 건 뜻 때문이 아니라 사람 목소리가
+    한 화음에 겹치기 때문이고, 그 자리를 기계가 대신한다.
+    음은 마지막 화음과 같은 배음렬(76 · 114 · 152)이라 따로 놀지 않는다."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    for f0, g, F in ((76.0, 1.00, VOWEL['AA']), (114.0, 0.70, VOWEL['AO']),
+                     (152.0, 0.44, VOWEL['AH']), (228.0, 0.22, VOWEL['OW'])):
+        # 아주 살짝 흔들어야 한 사람이 아니라 여럿으로 들린다
+        v = _formant(_buzz(n, f0) * (1 + 0.03 * np.sin(2 * np.pi * 4.1 * t + f0)), F)
+        out += v * g
+    rate = 2.0 / max(0.3, dur - hold)
+    e = np.clip(t / 0.30, 0, 1) ** 1.2 * np.where(t < hold, 1.0, np.exp(-(t - hold) * rate))
+    e *= np.clip((dur - t) / 0.40, 0, 1)
+    out = out / 2.3 * e
+    return np.tanh(out * 1.8) / np.tanh(1.8) * gain
+
+
 def hall(x, pre=0.085, tail=6.0, damp=5200, seed=61):
     """**큰 방은 잔향이 길어서가 아니라 늦게 와서 크게 들린다.**
 
@@ -292,10 +315,20 @@ def _formant(x, F, q=11.0):
     return out
 
 
-def say(seq, f0=108.0, gain=1.0, seed=11):
-    """seq 는 (기호, 길이) 목록. 대문자 모음/자음 기호는 위 표를 쓴다."""
+def say(seq, f0=108.0, gain=1.0, seed=11, ring=0.38, crush=12, glide=False):
+    """seq 는 (기호, 길이) 목록. 대문자 모음/자음 기호는 위 표를 쓴다.
+
+    `ring`·`crush` 는 **기계로 만드는 장치이자 말을 부수는 장치**다. 리듬만 맞으면
+    되는 마디는 세게 걸어도 되지만, 반드시 알아들어야 하는 마디는 풀어야 한다.
+
+    `glide` 는 포먼트를 앞 소리에서 이 소리로 미끄러뜨린다.
+    **말이 알아들어지는 건 정지한 포먼트가 아니라 그 사이를 옮겨 가는 궤적이다** —
+    모음마다 고정된 세 주파수만 쓰면 낱말이 아니라 음 두 개로 들린다.
+    같은 성대 신호를 앞 입 모양·이 입 모양 두 벌로 거른 뒤 섞어야
+    위상이 안 깨진다(구간마다 따로 필터를 걸면 이음새에서 딸깍거린다)."""
     rng = np.random.default_rng(seed)
     parts = []
+    prev = None
     for sym, d in seq:
         n = int(d * SR)
         t = np.arange(n) / SR
@@ -306,7 +339,14 @@ def say(seq, f0=108.0, gain=1.0, seed=11):
         elif sym == '_':
             parts.append(np.zeros(n)); continue
         else:
-            x = _formant(_buzz(n, f0), VOWEL[sym])
+            F = VOWEL[sym]
+            buz = _buzz(n, f0)
+            if glide and prev is not None and prev != F:
+                w = np.clip(t / (d * 0.45), 0, 1) ** 0.8
+                x = _formant(buz, prev) * (1 - w) + _formant(buz, F) * w
+            else:
+                x = _formant(buz, F)
+            prev = F
             # 붙었다 떨어지는 자리를 부드럽게. 각지면 딸깍 소리가 낀다
             e = np.clip(t / 0.018, 0, 1) * np.clip((d - t) / 0.030, 0, 1)
             if sym in ('N', 'M', 'L'):
@@ -316,8 +356,9 @@ def say(seq, f0=108.0, gain=1.0, seed=11):
     n = len(v)
     t = np.arange(n) / SR
     # 링 모듈레이터 — 이게 사람 목소리를 기계로 바꾼다
-    v = v * (0.62 + 0.38 * signal.square(2 * np.pi * 47.0 * t))
-    v = np.round(v * 12) / 12                                  # 비트 크러시
+    if ring > 0:
+        v = v * (1 - ring + ring * signal.square(2 * np.pi * 47.0 * t))
+    v = np.round(v * crush) / crush                            # 비트 크러시
     v = bp(v, 220, 5200)
     return v / (np.abs(v).max() + 1e-9) * gain
 
@@ -330,8 +371,11 @@ LINES = {
                       ('_', .08), ('K', .05), ('R', .06), ('UW', .16)],
     # 가운데에서 한 번, **누구나 알아들어야 하는 한 마디.** 다른 줄보다 두 배 느리다 —
     # 포먼트 합성은 빠르면 뭉개진다. 모음을 길게 끌어야 입 모양이 드러난다.
-    'BLACKOUT':      [('B', .07), ('L', .08), ('AE', .19), ('K', .07),
-                      ('AW', .21), ('T', .08)],
+    # **파열음 앞에는 반드시 무음을 둔다.** B·K·T 는 입을 막았다 터뜨리는 소리라,
+    # 막는 시간이 없으면 터지는 게 안 들리고 낱말 경계가 사라진다.
+    'BLACKOUT':      [('_', .05), ('B', .05), ('L', .09), ('AE', .21),
+                      ('_', .05), ('K', .05), ('AW', .25),
+                      ('_', .05), ('T', .07)],
     'SYSTEM ONLINE': [('S', .09), ('IH', .07), ('S', .06), ('T', .04), ('EH', .07), ('M', .07),
                       ('_', .09), ('AA', .09), ('N', .06), ('L', .05), ('AY', .11), ('N', .10)],
     'SOUND CHECK':   [('S', .09), ('AW', .12), ('N', .06), ('D', .05),
@@ -417,7 +461,7 @@ def build():
     # 4.8–10.4 기계가 규칙적으로 돈다. 0.6초 간격 = 100BPM 느낌이지만 악기는 없다
     # ── 기계가 화면의 글자를 읽는다 ────────────────────────
     # (문구, 시작, 높이, 세기) — 화면에 그 글자가 뜨는 프레임과 맞춰야 한다.
-    SPOKEN = [('BLACKOUT', 9.58, 92, 1.35),
+    SPOKEN = [('BLACKOUT', T_SAY, 92, 1.60),
               ('BLACKOUT CREW', 1.70, 100, 0.80),
               ('SYSTEM ONLINE', 5.20, 104, 1.00),
               ('SOUND CHECK',   6.62, 104, 0.92),
@@ -430,12 +474,19 @@ def build():
               ('THREE',        14.95,  92, 1.05),
               ('TWO',          15.50,  92, 1.05),
               ('ONE',          16.02,  88, 1.20)]
+    # BLACKOUT 만 기계 장치를 풀고 궤적을 넣는다. 나머지는 리듬만 맞으면 되고,
+    # 오히려 세게 걸어야 기계로 들린다.
+    CLEAR = dict(ring=0.14, crush=64, glide=True)
     for i2, (name, at, f0, g) in enumerate(SPOKEN):
-        place(vo, say(LINES[name], f0, g, 11 + i2), at)
+        kw = CLEAR if name == 'BLACKOUT' else {}
+        place(vo, say(LINES[name], f0, g, 11 + i2, **kw), at)
     # **이 한 마디만은 겹쳐서 말한다.** 옥타브 위아래를 같이 얹으면 소리가 굵어져
     # 큰 스피커에서도 작은 스피커에서도 남는다 — 예고편 목소리가 하는 일과 같다.
-    for i2, (f0, g, dl) in enumerate(((46, 0.70, 0.010), (184, 0.34, 0.022))):
-        place(vo, say(LINES['BLACKOUT'], f0, g, 91 + i2), 9.58 + dl)
+    for i2, (f0, g, dl) in enumerate(((46, 0.78, 0.010), (184, 0.34, 0.022))):
+        place(vo, say(LINES['BLACKOUT'], f0, g, 91 + i2, **CLEAR), T_SAY + dl)
+    # 0.11 초 뒤에 한 번 되돌아온다. **행사장 방송이 늘 이렇게 들린다** —
+    # 짧은 반사가 붙으면 말이 '안내 방송'으로 읽히고 오히려 또렷해진다.
+    place(vo, say(LINES['BLACKOUT'], 92, 0.40, 11, **CLEAR), T_SAY + 0.115)
 
     # 말하는 구간 — 여기선 기계를 반만 친다. 아예 끄면 리듬이 끊긴다
     SPEAK = [(at - 0.10, at + total(name) + 0.15) for name, at, _, _ in SPOKEN]
@@ -466,7 +517,7 @@ def build():
     # **한 마디를 또렷하게 하려면 그 위에 걸친 것을 옮겨야 한다.** 눌러서는 안 된다 —
     # 눌린 소리는 사라지지 않고 탁해지기만 하고, 그 탁함이 말을 먹는다.
     # 터빈·콘덴서·서보를 전부 9.4 앞에서 끝내고 10.4 뒤에서 다시 올린다.
-    place(m, turbine(0.9, 88, 132, 0.34, 1200, 4200, 14), 8.90)
+    place(m, turbine(0.55, 88, 132, 0.34, 1200, 4200, 14), 8.90)
     place(m, turbine(0.7, 120, 200, 0.40, 2000, 7000, 15), 10.36)
 
     # 8.6–11.0 콘덴서가 충전된다. 이 구간이 길어야 터질 때 크게 들린다
@@ -502,7 +553,8 @@ def build():
 
     # ── 16.75  마지막 한 방 ────────────────────────────────
     # **화음을 1.8초 버틴 뒤에 내려온다.** 치자마자 줄어들면 타격이지 벽이 아니다.
-    place(m, chord(6.4, 1.15, 1.8, 50), T_GO)
+    place(m, chord(6.4, 1.15, 2.4, 50), T_GO)
+    place(m, voxchord(5.6, 0.52, 2.2), T_GO + 0.05)
     place(m, metal(2.4, 0.90, 27, 118), T_GO)
     place(m, metal(2.0, 0.55, 37, 76), T_GO + 0.03)
     place(m, bell(5.2, 0.62, 228, 8), T_GO)        # 화음 위에 중역을 오래 끌어 준다

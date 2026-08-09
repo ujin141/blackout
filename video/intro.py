@@ -65,7 +65,7 @@ AMBER = np.array([1.00, 0.74, 0.22], np.float32)
 T_POWER, T_HIT, T_RUN, T_CHARGE, T_LOCK = 1.2, 4.3, 4.8, 8.6, 11.0
 T_BUILD, T_GO = 13.2, 16.75        # 다시 올리는 구간과 마지막 한 방
 T_GAP = 16.35                      # 소리가 통째로 비는 자리. 화면도 같이 끈다
-T_SAY = 9.58                       # 기계가 BLACKOUT 을 부르는 자리
+T_SAY = 9.50                       # 기계가 BLACKOUT 을 부르는 자리
 T_SETTLE = 18.6                    # 화음이 내려오기 시작하는 자리 — 여기서 이름만 남긴다
 
 
@@ -251,9 +251,9 @@ def frame(t, i, A, rng):
         # ── 9.58 기계가 이름을 부른다 ─────────────────────
         # **글자를 같이 띄워야 들린다.** 포먼트 합성은 완전히 또렷하진 않지만
         # 눈이 본 글자로 귀가 소리를 해석한다. 소리 쪽도 이 구간을 비워 뒀다.
-        bq = (t - T_SAY) / 0.72
-        if -0.10 <= bq < 1.45:
-            a = np.clip((bq + 0.10) / 0.14, 0, 1) * np.clip((1.45 - bq) / 0.40, 0, 1)
+        bq = (t - T_SAY) / 0.87
+        if -0.08 <= bq < 1.40:
+            a = np.clip((bq + 0.08) / 0.12, 0, 1) * np.clip((1.40 - bq) / 0.38, 0, 1)
             bw = int((W - M * 2) * (0.70 if W > H else 1.0))
             paint(img, tmask('BLACKOUT', BRAND, fit('BLACKOUT', BRAND, bw, 0.10), 0.10),
                   W / 2, cy, color=WHITE, a=a, anchor='c')
@@ -315,6 +315,12 @@ def frame(t, i, A, rng):
         if t >= T_GO:
             g = np.clip((t - T_GO) / 0.32, 0, 1)
             img += ((1 - g) ** 2) * 1.15 * WHITE
+            # **큰 화면에서는 번짐이 크기다.** 밝은 데를 뽑아 흐려 더하면
+            # 글자가 빛을 내는 것처럼 보인다 — 화음이 버티는 동안 같이 버틴다.
+            bl = np.exp(-(t - T_GO) / 2.6) * (0.30 + 0.55 * A['rms'][i])
+            if bl > 0.02:
+                img += cv2.GaussianBlur(np.clip(img - 0.42, 0, 1), (0, 0),
+                                        int(min(W, H) * 0.024)) * bl * 2.4
             # 화면 아래에서 노을이 부풀었다 7초에 걸쳐 물러난다. 소리에 맞춰 숨 쉰다.
             # **검정 하나만 남기면 웅장한 게 아니라 빈 화면이다.**
             horizon(img, H * 1.02,
