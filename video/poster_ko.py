@@ -9,8 +9,9 @@ AE안 — **한글 헤드라인.** 한국 사람이 보는 포스터라 한국�
     8월 29일 토요일        ← 언제
     AFTER SUNSET          ← 이름은 그다음
 
-**한글은 볼드로 키우지 않습니다.** 보통 굵기에 자간을 줍니다 —
-한글 볼드를 크게 쓰면 전단지가 됩니다(A안 첫 판에서 반려된 이유 중 하나).
+**큰 제목은 제목용 굵기를 씁니다.** 본문 굵기를 그대로 키우면 획이 가늘어
+크기만 큰 글자가 됩니다. 다만 **자간을 벌려야** 합니다 — 굵은 한글을 붙여 쓰면
+전단지가 됩니다(A안 첫 판에서 반려된 이유 중 하나).
 
 python poster_ko.py  →  out/poster/ko_{feed,story}.png
 """
@@ -18,7 +19,7 @@ import numpy as np
 from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
                         rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
-from fonts import KR
+from fonts import KR, KRD
 import event as EV
 
 DEEP  = np.float32([0.016, 0.038, 0.062])
@@ -51,14 +52,14 @@ def build(W, H, story=False):
 
     # ── 한글 헤드라인이 제일 크다 ────────────────────────
     hy = H * (0.190 if story else 0.180)
-    hs = justify(HEAD, CWD, 0.06, path=KR, cap=int(120 * V))
-    paint(img, tmask(HEAD, KR, hs, 0.06), M, hy, color=PAPER)
+    hs = justify(HEAD, CWD, 0.08, path=KRD, cap=int(120 * V))
+    paint(img, tmask(HEAD, KRD, hs, 0.08), M, hy, color=PAPER)
     paint(img, tmask(SUB, KR, int(26 * V), 0.10), M, hy + hs * 0.86, color=AQUA, a=0.98)
 
     # 날짜 — 두 번째로 크다
     dy = hy + hs * 0.86 + 76 * V
-    ds = justify(EV.DATE, CWD * 0.86, 0.04, path=KR, cap=int(72 * V))
-    paint(img, tmask(EV.DATE, KR, ds, 0.04), M, dy, color=PAPER)
+    ds = justify(EV.DATE, CWD * 0.86, 0.05, path=KRD, cap=int(72 * V))
+    paint(img, tmask(EV.DATE, KRD, ds, 0.05), M, dy, color=PAPER)
     paint(img, tmask(EV.TIME, KR, int(28 * V), 0.04), M, dy + ds * 0.86,
           color=PAPER, a=0.90)
 
