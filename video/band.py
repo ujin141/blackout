@@ -18,19 +18,20 @@
    밝기도 세 단 — 어두움(GUEST) → 중간(ARTIST) → 밝음(STAFF).
    흑백으로 인쇄되거나 어두운 데서 봐도 구분됩니다.
 
-**2-1. 가로선은 재단선이 아니다**
-   장식 괘선입니다. 다만 가장자리와 나란히 **끝까지** 그으면 인쇄소가
-   재단선으로 볼 수 있습니다. 양끝을 안쪽에서 끊어 두면 재단선일 수 없습니다.
+**2-1. 위아래 가로선은 뺐다**
+   장식 괘선이었는데 가장자리와 나란해서 재단선으로 오해를 샀습니다.
+   뺀 자리에 협업 브랜드 줄이 들어갔습니다 — 장식을 정보로 바꾼 셈입니다.
    진짜 재단·블리드는 인쇄소 사양에 맞춰 그쪽에서 잡습니다.
 
 **3. 한 번에 3분의 1도 안 보인다**
    손목에 감기니까 같은 덩어리를 두 번 반복합니다. 접착 탭이 한쪽 반복을
    덮어도 나머지 하나가 통째로 남습니다 — 반복하는 이유가 이것입니다.
 
-**4. 위계는 셋까지**
-   이름(AFTER SUNSET) → 형식(풀파티×솔로파티) → 날짜·시간.
-   여기에 장소·가격·핸들까지 넣으면 25mm 안에서 전부 같은 크기가 되고,
-   같은 크기면 아무것도 안 읽힙니다. **뺄 것을 정하는 게 이 판의 설계입니다.**
+**4. 위계는 넷, 그 이상은 안 된다**
+   이름(AFTER SUNSET) → 형식(풀파티×솔로파티) → 날짜·시간 → 협업 브랜드.
+   협업 브랜드는 **제일 작게** 둡니다. 넣어야 하는 정보지만 이름보다 커지면
+   밴드가 협찬 스티커가 됩니다. 여기에 장소·가격·핸들까지 더하면 25mm 안에서
+   전부 같은 크기가 되고, 같은 크기면 아무것도 안 읽힙니다.
 
 **5. 재단 여유(±1mm)를 먹고 들어간다**
    위아래 4mm(=48px, `SAFE`)는 비웁니다. 여기 글자를 걸면 잘려 나옵니다.
@@ -57,7 +58,7 @@ python band.py  →  out/band/band_{guest,artist,staff}.png
 import os
 import numpy as np
 from PIL import Image
-from poster_kit import BRAND, tmask_bl, paint, paint_bl, rule, vrule, box, logo, grain
+from poster_kit import BRAND, tmask_bl, fit, paint, paint_bl, vrule, box, logo, grain
 import event as EV
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'band')
@@ -72,7 +73,9 @@ PRINT = W - TAB
 UNIT = PRINT // 2
 HAIR = 3                               # 최소 획 3px = 0.25mm. 더 얇으면 인쇄에서 사라진다
 
-BL1, BL2 = 150, 212                    # 두 줄의 베이스라인. 좌우 블록이 공유한다
+# 세 줄의 베이스라인. 좌우 블록이 공유한다.
+# 가로 괘선을 빼면서 생긴 자리에 협업 브랜드 줄이 들어갔다.
+BL1, BL2, BL3 = 126, 180, 234
 
 # 세 등급은 **색상환에서 멀리 떨어뜨린다.** 남색·청록처럼 이웃한 색으로 나누면
 # 조명 아래에서 둘이 같아 보인다. 파랑(220°) · 분홍(335°) · 호박(42°) 로 벌렸다.
@@ -97,14 +100,14 @@ TIERS = [
 
 def tier_chip(u, word, n, bg, fg):
     """오른쪽 끝 등급 표시. 색을 못 믿는 상황을 위해 **세는 막대**를 같이 넣는다."""
-    wm = tmask_bl(word, BRAND, 24, 0.26)
+    wm = tmask_bl(word, BRAND, 23, 0.26)
     bw, bg_gap = HAIR * 3, 11
     bars_w = n * bw + (n - 1) * bg_gap
     pad = 30
     cw = pad + bars_w + 22 + wm[0].shape[1] + pad
     x1 = UNIT - 70
     x0 = x1 - cw
-    y0, y1 = BL1 - 48, BL2 + 20
+    y0, y1 = BL1 - 42, BL2 + 16
     box(u, x0, y0, x1, y1, fg)                       # 칩은 글자색으로 채운다(반전)
     bx = x0 + pad
     for i in range(n):
@@ -118,34 +121,41 @@ def draw_unit(u, bg, fg, accent, word, n):
 
     # ── 왼쪽 · 정체 ───────────────────────────────────────
     x = 80
-    lg = logo(88)
+    lg = logo(82)
     # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다. 2px 올린다.
-    paint(u, lg, x, (BL1 + BL2) / 2 - 26, color=fg, a=0.95)
+    paint(u, lg, x, (BL1 + BL2) / 2 - 22, color=fg, a=0.95)
     x += lg.shape[1] + 46
 
     # STAFF 는 강조색이 글자색과 같다(밝은 바탕이라 쓸 색이 없다).
     # 그대로 두면 둘째 줄이 첫째 줄과 같은 무게로 읽히므로 알파로 단을 만든다.
     aa = 0.68 if np.allclose(accent, fg) else 0.95
 
-    name = tmask_bl(EV.NAME, BRAND, 44, 0.10)
+    name = tmask_bl(EV.NAME, BRAND, 42, 0.10)
     paint_bl(u, name, x, BL1, color=fg)
-    fmt = tmask_bl(EV.FORMAT, BRAND, 20, 0.14)
+    fmt = tmask_bl(EV.FORMAT, BRAND, 19, 0.14)
     paint_bl(u, fmt, x, BL2, color=accent, a=aa)
     left_end = x + max(name[0].shape[1], fmt[0].shape[1])
+
+    # ── 협업 브랜드 — 제일 작게, 전폭 한 줄 ────────────────
+    # 넣어야 하지만 이름·날짜보다 커지면 안 된다. 폭에 맞춰 자동으로 줄인다.
+    pw = UNIT - 70 - x
+    # 형식 줄(19)보다 작아야 한다. 폭이 남는다고 키우면 위계가 뒤집힌다.
+    ps = min(17, fit(EV.PARTNERS_STR, BRAND, pw, 0.05))
+    paint_bl(u, tmask_bl(EV.PARTNERS_STR, BRAND, ps, 0.05), x, BL3, color=fg, a=0.62)
 
     # ── 오른쪽 끝 · 등급 ──────────────────────────────────
     chip_x = tier_chip(u, word, n, bg, fg)
 
     # ── 가운데 오른쪽 · 날짜·시간 ─────────────────────────
     rx = chip_x - 44
-    d1 = tmask_bl(DATE_SHORT, BRAND, 29, 0.14)
-    d2 = tmask_bl(TIME_SHORT, BRAND, 20, 0.18)
+    d1 = tmask_bl(DATE_SHORT, BRAND, 27, 0.14)
+    d2 = tmask_bl(TIME_SHORT, BRAND, 19, 0.18)
     paint_bl(u, d1, rx, BL1, color=fg, anchor='r')
     paint_bl(u, d2, rx, BL2, color=accent, a=aa, anchor='r')
     right_start = rx - max(d1[0].shape[1], d2[0].shape[1])
 
     # 가르는 선 — 남는 폭 한가운데. 고정 좌표로 박으면 한쪽에 붙는다.
-    vrule(u, (left_end + right_start) / 2, BL1 - 40, BL2 + 14, fg, 0.35, HAIR)
+    vrule(u, (left_end + right_start) / 2, BL1 - 36, BL2 + 12, fg, 0.35, HAIR)
 
 
 def build(word, n, bg, fg, accent):
@@ -155,11 +165,6 @@ def build(word, n, bg, fg, accent):
     img[:, :UNIT] = u
     img[:, UNIT:UNIT * 2] = u
     img[:, UNIT * 2:] = bg          # 나머지는 탭까지 바탕으로
-
-    # 가장자리와 나란히 끝까지 긋지 않는다 — **재단선으로 오해받는다.**
-    # 양끝을 안쪽에서 끊으면 재단선일 수 없고, 장식으로만 읽힌다.
-    rule(img, SAFE + 6, SAFE, PRINT - SAFE, accent, 0.5, HAIR)
-    rule(img, H - SAFE - 9, SAFE, PRINT - SAFE, accent, 0.5, HAIR)
 
     box(img, W - TAB, 0, W, H, bg)         # 접착 탭은 바탕만
     grain(img, 0.006, 2)
