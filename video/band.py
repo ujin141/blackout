@@ -103,20 +103,28 @@ TIERS = [
 
 
 def tier_chip(u, word, n, bg, fg):
-    """오른쪽 끝 등급 표시. 색을 못 믿는 상황을 위해 **세는 막대**를 같이 넣는다."""
-    wm = tmask_bl(word, BRAND, 23, 0.26)
-    bw, bg_gap = HAIR * 3, 11
-    bars_w = n * bw + (n - 1) * bg_gap
-    pad = 30
-    cw = pad + bars_w + 22 + wm[0].shape[1] + pad
+    """오른쪽 끝 등급 표시.
+
+    **문에서 제일 먼저 확인하는 게 등급입니다.** 그런데 처음엔 밴드에서 제일
+    작은 글자였습니다 — 이름·날짜보다 작으면 기능을 못 합니다.
+    키우되 이름을 넘지는 않게, 그 사이에서 잡습니다.
+
+    색을 못 믿는 상황(밤·조명·색약)을 위해 **세는 막대**를 같이 넣습니다.
+    막대 수가 곧 출입 등급이라 문에서 세기만 하면 됩니다."""
+    wm = tmask_bl(word, BRAND, 30, 0.22)
+    bw, gap = 10, 10
+    bars_w = n * bw + (n - 1) * gap
+    pad = 32
+    cw = pad + bars_w + 26 + wm[0].shape[1] + pad
     x1 = UNIT - 70
     x0 = x1 - cw
-    y0, y1 = BL1 - 48, BL1 + 22
+    y0, y1 = BL1 - 52, BL1 + 30
     box(u, x0, y0, x1, y1, fg)                       # 칩은 글자색으로 채운다(반전)
     bx = x0 + pad
     for i in range(n):
-        box(u, bx + i * (bw + bg_gap), y0 + 20, bx + i * (bw + bg_gap) + bw, y1 - 20, bg)
-    paint_bl(u, wm, x1 - pad, (y0 + y1) / 2 + wm[1] * 0.5 - 2, color=bg, anchor='r')
+        box(u, bx + i * (bw + gap), y0 + 16, bx + i * (bw + gap) + bw, y1 - 16, bg)
+    # 칩 안에서도 글자는 광학 중심에 — 상자 정가운데로 두면 아래로 처져 보인다
+    paint_bl(u, wm, x1 - pad, (y0 + y1) / 2 + wm[0].shape[0] * 0.5, color=bg, anchor='r')
     return x0
 
 
@@ -136,7 +144,7 @@ def draw_unit(u, bg, fg, word, n):
     chip_x = tier_chip(u, word, n, bg, fg)
 
     rx = chip_x - 46
-    d1 = tmask_bl(DATE_SHORT, BRAND, 32, 0.14)
+    d1 = tmask_bl(DATE_SHORT, BRAND, 27, 0.14)
     paint_bl(u, d1, rx, BL1, color=fg, anchor='r')
     right_start = rx - d1[0].shape[1]
 
@@ -146,7 +154,7 @@ def draw_unit(u, bg, fg, word, n):
     left_end = x + name[0].shape[1]
 
     # 가르는 선 — 남는 폭 한가운데. 고정 좌표로 박으면 한쪽에 붙는다.
-    vrule(u, (left_end + right_start) / 2, BL1 - 42, BL1 + 16, fg, 0.32, HAIR)
+    vrule(u, (left_end + right_start) / 2, BL1 - 40, BL1 + 14, fg, 0.32, HAIR)
 
     # ── 아랫줄 · 협업 브랜드. 제일 작게 ────────────────────
     # 넣어야 하는 정보지만 이름보다 커지면 밴드가 협찬 스티커가 된다.
