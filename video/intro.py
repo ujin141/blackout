@@ -16,8 +16,12 @@
     3.6–4.4   배기 → 금속 타격. 셔터가 한 번 닫혔다 열린다
     4.8–10.4  기계가 돈다. 가운데 조리개 링이 돌고 글자가 찍힌다
     8.6–11.0  충전. 링이 빨라지고 빛이 차오른다
-    11.0      판이 걸린다 — AFTER SUNSET
-    11.0–16   정보가 한 줄씩 찍히고 잦아든다
+    11.0      판이 걸린다 — AFTER SUNSET. 기계 음성이 이름을 부른다
+    11.0–16   이름만 두고 잦아든다
+
+**인트로는 포스터가 아닙니다.** 날짜·주소·협업 브랜드는 넣지 않습니다 —
+그건 포스터가 하는 일이고, 행사장에서 트는 화면에 주소를 띄울 이유가 없습니다.
+인트로가 할 일은 **이름 하나를 각인시키는 것**뿐입니다.
 
 색은 검정 · 흰색 · 호박색 하나. 브랜드가 흑백이라 색은 강조 하나만 씁니다.
 
@@ -33,8 +37,7 @@ import subprocess
 import numpy as np
 import cv2
 from scipy import signal
-from poster_kit import BRAND, tmask, tmask_bl, fit, paint, paint_bl, rule, box, logo
-from fonts import KR
+from poster_kit import BRAND, tmask, fit, paint, rule, box, logo
 import event as EV
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -219,15 +222,8 @@ def frame(t, i, A, rng):
         paint(img, tmask(EV.FORMAT, BRAND, int(30 * S), 0.10), M, ny + 108 * S,
               color=AMBER, a=k * 0.95)
 
-        r0 = 0.470 if W > H else 0.560
-        dy = 0.060 if W > H else 0.038
-        for j, txt in enumerate((EV.DATE, EV.TIME, EV.VENUE, EV.ADDR)):
-            typed(img, txt, KR, int(26 * S), 0.01, M, H * (r0 + j * dy),
-                  (t - T_LOCK - 0.55 - j * 0.28) / 0.45, WHITE, 0.92)
-        typed(img, EV.PARTNERS_STR, BRAND, int(17 * S), 0.16, M, H * (r0 + 4.5 * dy),
-              (t - T_LOCK - 1.9) / 0.8, WHITE, 0.55)
-        paint(img, tmask(EV.HANDLE, BRAND, int(20 * S), 0.16), M, H * 0.935, color=WHITE,
-              a=0.9 * np.clip((t - T_LOCK - 2.6) / 0.6, 0, 1))
+        # 여기서 끝이다. 날짜·주소를 붙이면 인트로가 아니라 포스터가 된다.
+        # 이름이 걸린 뒤에는 화면을 비워 두는 게 이름을 더 오래 남긴다.
         img *= 0.94 + 0.10 * A['rms'][i]
 
     if t > 10.4:

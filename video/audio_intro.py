@@ -11,9 +11,18 @@
     금속     비조화 배음 다섯 개 + 어택 노이즈. 두드리면 나는 소리
     콘덴서   가늘게 위로 올라가는 사인. 충전되는 소리
     글리치   샘플 앤 홀드. 디지털이 튀는 소리
+    음성     성대 대신 펄스, 입 모양 대신 포먼트 필터. 링모듈레이터로 기계로 만든다
 
 **기계음은 음정이 없어서 리듬만 남습니다.** 그래서 배치가 전부입니다 —
 언제 붙고 언제 비는지로만 긴장을 만듭니다.
+
+**목소리도 기계로 만듭니다.** 사람 목소리를 녹음해 변조하는 게 아니라
+성대(펄스 트레인)와 입 모양(포먼트 세 개)을 따로 합성해 붙입니다.
+모음마다 F1·F2·F3 가 정해져 있어서, 그 세 주파수만 맞추면 그 모음으로 들립니다.
+자음은 대역이 다른 노이즈입니다 — S 는 높고 F 는 넓고 T 는 짧게 터집니다.
+
+말이 완전히 또렷하진 않습니다. **그래도 화면에 같은 글자가 같이 뜨면 들립니다** —
+애매한 소리는 눈이 본 것으로 해석됩니다. 그래서 음성과 글자를 같은 프레임에 놓습니다.
 
 python audio_intro.py  →  out/intro/bgm_intro.wav
 """
@@ -113,8 +122,76 @@ def thump(dur=0.5, gain=1.0):
     return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 7.5) * gain
 
 
+# ── 기계 음성 ─────────────────────────────────────────────
+# 모음은 포먼트 세 개로 정해진다. 이 값만 맞추면 그 모음으로 들린다.
+VOWEL = {
+    'AE': (660, 1720, 2410), 'ER': (490, 1350, 1690), 'AH': (640, 1190, 2390),
+    'EH': (550, 1770, 2490), 'IH': (390, 1990, 2550), 'AA': (730, 1090, 2440),
+    'AY': (660, 1700, 2400), 'OW': (450, 1030, 2380), 'N': (250, 1250, 2500),
+    'M': (250, 1100, 2300), 'L': (360, 1300, 2600),
+}
+# 자음은 대역이 다른 노이즈. S 는 높고 F 는 넓고 T 는 짧게 터진다.
+FRIC = {'S': (4200, 9000, 1.0), 'F': (1200, 4600, 0.62), 'T': (2200, 7000, 0.5),
+        'K': (1400, 5200, 0.55), 'CH': (2600, 7800, 0.8)}
+
+
+def _buzz(n, f0):
+    """성대 대신 펄스 트레인. 폭이 좁아야 배음이 많아 포먼트가 잘 드러난다."""
+    ph = np.cumsum(np.full(n, f0 / SR))
+    return signal.sawtooth(2 * np.pi * ph, 0.10)
+
+
+def _formant(x, F, q=11.0):
+    out = np.zeros_like(x)
+    for i, f in enumerate(F):
+        bw = max(70.0, f / q)
+        lo_, hi_ = max(60.0, f - bw), min(SR / 2 - 200, f + bw)
+        sos = signal.butter(2, [lo_, hi_], 'bp', fs=SR, output='sos')
+        out += signal.sosfilt(sos, x) * (1.0, 0.66, 0.36)[i]
+    return out
+
+
+def say(seq, f0=108.0, gain=1.0, seed=11):
+    """seq 는 (기호, 길이) 목록. 대문자 모음/자음 기호는 위 표를 쓴다."""
+    rng = np.random.default_rng(seed)
+    parts = []
+    for sym, d in seq:
+        n = int(d * SR)
+        t = np.arange(n) / SR
+        if sym in FRIC:
+            lo_, hi_, g = FRIC[sym]
+            x = bp(rng.standard_normal(n), lo_, hi_) * g
+            e = np.clip(t / 0.006, 0, 1) * np.exp(-t / (d * 0.55))
+        elif sym == '_':
+            parts.append(np.zeros(n)); continue
+        else:
+            x = _formant(_buzz(n, f0), VOWEL[sym])
+            # 붙었다 떨어지는 자리를 부드럽게. 각지면 딸깍 소리가 낀다
+            e = np.clip(t / 0.018, 0, 1) * np.clip((d - t) / 0.030, 0, 1)
+            if sym in ('N', 'M', 'L'):
+                x *= 0.55
+        parts.append(x * e)
+    v = np.concatenate(parts) if parts else np.zeros(0)
+    n = len(v)
+    t = np.arange(n) / SR
+    # 링 모듈레이터 — 이게 사람 목소리를 기계로 바꾼다
+    v = v * (0.62 + 0.38 * signal.square(2 * np.pi * 47.0 * t))
+    v = np.round(v * 12) / 12                                  # 비트 크러시
+    v = bp(v, 220, 5200)
+    return v / (np.abs(v).max() + 1e-9) * gain
+
+
+# 또렷하게 만들려고 욕심내면 오히려 사람 흉내가 어설퍼진다.
+# 음절 수와 리듬만 맞으면 화면의 글자가 나머지를 채운다.
+SYSTEM_ONLINE = [('S', .09), ('IH', .07), ('S', .07), ('T', .04), ('EH', .07), ('M', .07),
+                 ('_', .10), ('AA', .09), ('N', .06), ('L', .05), ('AY', .11), ('N', .10)]
+AFTER_SUNSET = [('AE', .11), ('F', .08), ('T', .04), ('ER', .13), ('_', .09),
+                ('S', .11), ('AH', .12), ('N', .07), ('S', .10), ('EH', .10), ('T', .06)]
+
+
 def build():
     m = np.zeros(N)                                   # 기계 · 전면
+    vo = np.zeros(N)                                  # 음성 — 따로 둬야 밑을 누를 수 있다
     b = np.zeros(N)                                   # 저역 · 바닥
     f = np.zeros(N)                                   # 공간
 
@@ -159,12 +236,28 @@ def build():
     place(b, thump(1.4, 1.0), 11.0)
     place(b, thump(1.2, 0.55), 11.02)
 
-    # 11.0–16  험만 남기고 접점이 가끔 튄다
-    for i, at in enumerate((12.3, 13.6, 14.9)):
-        place(m, relay(0.24, 60 + i), at)
-    place(f, air(2.4, 0.10, 9), 13.4)
+    # ── 기계 음성 두 마디 ─────────────────────────────────
+    # 화면에 같은 글자가 뜨는 프레임에 정확히 얹는다.
+    place(vo, say(SYSTEM_ONLINE, 104, 0.72, 11), 5.20)
+    place(vo, say(AFTER_SUNSET, 96, 1.00, 12), 11.15)
 
-    mix = m + b * 1.15 + reverb(m, 1.8, 0.20) * 0.55 + reverb(f, 2.6, 0.35) * 0.5
+    # **말이 나올 땐 기계를 눌러야 한다.** 안 누르면 음성이 기계음에 묻혀
+    # 무슨 말인지도 모르고 소리만 지저분해진다 — 실제로 처음엔 안 들렸다.
+    # 방송 장비가 하는 일과 같다.
+    env = np.abs(vo)
+    k = int(0.05 * SR)
+    env = np.convolve(env, np.ones(k) / k, mode='same')
+    env = np.clip(env / (env.max() + 1e-9), 0, 1) ** 0.5
+    m *= 1 - 0.62 * env
+    b *= 1 - 0.30 * env
+
+    # 11.0–16  험만 남기고 접점이 가끔 튄다
+    for i, at in enumerate((12.6, 14.1, 15.2)):
+        place(m, relay(0.24, 60 + i), at)
+    place(f, air(2.4, 0.10, 9), 13.6)
+
+    mix = (m + b * 1.15 + vo * 1.05 + reverb(vo, 1.1, 0.16) * 0.35
+           + reverb(m, 1.8, 0.20) * 0.55 + reverb(f, 2.6, 0.35) * 0.5)
     mix = hp(mix, 26, 2)
     mix = np.tanh(mix * 1.25) / np.tanh(1.25)
     mix /= np.abs(mix).max() + 1e-9
