@@ -24,7 +24,7 @@ python poster_photo.py  →  out/poster/photo_{feed,story}.png
 """
 import numpy as np
 from poster_kit import (BRAND, POOL, SIZES, tmask, fit, paint, rule, duotone,
-                        logo, grain, save, timetable)
+                        logo, grain, save, timetable, tmask_bl, paint_bl)
 from fonts import KR
 import event as EV
 
@@ -78,16 +78,16 @@ def build(W, H, story=False):
     paint(img, tmask('SEOUL', BRAND, int(17 * V), 0.30), W - M, hy,
           color=AMBER, a=0.85, anchor='r')
 
-    # ── 타이틀 — 눌러 놓은 자리 위에 그냥 얹는다 ─────────────
+    # ── 이름이 헤드라인, 형식은 그 밑에 ──────────────────────
     tw = int(W - M * 1.3)
-    t1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, tw, 0.02), 0.02)
-    t2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, tw, 0.02), 0.02)
-    ty = H * (0.238 if story else 0.248)
-    paint(img, t1, M, ty, color=WHITE)
-    my = ty + t1.shape[0] / 2 + 44 * U
-    rule(img, my, M, W - M - int(70 * V), WHITE, 0.30, max(1, int(2 * V)))
-    paint(img, tmask('×', BRAND, int(48 * V)), W - M, my, color=AMBER, anchor='r')
-    paint(img, t2, M, my + t2.shape[0] / 2 + 44 * U, color=WHITE)
+    nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, tw, 0.03), 0.03)
+    ty = H * (0.228 if story else 0.238)
+    paint(img, nm, M, ty, color=WHITE)
+    my = ty + nm.shape[0] / 2 + 46 * U
+    rule(img, my, M, W - M - int(70 * V), WHITE, 0.28, max(1, int(2 * V)))
+    paint(img, tmask('×', BRAND, int(44 * V)), W - M, my, color=AMBER, anchor='r')
+    fm = tmask(EV.FORMAT, BRAND, min(int(46 * V), fit(EV.FORMAT, BRAND, tw, 0.05)), 0.05)
+    paint(img, fm, M, my + fm.shape[0] / 2 + 42 * U, color=AMBER, a=0.95)
 
     # ── 정보표 ────────────────────────────────────────────
     y0 = H * (0.492 if story else 0.505)
@@ -103,7 +103,8 @@ def build(W, H, story=False):
     ty2 = H * (0.680 if story else 0.690)
     paint(img, tmask('TIME TABLE', BRAND, int(15 * V), 0.24), M, ty2, color=AMBER, a=0.85)
     timetable(img, EV.TIMETABLE, M, W - M, ty2 + H * 0.035, H * 0.033, V,
-              AMBER, WHITE, cols=2, ksize=14, vsize=18)
+              AMBER, WHITE, cols=2, ksize=14, vsize=18,
+              program=EV.PROGRAM, prog_color=AMBER)
 
     # ── 협업 브랜드 ───────────────────────────────────────
     if EV.PARTNERS_STR:

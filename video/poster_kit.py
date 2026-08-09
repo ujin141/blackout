@@ -49,6 +49,35 @@ def tmask(text, path, size, track_em=0.0):
     return a[ys.min():ys.max() + 1, xs.min():xs.max() + 1].copy()
 
 
+def tmask_bl(text, path, size, track_em=0.0):
+    """마스크와 함께 **윗변에서 베이스라인까지의 거리**를 돌려준다.
+
+    라벨(영문 대문자)과 값(한글)을 같은 y 에 가운데 맞추면 한 줄로 안 읽힙니다 —
+    글자마다 위아래로 튀어나온 정도가 달라서 각자 다른 높이에 뜹니다.
+    베이스라인을 맞춰야 비로소 한 줄이 됩니다."""
+    f = ImageFont.truetype(path, size)
+    tr = int(size * track_em)
+    ws = [f.getlength(c) for c in text]
+    total = int(sum(ws) + tr * max(len(text) - 1, 0))
+    asc, desc = f.getmetrics()
+    im = Image.new('L', (total + 140, asc + desc + 120), 0)
+    d = ImageDraw.Draw(im)
+    x = 70
+    for c, wc in zip(text, ws):
+        d.text((x, 60), c, font=f, fill=255)
+        x += wc + tr
+    a = np.asarray(im)
+    ys, xs = np.where(a > 0)
+    m = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1].copy()
+    return m, (60 + asc) - ys.min()
+
+
+def paint_bl(dst, pair, x, y_base, color=WHITE, a=1.0, anchor='l'):
+    """베이스라인 y 에 맞춰 그린다. pair 는 tmask_bl() 의 반환값."""
+    m, base = pair
+    paint(dst, m, x, y_base - base, color=color, a=a, anchor=anchor, valign='t')
+
+
 def fit(text, path, target_w, track_em=0.0):
     """target_w 에 딱 맞는 글자 크기를 이분탐색으로 찾는다."""
     lo, hi = 8, 560
@@ -152,7 +181,7 @@ def logo(height):
 
 
 def timetable(img, rows, x0, x1, y0, step, V, key_color, val_color,
-              cols=2, ksize=15, vsize=19, a=1.0):
+              cols=2, ksize=15, vsize=19, a=1.0, program=(), prog_color=None):
     """타임테이블. 여덟 줄을 한 줄씩 쌓으면 포스터 절반을 먹어서 두 칸으로 접는다.
 
     시간은 오른쪽 끝을 맞춰야 세로로 읽힌다 — 왼쪽만 맞추면 자릿수가 달라
@@ -162,8 +191,15 @@ def timetable(img, rows, x0, x1, y0, step, V, key_color, val_color,
     for i, (s, e, name) in enumerate(rows):
         cx = x0 + cw * (i // per)
         y = y0 + step * (i % per)
-        paint(img, tmask(f'{s}–{e}', BRAND, int(ksize * V), 0.10), cx, y, color=key_color, a=a * 0.8)
-        paint(img, tmask(name, BRAND, int(vsize * V), 0.08), cx + cw * 0.46, y, color=val_color, a=a)
+        # 시간과 이름을 각각 가운데 맞추면 크기가 달라 한 줄로 안 읽힌다 —
+        # 베이스라인을 맞춘다. 표에서 이 한 끗이 제일 크게 보인다.
+        kb = tmask_bl(f'{s}–{e}', BRAND, int(ksize * V), 0.10)
+        vb = tmask_bl(name, BRAND, int(vsize * V), 0.08)
+        yb = y + vb[0].shape[0] * 0.5
+        paint_bl(img, kb, cx, yb, color=key_color, a=a * 0.8)
+        # 프로그램(솔로파티)은 DJ 가 아니다. 같은 색이면 DJ 이름으로 읽힌다.
+        c = (prog_color if (name in program and prog_color is not None) else val_color)
+        paint_bl(img, vb, cx + cw * 0.46, yb, color=c, a=a)
 
 
 def partner_strip(img, paths, x0, x1, cy, h_max, color, a=0.9, gap_ratio=0.055,

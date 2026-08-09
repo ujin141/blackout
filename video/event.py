@@ -16,6 +16,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PARTNER_DIR = os.path.join(os.path.dirname(HERE), 'assets', 'img', 'partners')
 
 # ── 행사 정보 ─────────────────────────────────────────────
+# 행사 이름과 형식은 다르다. 이름이 브랜드고, 형식은 무슨 파티인지 설명이다.
+# 포스터는 이름을 크게, 형식을 그 밑에 작게 — 순서가 바뀌면 이름이 안 남는다.
+NAME    = 'AFTER SUNSET'
+NAME_KR = '애프터 선셋'
+FORMAT  = 'POOL PARTY  ×  SOLO PARTY'
+
 DATE  = '8월 29일 토요일'         # 2026-08-29 (토)
 TIME  = '오후 7시 — 자정'         # 19:00 ~ 24:00
 VENUE = '루프탑 어나더 라운지'    # 장소명과 주소는 줄을 나눈다 —
@@ -45,7 +51,8 @@ TIMETABLE = [
 ]
 
 # 라인업 — 타임테이블에서 뽑는다. 따로 적으면 둘이 어긋난다.
-LINEUP = [n for _, _, n in TIMETABLE if n != 'SOLO PARTY']
+PROGRAM = {'SOLO PARTY'}          # DJ 가 아니라 프로그램. 타임테이블에서 색을 가른다
+LINEUP = [n for _, _, n in TIMETABLE if n not in PROGRAM]
 LINEUP_STR = ' · '.join(LINEUP)
 
 # ── 협업 브랜드 ───────────────────────────────────────────

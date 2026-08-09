@@ -80,18 +80,19 @@ def build(W, H, story=False):
     paint(img, tmask('SEOUL', BRAND, int(16 * V), 0.30), W - M, hy, color=LIME, a=0.8, anchor='r')
 
     # ── 네온 간판 ─────────────────────────────────────────
-    t1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, iw, 0.02), 0.02)
-    t2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, iw, 0.02), 0.02)
-    y1 = H * (0.235 if story else 0.250)
+    # 간판에는 행사 이름을 건다. 형식은 간판 아래 작게 —
+    # 네온 두 줄을 다 튜브로 만들면 무엇이 이름인지 안 갈린다.
+    t1 = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, iw, 0.03), 0.03)
+    y1 = H * (0.250 if story else 0.268)
     neon(img, t1, M, y1, V, mirror=y1 + t1.shape[0] * 0.62)
 
-    my = y1 + t1.shape[0] / 2 + 96 * U
-    xm = tmask('×', BRAND, int(84 * V))
+    my = y1 + t1.shape[0] / 2 + 104 * U
+    xm = tmask('×', BRAND, int(72 * V))
     neon(img, xm, W - M, my, V, anchor='r')
     rule(img, my, M, W - M - xm.shape[1] - int(46 * V), LIME, 0.42, max(1, int(2 * V)))
 
-    y2 = my + t2.shape[0] / 2 + 96 * U
-    neon(img, t2, M, y2, V, mirror=y2 + t2.shape[0] * 0.62)
+    t2 = tmask(EV.FORMAT, BRAND, min(int(44 * V), fit(EV.FORMAT, BRAND, iw, 0.05)), 0.05)
+    paint(img, t2, M, my + t2.shape[0] / 2 + 54 * U, color=LIME, a=0.92)
 
     # ── 정보 — 간판 아래 작게. 여기서 빛나면 간판이 죽는다 ──
     y0 = H * 0.515
@@ -106,7 +107,8 @@ def build(W, H, story=False):
     ty = H * 0.712
     paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.24), M, ty, color=LIME, a=0.85)
     timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.032, H * 0.030, V,
-              LIME, WHT, cols=2, ksize=13, vsize=17, a=0.92)
+              LIME, WHT, cols=2, ksize=13, vsize=17, a=0.92,
+              program=EV.PROGRAM, prog_color=LIME)
 
     if EV.PARTNERS_STR:
         py = H * (0.872 if story else 0.878)

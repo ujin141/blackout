@@ -185,11 +185,15 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUT CREW', BRAND, int(16 * V), 0.30), M + hgt + int(16 * V), hy, a=0.92)
     paint(img, tmask('SEOUL', BRAND, int(16 * V), 0.30), W - M, hy, color=RED, a=0.9, anchor='r')
 
+    # ── 행사 이름 — 쌓은 타이포보다 위에, 제일 먼저 읽히게 ──
+    nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, fx1 - fx0, 0.04), 0.04)
+    paint(img, nm, fx0, H * (0.140 if story else 0.148))
+
     # ── 쌓아 올린 타이포 ──────────────────────────────────
     # 큰 낱말은 전폭 왼쪽, 작은 낱말은 60% 폭 오른쪽.
     # 전부 같은 폭으로 맞추면 네 줄이 다 커져서 세로가 넘치고,
     # 넘치지 않게 줄이면 오른쪽 여백이 남는다. 크기를 갈라 두 문제를 같이 푼다.
-    band0, band1 = H * 0.130, H * 0.545
+    band0, band1 = H * 0.195, H * 0.560
     colw = fx1 - fx0
     lead, divh = int(20 * U), int(104 * U)
     for _ in range(4):                                  # 칸에 맞을 때까지 폭을 줄인다
@@ -240,7 +244,8 @@ def build(W, H, story=False):
     # 시간은 흰색으로. 배경이 붉은 판이라 붉은 글자를 쓰면 같은 색끼리 겹쳐
     # 안 읽힌다 — 강조색은 구역 라벨에만 남긴다.
     timetable(img, EV.TIMETABLE, fx0, fx1, ty + H * 0.035, H * 0.028, V,
-              WHITE, WHITE, cols=2, ksize=13, vsize=17, a=0.95)
+              WHITE, WHITE, cols=2, ksize=13, vsize=17, a=0.95,
+              program=EV.PROGRAM, prog_color=RED)
 
     if EV.PARTNERS_STR:
         py = H * (0.884 if story else 0.892)

@@ -95,14 +95,14 @@ def build(W, H, story=False):
     # 두 줄이 안쪽 폭을 꽉 채우므로 × 를 넣을 자리가 옆에 없다.
     # 줄 사이에 칸을 만들어 거기에 놓는다. 좌표를 눈대중으로 박으면
     # 글자 높이가 바뀔 때 × 가 글자 위로 올라탄다 — 실제 높이에서 계산할 것.
-    t1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, iw, 0.02), 0.02)
-    t2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, iw, 0.02), 0.02)
+    t1 = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, iw, 0.03), 0.03)
+    t2 = tmask(EV.FORMAT, BRAND, min(int(40 * V), fit(EV.FORMAT, BRAND, iw, 0.05)), 0.05)
     ty = H * (0.108 if story else 0.105)
     paint(img, t1, M, ty, color=INK, valign='t')
     my = ty + t1.shape[0] + 34 * U
     rule(img, my, M, Mx - int(74 * V), INK, 0.30, max(1, int(1 * V)))
     paint(img, tmask('×', BRAND, int(46 * V)), Mx, my, color=BLUE, anchor='r')
-    paint(img, t2, M, my + 34 * U, color=INK, valign='t')
+    paint(img, t2, M, my + 30 * U, color=BLUE, a=0.9, valign='t')
 
     # ── 사진 창 — 신문처럼 잉크 한 색으로 ──────────────────
     py0 = int(H * 0.300)
@@ -145,7 +145,8 @@ def build(W, H, story=False):
     rule(img, ty - 24 * U, M, Mx, INK, 0.30, max(1, int(1 * V)))
     paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.24), M, ty, color=BLUE, a=0.95)
     timetable(img, EV.TIMETABLE, M, Mx, ty + H * 0.034, H * 0.030, V,
-              BLUE, INK, cols=2, ksize=13, vsize=17)
+              BLUE, INK, cols=2, ksize=13, vsize=17,
+              program=EV.PROGRAM, prog_color=BLUE)
 
     # ── 바코드 + 발 ───────────────────────────────────────
     by0 = int(H * 0.850)

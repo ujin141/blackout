@@ -40,7 +40,7 @@ ORANGE = np.array([1.00, 0.42, 0.05], np.float32)
 BLK    = np.array([0.06, 0.05, 0.05], np.float32)
 
 # (이름, 비중) — 세로를 이 비율로 나눈다
-ROWS = [('head', 0.55), ('pool', 1.45), ('pair', 2.10), ('solo', 1.45),
+ROWS = [('head', 1.25), ('pool', 1.35), ('pair', 2.00), ('solo', 1.35),
         ('mix', 2.55), ('info', 1.80), ('foot', 0.55)]
 # 로고 칸은 파일이 있을 때만 넣는다. 비워 두면 빈 흰 칸이 남는다.
 if EV.PARTNERS_STR:
@@ -77,12 +77,14 @@ def build(W, H, story=False):
 
     # ── 머리 ──────────────────────────────────────────────
     y0, y1 = ys['head']
-    cy = (y0 + y1) / 2
-    paint(img, logo(int(38 * V)), M, cy, color=WHT)
+    hy = y0 + (y1 - y0) * 0.22
+    paint(img, logo(int(38 * V)), M, hy, color=WHT)
     paint(img, tmask('BLACKOUT CREW', BRAND, int(15 * V), 0.30),
-          M + int(38 * V) + int(14 * V), cy, color=WHT, a=0.9)
-    paint(img, tmask('SEOUL  ·  2026', BRAND, int(15 * V), 0.30), W - M, cy,
+          M + int(38 * V) + int(14 * V), hy, color=WHT, a=0.9)
+    paint(img, tmask('SEOUL  ·  2026', BRAND, int(15 * V), 0.30), W - M, hy,
           color=ORANGE, anchor='r')
+    # 행사 이름 — 칸 안이 아니라 머리에 둔다. 칸으로 만들면 다른 칸과 같은 무게가 된다.
+    paint(img, tw(EV.NAME, BRAND, iw, 0.04), M, y0 + (y1 - y0) * 0.70, color=WHT)
 
     # ── POOL PARTY — 흰 칸에 검은 글자 ─────────────────────
     y0, y1 = ys['pool']
@@ -114,7 +116,8 @@ def build(W, H, story=False):
     paint(img, tmask('TIME TABLE', BRAND, int(14 * V), 0.26), M + px, y0 + 32 * U,
           color=ORANGE)
     timetable(img, EV.TIMETABLE, M + px, W - M - px, y0 + 76 * U,
-              (y1 - y0 - 96 * U) / 4, V, ORANGE, WHT, cols=2, ksize=13, vsize=18)
+              (y1 - y0 - 96 * U) / 4, V, ORANGE, WHT, cols=2, ksize=13, vsize=18,
+              program=EV.PROGRAM, prog_color=ORANGE)
 
     # ── 정보 칸 — 2×2 ─────────────────────────────────────
     y0, y1 = ys['info']

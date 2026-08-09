@@ -44,7 +44,7 @@ from fonts import KR, KRB
 
 # 행사 정보는 event.py 한 곳에서 온다. 여기서 고치지 말 것.
 import event as EV
-from poster_kit import timetable, partner_strip
+from poster_kit import timetable, partner_strip, tmask_bl, paint_bl
 
 HOOK   = ''                                # 한 줄 카피. 비우면 아예 안 그린다
 ROWS   = [('DATE',    EV.DATE),
@@ -288,7 +288,7 @@ def build(W, H, story=False):
     img = img * (1 - d) + INK * d
     d2 = np.clip((yy - H * (0.560 if HOOK else 0.455)) / (H * 0.085), 0, 1)[..., None] * 0.68
     img = img * (1 - d2) + INK * d2
-    t = np.clip(1 - yy / (H * 0.17), 0, 1)[..., None] * 0.42
+    t = np.clip(1 - yy / (H * 0.30), 0, 1)[..., None] * 0.56
     img = img * (1 - t) + INK * t
     # 물 쪽도 경계로 갈수록 눌러 준다 — 안 그러면 흰 타이틀이 수면 반짝임에 먹힌다
     p = (np.clip((yy - SEAM * 0.44) / (SEAM * 0.56), 0, 1) ** 1.15 * top[..., 0] * 0.62)[..., None]
@@ -307,19 +307,27 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUT CREW', BRAND, int(17 * V), 0.30), M + hgt + int(18 * V), H * 0.068, a=0.9)
     paint(img, tmask('SEOUL', BRAND, int(17 * V), 0.30), W - M, H * 0.068, a=0.6, anchor='r')
 
-    # ── 타이틀 — 좌측 기준선에서 시작해 오른쪽으로 거의 흘러넘친다 ──
-    tw = int(W - M * 1.25)
-    off = int(6 * V)
-    m1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, tw, 0.02), 0.02)
-    glow(img, m1, M, SEAM - 150 * U, CYAN, 0.55, 22 * V)
-    paint_split(img, m1, M, SEAM - 150 * U, off)
-    m2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, tw, 0.02), 0.02)
-    glow(img, m2, M, SEAM + 110 * U, MAGENTA, 0.60, 22 * V)
-    paint_split(img, m2, M, SEAM + 110 * U, off)
+    # ── 행사 이름 — 제일 큰 글자여야 한다. 형식(풀파티×솔로파티)은
+    #    아래 타이틀과 경계 마퀴가 이미 말하고 있다. ──────────
+    nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, int(W - M * 1.25), 0.04), 0.04)
+    ny = H * (0.168 if story else 0.175)
+    glow(img, nm, M, ny, CYAN, 0.50, 24 * V)
+    paint(img, nm, M, ny)
 
-    # ── 마퀴 두 줄. 서로 반대로 눕혀 화면을 잡아 준다 ───────
-    # 위쪽은 물만 있는 빈 자리를 메운다. 셋 이상 깔면 산만해진다.
-    marquee(img, 'DAY TO NIGHT  ×  SEOUL  ×  ', H * 0.158, int(40 * V), MAGENTA, INK, V, -ANGLE)
+    # ── 타이틀 — 좌측 기준선에서 시작해 오른쪽으로 거의 흘러넘친다 ──
+    tw = int(W * 0.52)
+    off = int(5 * V)
+    m1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, tw, 0.02), 0.02)
+    glow(img, m1, M, SEAM - 105 * U, CYAN, 0.50, 18 * V)
+    paint_split(img, m1, M, SEAM - 105 * U, off)
+    m2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, tw, 0.02), 0.02)
+    glow(img, m2, M, SEAM + 95 * U, MAGENTA, 0.55, 18 * V)
+    paint_split(img, m2, M, SEAM + 95 * U, off)
+
+    # ── 마퀴는 경계 한 줄만 ───────────────────────────────
+    # 위쪽에도 띠가 하나 더 있었는데 뺐다 — 물만 있던 빈 자리를 메우려던 것이고,
+    # 행사 이름이 들어오면서 그 자리를 차지했다. 이름 위에 띠까지 얹으면
+    # 이름이 장식에 묻힌다.
     marquee(img, 'POOL PARTY  ×  SOLO PARTY  ×  ', SEAM, int(52 * V), CYAN, INK, V)
 
     # ── 한 줄 — 이 포스터에서 제일 중요한 문장 ─────────────
@@ -347,7 +355,8 @@ def build(W, H, story=False):
     ty = H * (0.660 if story else 0.672)
     paint(img, tmask('TIME TABLE', BRAND, int(15 * V), 0.24), M, ty, color=CYAN, a=0.75)
     timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.036,
-              V, CYAN, WHITE, cols=2, ksize=14, vsize=18)
+              V, CYAN, WHITE, cols=2, ksize=14, vsize=18,
+              program=EV.PROGRAM, prog_color=MAGENTA)
 
     # ── 협업 브랜드 ───────────────────────────────────────
     # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
