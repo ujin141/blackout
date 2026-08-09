@@ -115,6 +115,36 @@ def glitch(dur=0.22, gain=1.0, seed=3):
     return hp(x, 300) * np.exp(-t * 14) * gain
 
 
+def turbine(dur, f0=64, f1=104, gain=1.0, cut0=380, cut1=3400, seed=4):
+    """터빈이 돌아가는 굉음. **이 판의 웅장함은 전부 여기서 나온다.**
+
+    디튠한 톱니 일곱 개를 겹치고 로우패스를 위로 연다.
+    악기가 아니라 큰 기계가 회전수를 올리는 소리다."""
+    n, t = _n(dur)
+    rng = np.random.default_rng(seed)
+    f = f0 * (f1 / f0) ** (t / dur)
+    x = np.zeros(n)
+    for d in (-0.011, -0.006, -0.002, 0.0, 0.003, 0.007, 0.012):
+        x += signal.sawtooth(2 * np.pi * np.cumsum(f * (1 + d)) / SR)
+    x = x / 7 + bp(rng.standard_normal(n), 300, 6500) * 0.28
+    out = np.zeros(n)
+    step = int(SR * 0.03)
+    for i in range(0, n, step):
+        c = cut0 + (cut1 - cut0) * (i / n) ** 1.5
+        out[i:i + step] = lp(x[i:i + step], c)
+    return out * np.clip(t / (dur * 0.45), 0, 1) ** 1.3 * gain
+
+
+def boom(dur=2.8, gain=1.0):
+    """판이 걸릴 때의 한 방. **포화를 걸어 배음을 만든다** —
+    순수한 저음만 두면 작은 스피커에서는 아무 소리도 안 난다."""
+    n, t = _n(dur)
+    f = 132 * np.exp(-t * 2.2) + 44
+    x = np.sin(2 * np.pi * np.cumsum(f) / SR)
+    x = np.tanh(x * 2.8) / np.tanh(2.8)
+    return x * np.exp(-t * 1.45) * gain
+
+
 def thump(dur=0.5, gain=1.0):
     """기계가 도는 박자. 음정이 아니라 무게만 남긴다."""
     n, t = _n(dur)
@@ -200,7 +230,7 @@ def build():
         place(m, relay(0.85, i), at)
 
     # 1.2–16   전원 험이 깔린다. 뒤로 갈수록 커진다
-    hm = hum(DUR - 1.2, 60.0, 0.5)
+    hm = hum(DUR - 1.2, 60.0, 0.12)
     hm *= np.clip(np.linspace(0, 1, len(hm)) * 2.2, 0, 1) ** 0.7
     place(b, hm, 1.2)
     HUM_START = 1.2
@@ -230,6 +260,10 @@ def build():
         at += 0.6
         k += 1
 
+    # 4.8–11.0 터빈이 회전수를 올린다. 웅장함은 여기서 나온다
+    place(m, turbine(6.4, 58, 96, 0.62, 520, 3400, 4), 4.70)
+    place(m, turbine(2.2, 88, 150, 0.55, 1200, 6000, 14), 8.90)
+
     # 8.6–11.0 콘덴서가 충전된다. 이 구간이 길어야 터질 때 크게 들린다
     place(m, capacitor(2.4, 0.20), 8.60)
     place(m, servo(1.6, 200, 1600, 0.16, 26), 9.40)
@@ -238,9 +272,11 @@ def build():
 
     # 11.0  판이 걸린다 — 여기가 이름이 나오는 자리
     place(m, metal(1.3, 0.95, 7, 150), 11.0)
+    place(m, metal(1.6, 0.55, 17, 92), 11.0)          # 한 옥타브 아래를 겹쳐 무게를 준다
     place(m, air(0.7, 0.34, 8), 11.0)
-    place(b, thump(1.4, 1.0), 11.0)
-    place(b, thump(1.2, 0.55), 11.02)
+    place(b, boom(2.8, 0.95), 11.0)
+    place(b, thump(1.2, 0.45), 11.02)
+    place(f, turbine(4.6, 96, 62, 0.42, 3600, 700, 24), 11.0)   # 회전수가 떨어지며 남는 굉음
 
     # ── 기계 음성 두 마디 ─────────────────────────────────
     # 화면에 같은 글자가 뜨는 프레임에 정확히 얹는다.
@@ -256,15 +292,21 @@ def build():
     env = np.clip(env / (env.max() + 1e-9), 0, 1) ** 0.5
     m *= 1 - 0.92 * env
     b *= 1 - 0.72 * env
+    f *= 1 - 0.85 * env          # 잦아드는 터빈도 눌러야 한다 — 안 누르면 말 위에 남는다
 
     # 11.0–16  험만 남기고 접점이 가끔 튄다
     for i, at in enumerate((12.6, 14.1, 15.2)):
         place(m, relay(0.24, 60 + i), at)
     place(f, air(2.4, 0.10, 9), 13.6)
 
-    mix = (m + b * 1.15 + vo * 2.30 + reverb(vo, 1.1, 0.16) * 0.30
-           + reverb(m, 1.8, 0.20) * 0.55 + reverb(f, 2.6, 0.35) * 0.5)
-    mix = hp(mix, 26, 2)
+    # **저음의 배음을 만들어 준다.** 작은 스피커는 200Hz 아래를 못 내므로
+    # 저음만 크면 "소리가 없다"가 된다. 포화시킨 저음의 윗부분을 섞어 주면
+    # 스피커가 못 내는 저음을 귀가 배음으로 채워 듣는다.
+    m += hp(np.tanh(b * 3.2), 150) * 0.60
+
+    mix = (m + b * 0.55 + vo * 2.30 + reverb(vo, 1.1, 0.16) * 0.30
+           + reverb(m, 2.4, 0.26) * 0.62 + reverb(f, 3.2, 0.40) * 0.6)
+    mix = hp(mix, 55, 2)                              # 42Hz 아래는 못 듣고 헤드룸만 먹는다
     mix = np.tanh(mix * 1.25) / np.tanh(1.25)
     mix /= np.abs(mix).max() + 1e-9
     mix *= 0.95
