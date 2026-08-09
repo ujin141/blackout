@@ -98,6 +98,11 @@ python poster_float.py                        # M안 겹친 튜브 두 개 · �
 python poster_mirror.py                       # N안 혼자 왔는데 비친 건 둘 · 호박
 python poster_lane.py                         # O안 수영 레인 = 타임테이블 · 라임
 python poster_tag.py                          # P안 번호표 두 장 · 코랄×아쿠아
+python poster_siren.py                        # Q안 경고문 · 위험 노랑×적색
+python poster_heat.py                         # R안 열화상 · 자홍→주황
+python poster_shred.py                        # S안 찢겨 어긋난 판 · 독성 마젠타
+python poster_splash.py                       # T안 물튀김 정지 · 전기 시안
+python poster_scream.py                       # U안 판을 넘치는 글자 · 형광 오렌지
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
