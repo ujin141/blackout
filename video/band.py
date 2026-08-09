@@ -12,9 +12,16 @@
    그래서 **세는 막대**를 넣었습니다. GUEST 1개 · ARTIST 2개 · STAFF 3개.
    색을 못 믿는 상황에서도 개수는 셀 수 있습니다.
 
-**2. 밝기까지 갈라 놓는다**
-   흑백으로 인쇄되거나 어두운 데서 봐도 구분되게 배경 밝기를 세 단으로 벌립니다.
-   어두움(GUEST) → 중간(ARTIST) → 밝음(STAFF).
+**2. 색상도 밝기도 둘 다 갈라 놓는다**
+   색상환에서 이웃한 색(남색·청록)으로 나누면 조명 아래에서 둘이 같아 보입니다.
+   파랑(220°) · 분홍(335°) · 호박(42°) 으로 벌렸습니다.
+   밝기도 세 단 — 어두움(GUEST) → 중간(ARTIST) → 밝음(STAFF).
+   흑백으로 인쇄되거나 어두운 데서 봐도 구분됩니다.
+
+**2-1. 가로선은 재단선이 아니다**
+   장식 괘선입니다. 다만 가장자리와 나란히 **끝까지** 그으면 인쇄소가
+   재단선으로 볼 수 있습니다. 양끝을 안쪽에서 끊어 두면 재단선일 수 없습니다.
+   진짜 재단·블리드는 인쇄소 사양에 맞춰 그쪽에서 잡습니다.
 
 **3. 한 번에 3분의 1도 안 보인다**
    손목에 감기니까 같은 덩어리를 두 번 반복합니다. 접착 탭이 한쪽 반복을
@@ -64,10 +71,12 @@ HAIR = 3                               # 최소 획 3px = 0.25mm. 더 얇으면 
 
 BL1, BL2 = 150, 212                    # 두 줄의 베이스라인. 좌우 블록이 공유한다
 
-NAVY  = np.array([0.03, 0.05, 0.14], np.float32)
-TEAL  = np.array([0.05, 0.22, 0.26], np.float32)
-AMBER = np.array([1.00, 0.74, 0.22], np.float32)
-CYAN  = np.array([0.35, 0.92, 0.98], np.float32)
+# 세 등급은 **색상환에서 멀리 떨어뜨린다.** 남색·청록처럼 이웃한 색으로 나누면
+# 조명 아래에서 둘이 같아 보인다. 파랑(220°) · 분홍(335°) · 호박(42°) 로 벌렸다.
+NAVY  = np.array([0.03, 0.05, 0.16], np.float32)
+PINK  = np.array([0.93, 0.20, 0.50], np.float32)
+AMBER = np.array([1.00, 0.72, 0.18], np.float32)
+INK   = np.array([0.06, 0.03, 0.10], np.float32)
 WHITE = np.array([1.00, 1.00, 1.00], np.float32)
 
 DATE_SHORT = '08.29 SAT'               # 밴드에서 '8월 29일 토요일'은 자리를 너무 먹는다
@@ -76,8 +85,8 @@ TIME_SHORT = '19:00 – 24:00'
 # (등급, 세는 막대 수, 배경, 글자, 강조)  — 배경 밝기를 세 단으로 벌린다
 TIERS = [
     ('GUEST',  1, NAVY,  WHITE, AMBER),
-    ('ARTIST', 2, TEAL,  WHITE, CYAN),
-    ('STAFF',  3, AMBER, NAVY,  NAVY),
+    ('ARTIST', 2, PINK,  INK,   WHITE),
+    ('STAFF',  3, AMBER, INK,   INK),
 ]
 
 
@@ -141,8 +150,10 @@ def build(word, n, bg, fg, accent):
     img[:, :UNIT] = u
     img[:, UNIT:] = u
 
-    rule(img, SAFE - 14, 0, W, accent, 0.55, HAIR)
-    rule(img, H - SAFE + 11, 0, W, accent, 0.55, HAIR)
+    # 가장자리와 나란히 끝까지 긋지 않는다 — **재단선으로 오해받는다.**
+    # 양끝을 안쪽에서 끊으면 재단선일 수 없고, 장식으로만 읽힌다.
+    rule(img, SAFE + 6, SAFE, W - TAB - SAFE, accent, 0.5, HAIR)
+    rule(img, H - SAFE - 9, SAFE, W - TAB - SAFE, accent, 0.5, HAIR)
 
     box(img, W - TAB, 0, W, H, bg)         # 접착 탭은 바탕만
     grain(img, 0.006, 2)
