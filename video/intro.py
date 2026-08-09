@@ -21,7 +21,9 @@
     13.0–16.5 다시 올린다. 3 · 2 · 1 카운트다운 (두 박마다)
     16.5–17.0 소리도 화면도 통째로 비운다. **한 박의 정적이 한 방을 만든다**
     17.0      마지막 한 방. **여기서 디제이가 건다** — 마디 첫 박이다
-    17.0–23.0 화음이 울리는 동안 120BPM 을 계속 친다. 마디 셋 뒤 첫 박에서 끝
+    17.0–21.0 화음이 울리는 동안 120BPM 을 계속 친다
+    21.0–22.5 **카운트인** — 시보음 네 번(낮게 셋, 높게 하나)
+    23.0      끝. **여기가 노래 첫 박이다**
 
 **끝은 페이드가 아니라 한 방입니다.** 페이드로 끝나면 디제이가 언제 걸어야 할지
 모릅니다. 카운트다운 뒤 한 방이면 그 프레임에 정확히 걸 수 있습니다.
@@ -183,9 +185,20 @@ def beats(img, k):
     for i in range(NBEAT + 1):
         gx = x0 + (x1 - x0) * i / NBEAT
         down = (i % 4 == 0)
-        h = int((15 if down else 8) * S)
+        # **마지막 한 마디는 카운트인이다.** 소리가 시보음으로 세는 동안
+        # 눈금도 같이 커져야 어디가 끝인지 몸으로 알 수 있다.
+        cue = i >= NBEAT - 4
+        h = int((15 if down else 8) * (1.9 if cue else 1.0) * S)
         a = 0.95 if i == k else (0.30 if i < k else 0.13)
-        box(img, gx - 1.5 * S, y - h, gx + 1.5 * S, y, AMBER if down else WHITE, a)
+        if cue and i >= k:
+            a = max(a, 0.45)
+        col = AMBER if (down or cue) else WHITE
+        box(img, gx - (2.5 if cue else 1.5) * S, y - h, gx + (2.5 if cue else 1.5) * S, y, col, a)
+    # 마지막 눈금 = 파일의 마지막 프레임 = **여기서 건다.** 카운트인 동안 커진다
+    if k >= NBEAT - 4:
+        gx = x1
+        g = (k - (NBEAT - 4)) / 4.0
+        box(img, gx - 4 * S, y - (34 + 26 * g) * S, gx + 4 * S, y, AMBER, 0.55 + 0.45 * g)
 
 
 def horizon(img, y, k):
@@ -294,20 +307,29 @@ def frame(t, i, A, rng):
     if t >= T_LOCK:
         k = np.clip((t - T_LOCK) / 0.5, 0, 1)
         img += (1 - k) ** 2 * 0.9 * WHITE                  # 터지는 순간의 백색
-        # 가로판은 폭이 넉넉해서 이름을 꽉 채우면 오히려 싸 보인다. 62% 까지만.
-        nw = int((W - M * 2) * (0.62 if W > H else 1.0))
-        nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, nw, 0.06), 0.06)
-        ny = H * (0.36 if W > H else 0.40)
-        paint(img, nm, M, ny, color=WHITE, a=k)
-        rule(img, ny + 62 * S, M, M + (W - M * 2) * k, AMBER, 0.75 * (1 - st), int(3 * S))
-        paint(img, tmask(EV.FORMAT, BRAND, int(30 * S), 0.10), M, ny + 108 * S,
-              color=AMBER, a=k * 0.95 * (1 - st))
+        # **가운데로 세운다.** 왼쪽 기준선은 정보를 늘어놓을 때의 짜임이고,
+        # 이름 하나만 남기는 판에서는 가운데가 크다 — 좌우 여백이 같아야
+        # 글자가 화면을 지배하고, 왼쪽에 붙으면 오른쪽이 남은 것으로 보인다.
+        # 폭도 62% → 84% 로 넓히고 자간을 벌린다. 큰 글자는 벌려야 커 보인다.
+        TR = 0.16
+        nw = int((W - M * 2) * (0.84 if W > H else 1.0))
+        nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, nw, TR), TR)
+        nh = nm.shape[0]
+        ny = H * (0.42 if W > H else 0.44)
+        paint(img, nm, W / 2, ny, color=WHITE, a=k, anchor='c')
+        # 밑줄은 **가운데에서 양쪽으로 벌어진다.** 한쪽에서 흐르는 것보다 크다
+        half = (nm.shape[1] * 0.5 + 30 * S) * k
+        rule(img, ny + nh * 0.5 + 30 * S, W / 2 - half, W / 2 + half,
+             AMBER, 0.75 * (1 - st), int(3 * S))
+        fm = tmask(EV.FORMAT, BRAND, int(30 * S), 0.34)   # 부제는 더 벌려 폭을 맞춘다
+        paint(img, fm, W / 2, ny + nh * 0.5 + 78 * S,
+              color=AMBER, a=k * 0.95 * (1 - st), anchor='c')
 
         # 끝의 빈자리는 **정보가 아니라 브랜드 마크로** 채운다. 날짜·주소를 붙이면
         # 인트로가 아니라 포스터가 되고, 아무것도 안 두면 허전하다.
         # 엠블럼은 글자가 아니라 형태라 이름과 싸우지 않는다. 아주 옅게.
         if st > 0.01:
-            paint(img, logo(int(min(W, H) * 0.46)), W / 2, H * (0.66 if W > H else 0.70),
+            paint(img, logo(int(min(W, H) * 0.46)), W / 2, H * (0.72 if W > H else 0.72),
                   color=WHITE, a=0.12 * st, anchor='c')
 
         img *= 0.94 + 0.10 * A['rms'][i]
@@ -328,8 +350,10 @@ def frame(t, i, A, rng):
                 q = (t - t0) / 0.88
                 if 0 <= q < 1:
                     # 이름·형식 줄 아래에 놓는다. 가운데에 크게 두면 이름을 덮는다
-                    sz = int(min(W, H) * 0.34 * (1.20 - 0.20 * q))
-                    paint(img, tmask(num, BRAND, sz), W / 2, H * (0.68 if W > H else 0.68),
+                    # 이름이 가운데로 커지면서 숫자 자리가 좁아졌다. 아래로 내리고
+                    # 한 단 줄인다 — **숫자가 이름을 덮으면 이름이 진다.**
+                    sz = int(min(W, H) * 0.28 * (1.20 - 0.20 * q))
+                    paint(img, tmask(num, BRAND, sz), W / 2, H * (0.78 if W > H else 0.72),
                           color=WHITE, a=(1 - q) ** 0.55, anchor='c')
 
         # ── 16.35–16.75 소리가 통째로 비는 구간 ───────────
@@ -340,17 +364,21 @@ def frame(t, i, A, rng):
 
         # ── 16.75 마지막 한 방 ────────────────────────────
         if t >= T_GO:
-            g = np.clip((t - T_GO) / 0.32, 0, 1)
-            img += ((1 - g) ** 2) * 1.15 * WHITE
             # **큰 화면에서는 번짐이 크기다.** 밝은 데를 뽑아 흐려 더하면
             # 글자가 빛을 내는 것처럼 보인다 — 화음이 버티는 동안 같이 버틴다.
+            #
+            # **번짐은 반드시 백색 섬광보다 먼저 얹는다.** 뒤에 얹으면 섬광이
+            # 화면 전체를 문턱 위로 올려놔서 판이 통째로 흰색이 된다 —
+            # 자막을 키우자 실제로 그렇게 됐다. 번짐의 재료는 글자여야지 섬광이 아니다.
             bl = np.exp(-(t - T_GO) / 2.6) * (0.30 + 0.55 * A['rms'][i])
             if bl > 0.02:
                 # 문턱이 낮으면 **호박색 밑줄까지 번져 여백 밖으로 새어 나간다** —
                 # 실제로 밑줄의 후광이 왼쪽 여백을 60px 넘어가 정렬이 어긋나 보였다.
                 # 0.60 이면 흰 글자만 걸린다. 빛은 이름에서만 난다.
                 img += cv2.GaussianBlur(np.clip(img - 0.60, 0, 1), (0, 0),
-                                        int(min(W, H) * 0.022)) * bl * 3.0
+                                        int(min(W, H) * 0.022)) * bl * 1.9
+            g = np.clip((t - T_GO) / 0.32, 0, 1)
+            img += ((1 - g) ** 2) * 1.15 * WHITE
             # 화면 아래에서 노을이 부풀었다 7초에 걸쳐 물러난다. 소리에 맞춰 숨 쉰다.
             # **검정 하나만 남기면 웅장한 게 아니라 빈 화면이다.**
             beats(img, int(round((t - T_GO) / BEAT)))
