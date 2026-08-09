@@ -50,6 +50,7 @@ assets/css/styles.css   :root 에 디자인 토큰
 video/                  영상·카드뉴스·OG 생성 스크립트
 video/event.py          행사 정보 원본 — 날짜·시간·타임테이블·협업 브랜드. 시안 다섯이 여기서 가져감
 video/poster_kit.py     포스터 공통 도구 (C·D·E안이 씀. A·B안은 각자 복사본)
+video/fest_kit.py       페스티벌 시안 전용 도구 (G~K안)
 assets/img/partners/    협업 브랜드 로고 4종 — 포스터에 자동으로 들어감 (README 참고)
 proposal/               웨이비 스튜디오 제안서 (18p)
 proposal2/              디제이코리아 제안서 (15p) — style.css 는 proposal/ 것을 공유
@@ -87,6 +88,11 @@ python poster_club.py                         # B안 클럽, 직각 격자 + 쌓
 python poster_ticket.py                       # C안 입장권, 유일한 밝은 판 · 파랑
 python poster_neon.py                         # D안 네온 사인, 밤 느낌 최대 · 형광 초록
 python poster_grid.py                         # E안 모듈 그리드, 정보 밀도 최대 · 오렌지
+python poster_bill.py                         # G안 라인업 블록(톰스톤) · 순수 타이포 · 청록
+python poster_sun.py                          # H안 지는 해 + 레트로 띠 · 주황
+python poster_crest.py                        # I안 원형 배지 · 금색
+python poster_stage.py                        # J안 무대 빔 + 관객 · 보라×자홍
+python poster_stack.py                        # K안 활판 밴드 · 라임 한 줄
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
