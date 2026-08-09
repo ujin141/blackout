@@ -325,8 +325,9 @@ def render(key, cut='story'):
     if motion == 'strobe':
         extra['rng'] = rng
     if motion == 'card':
-        b0 = H * (0.826 if story else 0.850)
-        extra['bar'] = (b0, b0 + 52 * (H / 1350.0))
+        # 포스터 쪽 by0 · 바코드 높이와 같아야 스캐너 선이 바코드 위를 지나간다
+        b0 = H * 0.850
+        extra['bar'] = (b0, b0 + 44 * (H / 1350.0))
     if motion == 'flicker':
         lum = base @ np.float32([0.299, 0.587, 0.114])
         hi = np.clip(lum - 0.50, 0, 1) / 0.5

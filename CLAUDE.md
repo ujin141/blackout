@@ -78,7 +78,8 @@ python poster_event.py                        # 행사 포스터 (범용)
 python poster_solo.py                         # 풀파티 × 솔로파티 티저 포스터
 python poster_ad.py                           # 같은 행사 판매용 포스터 (정보형)
 python poster_loud.py                         # 직설 버전 — 컬러 일러스트
-python poster_photo.py                        # 실사 물 사진 (CC0)
+python poster_photo.py                        # F안 실사 물 사진 — 밤 버전 (CC0)
+python band.py                                # 입장 밴드 인쇄 원고 (게스트 · 스태프)
 python poster_split.py                        # A안 물×클럽, 기울인 축 · 시안×마젠타
 python poster_club.py                         # B안 클럽, 직각 격자 + 쌓은 타이포 · 검정×레드
 python poster_ticket.py                       # C안 입장권, 유일한 밝은 판 · 파랑
