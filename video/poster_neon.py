@@ -51,8 +51,10 @@ def neon(img, m, x, y, V, anchor='l', valign='c', th=None, mirror=None):
         f = (f * 255).astype(np.uint8)
         h = o.shape[0]
         glow(img, f, x, mirror + h * 0.55, LIME, 0.16, 14 * V, anchor, 'c')
-    glow(img, o, x, y, LIME, 0.50, 26 * V, anchor, valign)
-    glow(img, o, x, y, LIME, 0.75, 9 * V, anchor, valign)
+    # 후광을 세게 주면 관 속까지 밝아져 글자 모양이 사라진다.
+    # 넓은 후광은 옅게, 좁은 후광만 살려야 튜브가 튜브로 남는다.
+    glow(img, o, x, y, LIME, 0.26, 30 * V, anchor, valign)
+    glow(img, o, x, y, LIME, 0.44, 8 * V, anchor, valign)
     paint(img, o, x, y, color=CORE, a=1.0, anchor=anchor, valign=valign)
     return o
 
@@ -70,7 +72,7 @@ def build(W, H, story=False):
     r = np.sqrt(((xx / W - 0.5) / 0.62) ** 2 + ((yy / H - 0.44) / 0.62) ** 2)
     vig = np.clip(r - 0.35, 0, 1) ** 1.2
     img = img * (1 - vig[..., None] * 0.92) + INK * (vig[..., None] * 0.92)
-    img = img * 0.62 + INK * 0.38
+    img = img * 0.52 + INK * 0.48
 
     # ── 상단 ──────────────────────────────────────────────
     hy = H * 0.070

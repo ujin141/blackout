@@ -279,7 +279,7 @@ def build(W, H, story=False):
     top = np.clip(edge - yy + 0.5, 0, 1)[..., None]
     img = club * (1 - top) + pool * top
 
-    bloom(img, 0.74, 28 * V, 0.62, np.array([0.88, 0.94, 1.00], np.float32))
+    bloom(img, 0.80, 24 * V, 0.34, np.array([0.86, 0.92, 1.00], np.float32))
 
     # 아래를 눌러 글자 자리를 만든다 — 그림자 대신 이걸로 대비를 낸다
     # 두 단으로 누른다. 한 번에 다 누르면 디스코볼까지 죽어서 파티가 안 보인다 —
@@ -293,6 +293,8 @@ def build(W, H, story=False):
     # 물 쪽도 경계로 갈수록 눌러 준다 — 안 그러면 흰 타이틀이 수면 반짝임에 먹힌다
     p = (np.clip((yy - SEAM * 0.44) / (SEAM * 0.56), 0, 1) ** 1.15 * top[..., 0] * 0.62)[..., None]
     img = img * (1 - p) + INK * p
+    # 밤 행사다. 낮 물색으로 두면 포스터와 실제가 어긋난다.
+    img = img * 0.82 + INK * 0.18
 
     # ── 빛 알갱이 — 누른 뒤에 더한다. 먼저 얹으면 같이 죽는다 ──
     lum = img[..., 0] * .299 + img[..., 1] * .587 + img[..., 2] * .114
@@ -311,17 +313,17 @@ def build(W, H, story=False):
     #    아래 타이틀과 경계 마퀴가 이미 말하고 있다. ──────────
     nm = tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, int(W - M * 1.25), 0.04), 0.04)
     ny = H * (0.168 if story else 0.175)
-    glow(img, nm, M, ny, CYAN, 0.50, 24 * V)
+    glow(img, nm, M, ny, CYAN, 0.22, 30 * V)
     paint(img, nm, M, ny)
 
     # ── 타이틀 — 좌측 기준선에서 시작해 오른쪽으로 거의 흘러넘친다 ──
     tw = int(W * 0.52)
     off = int(5 * V)
     m1 = tmask('POOL PARTY', BRAND, fit('POOL PARTY', BRAND, tw, 0.02), 0.02)
-    glow(img, m1, M, SEAM - 105 * U, CYAN, 0.50, 18 * V)
+    glow(img, m1, M, SEAM - 105 * U, CYAN, 0.22, 22 * V)
     paint_split(img, m1, M, SEAM - 105 * U, off)
     m2 = tmask('SOLO PARTY', BRAND, fit('SOLO PARTY', BRAND, tw, 0.02), 0.02)
-    glow(img, m2, M, SEAM + 95 * U, MAGENTA, 0.55, 18 * V)
+    glow(img, m2, M, SEAM + 95 * U, MAGENTA, 0.24, 22 * V)
     paint_split(img, m2, M, SEAM + 95 * U, off)
 
     # ── 마퀴는 경계 한 줄만 ───────────────────────────────

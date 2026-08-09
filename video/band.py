@@ -1,31 +1,43 @@
 """
 입장 밴드(밴딩) 인쇄용 원고.
 
-제안서에만 있고 실물이 없어서 새로 만들었습니다.
-
-    크기   3000 × 300 px = 254 × 25 mm @300dpi (타이벡 밴드 표준에 맞춘 값)
+    크기   3000 × 300 px = 254 × 25 mm @300dpi (타이벡 밴드 표준)
     출력   out/band/band_{guest,staff}.png
 
-**손목에 감으면 한 번에 3분의 1도 안 보입니다.** 그래서 내용을 한 번만 넣으면
-각도에 따라 아무것도 안 읽힙니다 — 같은 덩어리를 **두 번 반복**해서
-어느 방향에서 봐도 행사명과 날짜가 걸리게 했습니다.
+밴드는 포스터가 아닙니다. 25mm 짜리 띠에서 지켜야 하는 게 따로 있습니다.
 
-스태프 밴드는 색을 뒤집었습니다. 밤에 멀리서도 스태프가 구분돼야 합니다 —
-글자를 읽게 하는 게 아니라 색으로 구분시키는 게 목적입니다.
+**1. 한 번에 3분의 1도 안 보인다**
+   손목에 감기니까 어느 각도에서든 행사명이 걸려야 합니다.
+   같은 덩어리를 두 번 반복합니다.
+
+**2. 위계가 셋을 넘으면 안 된다**
+   이름(AFTER SUNSET) → 형식(풀파티×솔로파티) → 날짜·시간.
+   여기에 장소·가격·핸들까지 넣으면 25mm 안에서 전부 같은 크기가 되고,
+   같은 크기면 아무것도 안 읽힙니다. 뺄 것을 정하는 게 이 판의 설계입니다.
+
+**3. 재단 여유(±1mm)를 먹고 들어간다**
+   위아래 4mm(=48px)는 비웁니다. 여기에 글자를 걸면 잘려 나옵니다.
+   `SAFE` 안에서만 그립니다.
+
+**4. 베이스라인을 맞춘다**
+   왼쪽 이름 블록과 오른쪽 날짜 블록은 글자 크기가 다릅니다.
+   각각 가운데를 맞추면 두 덩어리가 서로 다른 높이에 뜬 것처럼 보입니다.
+   두 줄의 베이스라인을 공유시킵니다.
+
+**5. 스태프는 글자가 아니라 색으로 구분한다**
+   밤에 멀리서 'STAFF' 를 읽을 수는 없습니다. 색을 뒤집습니다.
 
 인쇄 넘길 때
-    · 여기서 나오는 건 RGB PNG 입니다. CMYK 변환은 인쇄소에 맡기세요.
-    · 접착 탭(끝에서 약 35mm)은 겹쳐 붙는 자리라 글자를 안 넣었습니다.
-    · 일련번호가 필요하면 인쇄소에 넘버링 옵션을 요청하세요 — 여기서 그리면
-      전부 같은 번호가 됩니다.
+    · RGB PNG 입니다. CMYK 변환은 인쇄소에 맡기세요.
+    · 접착 탭(끝 약 9mm)은 겹쳐 붙는 자리라 비워 뒀습니다.
+    · 일련번호가 필요하면 인쇄소 넘버링 옵션으로 — 여기서 그리면 전부 같은 번호입니다.
 
 python band.py  →  out/band/band_{guest,staff}.png
 """
 import os
 import numpy as np
 from PIL import Image
-from poster_kit import BRAND, tmask, fit, paint, rule, vrule, box, logo, grain
-from fonts import KR
+from poster_kit import BRAND, tmask, tmask_bl, fit, paint, paint_bl, rule, vrule, box, logo, grain
 import event as EV
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'band')
@@ -33,40 +45,47 @@ os.makedirs(OUT, exist_ok=True)
 
 W, H = 3000, 300                       # 254 × 25 mm @300dpi
 UNIT = W // 2                          # 같은 덩어리를 두 번 반복한다
-TAB = int(W * 0.035)                   # 접착 탭 — 겹쳐 붙는 자리라 비운다
+SAFE = 48                              # 재단 여유 4mm. 여기 안쪽에만 그린다
+TAB = int(W * 0.035)                   # 접착 탭 — 겹쳐 붙는 자리
+
+# 두 줄의 베이스라인. 크기가 달라도 이 값을 공유해야 한 덩어리로 읽힌다
+BL1, BL2 = 152, 214
 
 NAVY  = np.array([0.03, 0.05, 0.14], np.float32)
 WHITE = np.array([1.00, 1.00, 1.00], np.float32)
 AMBER = np.array([1.00, 0.74, 0.22], np.float32)
 
-# 날짜는 event.py 에서 오지만 밴드에는 짧게 — 손목에서 긴 문장은 안 읽힌다
-DATE_SHORT = '08.29 SAT'
-LINE2 = f'{DATE_SHORT}  ·  19:00 – 24:00  ·  ANOTHER LOUNGE'
+DATE_SHORT = '08.29 SAT'               # 밴드에서 '8월 29일 토요일'은 자리를 너무 먹는다
+TIME_SHORT = '19:00 – 24:00'
 
 
 def draw_unit(u, bg, fg, accent, label):
-    """덩어리 하나를 그린다. u 는 (H, UNIT, 3)."""
+    """덩어리 하나. u 는 (H, UNIT, 3)."""
     u[:] = bg
-    x = 90
-    lg = logo(132)
-    paint(u, lg, x, H * 0.50, color=fg, a=0.95)
-    x += lg.shape[1] + 54
 
-    # 오른쪽에 STAFF 가 붙으면 그만큼 자리를 빼고 타이틀을 맞춘다.
-    # 크기를 고정해 두면 STAFF 가 타이틀 위로 올라탄다 — 실제로 한 번 겹쳤다.
-    lm = tmask(label, BRAND, 58, 0.20) if label else None
-    reserve = (lm.shape[1] + 90) if lm is not None else 60
-    avail = UNIT - x - reserve - 90
+    # ── 왼쪽 · 정체 ───────────────────────────────────────
+    x = 80
+    lg = logo(104)
+    paint(u, lg, x, (BL1 + BL2) / 2 - 24, color=fg, a=0.95)
+    x += lg.shape[1] + 48
 
-    m1 = tmask('POOL PARTY  ×  SOLO PARTY', BRAND,
-               min(54, fit('POOL PARTY  ×  SOLO PARTY', BRAND, avail, 0.06)), 0.06)
-    paint(u, m1, x, H * 0.36, color=fg)
-    m2 = tmask(LINE2, BRAND, min(27, fit(LINE2, BRAND, avail, 0.16)), 0.16)
-    paint(u, m2, x, H * 0.68, color=accent, a=0.95)
+    name = tmask_bl(EV.NAME, BRAND, 54, 0.10)
+    paint_bl(u, name, x, BL1, color=fg)
+    fmt = tmask_bl(EV.FORMAT, BRAND, 23, 0.10)
+    paint_bl(u, fmt, x, BL2, color=accent, a=0.95)
+    left_end = x + max(name[0].shape[1], fmt[0].shape[1])
 
-    if lm is not None:                 # 스태프 밴드만 오른쪽 끝에 표시
-        vrule(u, UNIT - reserve - 40, H * 0.22, H * 0.78, fg, 0.45, 3)
-        paint(u, lm, UNIT - 90, H * 0.50, color=fg, a=0.95, anchor='r')
+    # ── 오른쪽 · 데이터 ───────────────────────────────────
+    rx = UNIT - 80
+    d1 = tmask_bl(DATE_SHORT, BRAND, 34, 0.14)
+    d2 = tmask_bl(label or TIME_SHORT, BRAND, 24, 0.20)
+    paint_bl(u, d1, rx, BL1, color=fg, anchor='r')
+    paint_bl(u, d2, rx, BL2, color=accent, a=0.95, anchor='r')
+    right_start = rx - max(d1[0].shape[1], d2[0].shape[1])
+
+    # ── 두 블록을 가르는 선. 남는 폭 한가운데에 둔다 ────────
+    # 고정 좌표로 박으면 글자 길이가 바뀔 때 한쪽에 붙어 버린다.
+    vrule(u, (left_end + right_start) / 2, BL1 - 40, BL2 + 14, fg, 0.35, 3)
 
 
 def build(bg, fg, accent, label=''):
@@ -76,13 +95,12 @@ def build(bg, fg, accent, label=''):
     img[:, :UNIT] = u
     img[:, UNIT:] = u
 
-    # 위아래 가는 선 — 밴드가 얇아 보이지 않게 잡아 준다
-    rule(img, int(H * 0.045), 0, W, accent, 0.55, 3)
-    rule(img, int(H * 0.925), 0, W, accent, 0.55, 3)
+    # 위아래 선은 캔버스 전체에 한 번에 긋는다 — 덩어리마다 그리면
+    # 이음새에서 1px 어긋난 게 띠 전체에 줄로 보인다.
+    rule(img, SAFE - 14, 0, W, accent, 0.55, 3)
+    rule(img, H - SAFE + 11, 0, W, accent, 0.55, 3)
 
-    # 접착 탭 — 겹쳐 붙는 자리라 바탕만 남긴다
-    box(img, W - TAB, 0, W, H, bg)
-
+    box(img, W - TAB, 0, W, H, bg)         # 접착 탭은 바탕만
     grain(img, 0.006, 2)
     return np.clip(img, 0, 1)
 
@@ -95,5 +113,4 @@ def save(img, name):
 
 if __name__ == '__main__':
     save(build(NAVY, WHITE, AMBER), 'band_guest')
-    # 스태프는 색을 뒤집는다 — 밤에 멀리서 색으로 구분돼야 한다
     save(build(AMBER, NAVY, NAVY, label='STAFF'), 'band_staff')
