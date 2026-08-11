@@ -21,6 +21,7 @@
     deep    124  딥하우스. 킥 4 + 엇박 오픈햇. 코드는 두 마디에 한 번
     dark    130  다크테크노. 킥 럼블(킥을 잔향에 통과시켜 저역만 남긴 것) + 얇은 클랩
     dub     121  덥테크노. 제일 비어 있다. 스네어 없음. 엇박 코드 스탭과 잔향뿐
+    party   128  페스티벌 하우스. 엇박 오픈햇 + 클랩 + 드롭 뒤 리프. 유일하게 신나는 판
     heavy   142  하프타임. 킥 1·3&, 스네어 3박. 뭉갠 베이스 한 음. 제일 센 판
 
 BPM·조성 모두 릴스(128·145·132·155·105)·포스터(122·138·136·118·110·126)와 안 겹친다.
@@ -32,19 +33,22 @@ import os
 import sys
 import wave
 import numpy as np
-from audio import SR, place, lp, hp, reverb, clap, hat, noise_riser
+from audio import (SR, place, lp, hp, reverb, clap, hat, noise_riser,
+                   kick as kick0, impact)
 from audio_reel import sat, subf, snare, stab, pad, soft_kick, hard_kick
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'poster')
 os.makedirs(OUT, exist_ok=True)
 
-STYLES = {'deep': (124.0, 8), 'dark': (130.0, 8), 'dub': (121.0, 8), 'heavy': (142.0, 8)}
+STYLES = {'deep': (124.0, 8), 'dark': (130.0, 8), 'dub': (121.0, 8),
+          'heavy': (142.0, 8), 'party': (128.0, 8)}
 
 # 전부 단조 계열 낮은 음. 밝은 조성은 그 자체로 촌스럽다
 ROOT = {'deep': 55.00,     # A1
         'dark': 32.70,     # C1 — 제일 낮다. 럼블이 바닥을 채우는 판
         'dub':  36.71,     # D1
-        'heavy': 61.74}    # B1
+        'heavy': 61.74,    # B1
+        'party': 43.65}    # F1 — 제일 신나는 판. 나머지 넷과 조성이 안 겹친다
 
 # 코드는 **마이너 9** 하나로 고정한다. 진행을 넣으면 그 순간 노래가 된다
 MIN9 = (1.0, 1.189, 1.498, 2.245)          # root · m3 · 5 · 9
@@ -126,6 +130,31 @@ def build(style):
             for at in (0.5, 2.5):                               # 엇박 스탭 — 덥테크노의 전부
                 place(lead, stab(CH[:3], beat * 0.42, 0.20, 1300, 0.24), T(b, at))
 
+    # ── PARTY — 페스티벌 하우스. 이 파일에서 유일하게 '신나는' 판 ──
+    # 나머지 넷은 어둡고 비어 있게 짰다. 여기만 반대로 간다 — 다만 촌스러워지는
+    # 선은 그대로 지킨다. **엇박은 하이햇이 치지 베이스가 안 친다**, 리프는
+    # 코드 안에서만 돌고 음계를 오르내리지 않는다.
+    elif style == 'party':
+        RIFF = [1.0, 1.498, 2.0, 1.498, 1.783, 1.498]      # 근음·5도·옥타브만. 3음을 안 쓴다
+        for b in range(1, bars + 1):
+            g = 0.84 if b < DROP else 1.0
+            for x in range(4):
+                place(kickbus, kick0(0.44, g), T(b, x)); kicks.append(T(b, x))
+                place(perc, hat(0.20, 0.22 * g, open_=True), T(b, x + 0.5))   # 엇박 오픈햇 — 이게 굴린다
+            place(perc, clap(0.42 * g), T(b, 1)); place(perc, clap(0.42 * g), T(b, 3))
+            for i in range(8):                                # 셰이커. 두 칸은 비운다
+                if i % 4 != 2:
+                    place(perc, hat(0.04, 0.09 * g), T(b, i * 0.5 + 0.25))
+            place(bass, sustain(R, bar * 0.99, 0.60), T(b))
+            if b >= DROP:                                     # 드롭 뒤에만 리프가 돈다
+                for i, m in enumerate(RIFF):
+                    place(lead, stab([R * 8 * m], beat * 0.34, 0.26 * g, 5200, 0.22),
+                          T(b, i * 0.66))
+            else:
+                place(lead, pad([R * 4, R * 5.99], bar * 0.98, 0.10, 1800), T(b))
+        place(fx, noise_riser(bar * 1.6, 300, 9000, 0.34), T(DROP - 1))
+        place(fx, impact(2.2, 0.7), T(DROP))
+
     # ── HEAVY — 하프타임. 킥이 네 박을 안 친다 ────────────
     else:
         for b in range(1, bars + 1):
@@ -144,8 +173,8 @@ def build(style):
     # ── 사이드체인 ────────────────────────────────────────
     # **여기가 뽕짝과 클럽을 가른다.** 얕게 누르면 베이스가 킥과 따로 들려서
     # 결국 쿵짝이 되고, 깊게 누르면 둘이 한 덩어리로 숨을 쉰다.
-    depth = {'deep': 0.62, 'dark': 0.66, 'dub': 0.70, 'heavy': 0.58}[style]
-    hold = {'deep': 0.34, 'dark': 0.30, 'dub': 0.42, 'heavy': 0.36}[style]
+    depth = {'deep': 0.62, 'dark': 0.66, 'dub': 0.70, 'heavy': 0.58, 'party': 0.60}[style]
+    hold = {'deep': 0.34, 'dark': 0.30, 'dub': 0.42, 'heavy': 0.36, 'party': 0.28}[style]
     duck = np.ones(N)
     tt = np.arange(N) / SR
     for at in kicks:
@@ -160,7 +189,7 @@ def build(style):
     rm = rm * duck ** 0.5
 
     mix = (kickbus + perc * 0.9 + bass +
-           rm * {'deep': 0.30, 'dark': 0.55, 'dub': 0.42, 'heavy': 0.34}[style] +
+           rm * {'deep': 0.30, 'dark': 0.55, 'dub': 0.42, 'heavy': 0.34, 'party': 0.26}[style] +
            reverb(lead, 2.6 if style == 'dub' else 1.8, 0.42) * 0.9 +
            reverb(fx, 2.0, 0.34) * 0.7)
     mix = hp(mix, 26, 2)

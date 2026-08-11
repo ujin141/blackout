@@ -70,34 +70,57 @@ C = {
 # **박 수는 곡이 정한다.** 컷을 곡보다 길게 짜면 ffmpeg 의 -shortest 가 뒤를
 # 잘라내고, 끝 카드가 통째로 사라진다 — 실제로 그렇게 잘렸다.
 # audio_motion 의 곡은 전부 8마디 = 32박이다.
-STYLES = {'deep': 124.0, 'heavy': 142.0}
+# **신나는 판이 기본이다.** deep(딥하우스)은 차분해서 현장 영상의 열기와
+# 안 맞았다. party 는 audio_motion 의 페스티벌 하우스 — 엇박 오픈햇과
+# 클랩이 굴리고 드롭 뒤에 리프가 돈다.
+STYLES = {'party': 128.0, 'heavy': 142.0}
 NBEAT = 32
+# **같은 장면을 두 번 쓰지 않는다.** 클립이 다섯 개뿐이라 crowd 를 다섯 번,
+# floor 를 네 번 썼더니 15초짜리인데 본 그림이 또 나왔다. 클립 다섯 개에서
+# **겹치지 않는 구간 열둘**을 뽑으면 32박이 채워진다 — 아래 시작초는 서로
+# 겹치지 않게 잡은 값이라 바꿀 때 겹침을 다시 확인해야 한다(아래 assert 가 잡는다).
+# **구간이 안 겹쳐도 구도가 닮으면 붙여 놓지 않는다** — 다른 클립인데 같은
+# 커튼·수영장 모서리가 잡혀서 두 컷이 한 컷처럼 보인 자리가 있었다.
 SETS = {
-    # 느린 판 — 네 박씩. 그림을 보여 주는 쪽
-    'deep':  [('crowd', 2.2, 4, 0.50), ('floor', 3.2, 4, 0.46), ('side', 1.2, 4, 0.52),
-              ('walk', 4.0, 4, 0.42), ('crowd', 5.0, 4, 0.44), ('floor', 5.6, 2, 0.55),
-              ('floor', 1.4, 2, 0.42), ('crowd', 0.6, 8, 0.50)],
-    # 빠른 판 — 두 박씩. 컷이 두 배로 잦아 스크롤을 잡는 쪽
-    'heavy': [('crowd', 2.2, 2, 0.50), ('floor', 3.2, 2, 0.46), ('crowd', 4.4, 2, 0.44),
-              ('floor', 5.6, 2, 0.55), ('side', 1.2, 2, 0.52), ('walk', 4.0, 2, 0.42),
-              ('floor', 1.4, 2, 0.42), ('crowd', 6.2, 2, 0.50), ('side', 3.4, 2, 0.46),
-              ('walk', 0.4, 2, 0.52), ('floor', 0.6, 2, 0.50), ('crowd', 3.4, 2, 0.46),
-              ('crowd', 0.6, 8, 0.50)],
+    'party': [('crowd', 3.3, 4, 0.50), ('floor', 0.4, 2, 0.46), ('side', 0.3, 2, 0.52),
+              ('crowd', 5.4, 4, 0.44), ('walk', 2.2, 2, 0.48), ('floor', 3.6, 2, 0.55),
+              ('walk', 4.0, 2, 0.42), ('side', 3.6, 2, 0.46), ('sky', 5.0, 2, 0.50),
+              ('floor', 6.4, 2, 0.42), ('sky', 7.4, 2, 0.52), ('crowd', 0.3, 6, 0.50)],
+    'heavy': [('crowd', 3.3, 4, 0.50), ('floor', 0.4, 2, 0.46), ('side', 0.3, 2, 0.52),
+              ('crowd', 5.4, 4, 0.44), ('walk', 2.2, 2, 0.48), ('floor', 3.6, 2, 0.55),
+              ('walk', 4.0, 2, 0.42), ('side', 3.6, 2, 0.46), ('sky', 5.0, 2, 0.50),
+              ('floor', 6.4, 2, 0.42), ('sky', 7.4, 2, 0.52), ('crowd', 0.3, 6, 0.50)],
 }
 
-# (시작 박, 끝 박, 문구) — **정보를 자막이 다 진다.** 음소거로 봐도 알아야 한다
-CAPS = [(0, 4, '8월 29일 토요일'), (4, 8, '양재 루프탑'),
-        (8, 12, '풀파티 × 솔로파티'), (12, 16, '혼자 와도 되고'),
-        (16, 20, '친구 데려와도 된다'), (20, 24, '끝나면 신사 ACE 로 2차')]
+# (시작 박, 끝 박, 문구)
+# **첫 줄은 정보가 아니라 훅이다.** 처음엔 '8월 29일 토요일' 로 시작했는데,
+# 넘길지 말지를 정하는 1초에 날짜를 보여 주면 아무도 안 멈춘다.
+# 이 영상은 해외처럼 보인다 — 그래서 "여기 서울이에요" 가 제일 세게 걸린다.
+# 궁금해서 멈추고, 어디냐고 댓글이 달린다.
+#
+# **자막은 반말로 안 쓴다.** 처음 보는 사람한테 반말로 정보를 던지면
+# 건조한 게 아니라 싸가지없게 읽힌다. 짧은 존댓말이 같은 길이에 더 낫다.
+CAPS = [(0, 5, '여기 서울이에요'),
+        (5, 10, '양재 루프탑 풀파티'),
+        (10, 15, '8월 29일 토요일'),
+        (15, 20, '혼자 오셔도 되고 친구랑 오셔도 돼요'),
+        (20, 26, '끝나고 신사 ACE에서 2차까지')]
 
 
-def crop916(fr, ox):
+def crop916(fr, ox, z=1.0):
     """가로 16:9 를 세로 9:16 으로. **가운데를 무조건 쓰지 않는다** —
-    클립마다 사람이 몰린 쪽이 달라서 컷마다 가로 위치를 준다."""
+    클립마다 사람이 몰린 쪽이 달라서 컷마다 가로 위치를 준다.
+
+    z 는 컷 안에서 조금씩 밀어 넣는 배율이다. **정지 크롭으로 두면 손으로 찍은
+    흔들림만 보여서 컷이 애매해진다** — 아주 느린 푸시인이 있으면 같은 그림도
+    "보라고 미는" 것으로 읽힌다. 6% 안쪽이라 화질은 안 깨진다."""
     h, w = fr.shape[:2]
-    tw = int(h * W / H)
-    x0 = int(np.clip((w - tw) * ox, 0, w - tw))
-    return cv2.resize(fr[:, x0:x0 + tw], (W, H), interpolation=cv2.INTER_AREA)
+    tw, th = h * W / H / z, h / z
+    cx = (w - h * W / H) * ox + h * W / H / 2
+    x0 = int(np.clip(cx - tw / 2, 0, w - tw))
+    y0 = int(np.clip(h / 2 - th / 2, 0, h - th))
+    sub = fr[y0:y0 + int(th), x0:x0 + int(tw)]
+    return cv2.resize(sub, (W, H), interpolation=cv2.INTER_AREA)
 
 
 def grade(a):
@@ -129,6 +152,13 @@ def render(style='deep'):
     shots = SETS[style]
     nb = sum(s[2] for s in shots)
     assert nb == NBEAT, f'{style}: 컷이 {nb}박인데 곡은 {NBEAT}박이다 — 뒤가 잘린다'
+    # 같은 클립의 구간이 겹치면 같은 그림이 두 번 나온다. 눈으로는 잘 안 잡힌다
+    used = {}
+    for key, at, nbeat, _ in shots:
+        a, z = at, at + nbeat * beat
+        for a2, z2 in used.get(key, []):
+            assert z <= a2 + 0.05 or a >= z2 - 0.05,                 f'{style}: {key} 구간이 겹친다 — {a:.1f}~{z:.1f} 와 {a2:.1f}~{z2:.1f}'
+        used.setdefault(key, []).append((a, z))
     dur = nb * beat
     nf = int(round(dur * FPS))
 
@@ -155,7 +185,7 @@ def render(style='deep'):
             print(f'   {key}: {at:.1f}s 는 클립({total:.1f}s)을 넘는다 → {at2:.1f}s 로 당김')
             at = at2
         for i in range(n):
-            plan.append((key, int((at + i / FPS) * fps), ox))
+            plan.append((key, int((at + i / FPS) * fps), ox, 1.0 + 0.06 * (i / max(n - 1, 1))))
         t += nbeat * beat
     plan = plan[:nf] + [plan[-1]] * max(0, nf - len(plan))
 
@@ -167,7 +197,7 @@ def render(style='deep'):
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     last = {}
-    for i, (key, fno, ox) in enumerate(plan):
+    for i, (key, fno, ox, z) in enumerate(plan):
         c = caps[key]
         if last.get(key) != fno - 1:
             c.set(cv2.CAP_PROP_POS_FRAMES, max(0, fno))
@@ -178,7 +208,7 @@ def render(style='deep'):
         last[key] = fno
         if not ok:
             fr = np.zeros((1080, 1920, 3), np.uint8)
-        img = grade(crop916(cv2.cvtColor(fr, cv2.COLOR_BGR2RGB), ox).astype(np.float32) / 255)
+        img = grade(crop916(cv2.cvtColor(fr, cv2.COLOR_BGR2RGB), ox, z).astype(np.float32) / 255)
 
         tt = i / FPS
         b = tt / beat
@@ -195,16 +225,24 @@ def render(style='deep'):
         tail = nb - 6
         if b >= tail:
             k = np.clip((b - tail) / 0.5, 0, 1)
-            img *= 1 - 0.86 * k
-            cy = H * 0.44
+            img *= 1 - 0.88 * k
+            cy = H * 0.40
             paint(img, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, W * 0.84, 0.10), 0.10),
                   W / 2, cy, color=PAPER, a=float(k), anchor='c')
-            paint(img, tmask(EV.FORMAT, BRAND, 30, 0.36), W / 2, cy + H * 0.052,
+            paint(img, tmask(EV.FORMAT, BRAND, 30, 0.36), W / 2, cy + H * 0.048,
                   color=AQUA, a=float(k), anchor='c')
-            paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 40, 0.02), W / 2, cy + H * 0.105,
+            paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 40, 0.02), W / 2, cy + H * 0.100,
                   color=PAPER, a=float(k) * 0.96, anchor='c')
-            paint(img, tmask('사전예약 · 프로필 링크', KR, 34, 0.02), W / 2, cy + H * 0.152,
-                  color=CORAL, a=float(k) * 0.96, anchor='c')
+            # **CTA 는 마지막에 크게 하나.** 작게 여러 줄로 나누면 아무것도 안 남는다.
+            # 늦게 뜨는 것도 일부러다 — 정보를 읽은 뒤에 뭘 하라는 말이 와야 한다.
+            k2 = np.clip((b - tail - 1.2) / 0.5, 0, 1)
+            if k2 > 0.004:
+                yb = cy + H * 0.175
+                band(img, yb, H * 0.042, 0.55 * k2)
+                paint(img, tmask('프로필 링크에서 예약', KRB, 52, 0.02), W / 2, yb,
+                      color=CORAL, a=float(k2), anchor='c')
+                paint(img, tmask('사전예약만 받아요', KR, 32, 0.02), W / 2, yb + H * 0.048,
+                      color=PAPER, a=float(k2) * 0.88, anchor='c')
         p.stdin.write((np.clip(img, 0, 1) * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()
     for c in caps.values():
