@@ -79,7 +79,7 @@ def build(W, H, story=False):
 
     # 복장·입장 제한은 **잔글씨 한 줄.** 표의 한 줄로 넣으면 날짜·장소와 같은
     # 무게가 되는데, 이건 읽는 정보가 아니라 걸어 두는 단서다.
-    paint_bl(img, tmask_bl(EV.DRESS, KR, int(14 * V), 0.01),
+    paint_bl(img, tmask_bl(EV.RULES, KR, int(14 * V), 0.01),
              M, y0 + step * (len(ROWS) - 1) + 34 * V, color=DIM, a=0.72)
     fy = y0 + step * len(ROWS) + 34 * V
     # 상세는 캡션·구글폼으로 간다. 포스터에는 **거기로 가는 길**만

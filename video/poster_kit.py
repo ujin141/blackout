@@ -345,7 +345,7 @@ def info_block(img, x, y, width, V, key_color, val_color, head_color=None,
     # 복장·입장 제한은 **잔글씨 한 줄**로 붙인다. 표의 한 줄로 넣으면 날짜·장소와
     # 같은 무게가 되는데, 이건 읽는 정보가 아니라 걸어 두는 단서다.
     yb += 20 * V
-    paint_bl(img, tmask_bl(_EV.DRESS, KRF, int(13 * V), 0.01), x, yb,
+    paint_bl(img, tmask_bl(_EV.RULES, KRF, int(13 * V), 0.01), x, yb,
              color=val_color, a=0.58 * a)
     # **잔글씨 아래로도 여유를 돌려준다.** 안 주면 협업 브랜드 줄이 이 줄에 붙는다
     return yb + 14 * V

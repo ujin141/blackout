@@ -41,7 +41,8 @@ for h in heroes:
         done += 1
         print(f'[{done}/{total}] 사진 {h}번 · {k} · {cut}', flush=True)
         r = subprocess.run([sys.executable, os.path.join(HERE, 'motion.py'), k, cut],
-                           cwd=HERE, env=env, capture_output=True, text=True)
+                           cwd=HERE, env=env, capture_output=True, text=True,
+                           encoding='utf-8', errors='replace')
         line = (r.stdout or '').strip().splitlines()
         print('   ' + (line[-1] if line else (r.stderr or '').strip()[-200:]), flush=True)
 print('끝', flush=True)

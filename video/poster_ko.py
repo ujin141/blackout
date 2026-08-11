@@ -93,7 +93,7 @@ def build(W, H, story=False):
     # 애프터파티 — 본 행사 뒤로 이어지는 자리라 입장 조건 바로 밑에 둔다
     paint_bl(img, tmask_bl(f'AFTER PARTY   {EV.AFTER}', KR, int(17 * V), 0.01), M, fy + 214 * V,
              color=AQUA, a=0.92)
-    paint_bl(img, tmask_bl(EV.DRESS, KR, int(13 * V), 0.01), M, fy + 246 * V,
+    paint_bl(img, tmask_bl(EV.RULES, KR, int(13 * V), 0.01), M, fy + 246 * V,
              color=DIM, a=0.72)
     paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 286 * V,
           color=AQUA, a=0.98)

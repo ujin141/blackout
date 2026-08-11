@@ -87,7 +87,7 @@ def build(W, H, story=False):
              color=PAPER, a=0.85)
     paint_bl(img, tmask_bl(f'AFTER PARTY   {EV.AFTER}', KR, int(17 * V), 0.01), M, fy + 104 * V,
              color=AQUA, a=0.92)
-    paint_bl(img, tmask_bl(EV.DRESS, KR, int(13 * V), 0.01), M, fy + 136 * V,
+    paint_bl(img, tmask_bl(EV.RULES, KR, int(13 * V), 0.01), M, fy + 136 * V,
              color=DIM, a=0.72)
     paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 176 * V,
           color=AQUA, a=0.98)
