@@ -81,6 +81,8 @@ def build(W, H, story=False):
              color=PAPER, a=0.85)
     paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 92 * V,
           color=AQUA, a=0.98)
+    paint(img, tmask(EV.RESERVE, KR, int(17 * V), 0.02), W - M, fy + 92 * V,
+          color=AQUA, a=0.90, anchor='r')
     paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 124 * V,
           color=DIM, a=0.65)
 

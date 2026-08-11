@@ -77,7 +77,8 @@ def build(W, H, story=False):
             rule(img, yb + 20 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
 
     fy = y0 + step * len(ROWS) + 26 * V
-    paint(img, tmask(EV.NOTE, KR, int(19 * V), 0.01), M, fy, color=DIM, a=0.95)
+    # 상세는 캡션·구글폼으로 간다. 포스터에는 **거기로 가는 길**만
+    paint(img, tmask(EV.RESERVE, KR, int(19 * V), 0.01), M, fy, color=DIM, a=0.98)
     # **핸들을 다른 줄과 같은 y 에 두지 않는다.** 오른쪽 정렬이라 값이 길어지면
     # 왼쪽 줄과 부딪힌다 — 실제로 협업 줄과 겹쳤다. 한 줄을 따로 준다.
     paint(img, tmask(EV.HANDLE, BRAND, int(19 * V), 0.24), M, fy + 38 * V,

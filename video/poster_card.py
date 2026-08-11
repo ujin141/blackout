@@ -83,7 +83,7 @@ def build(W, H, story=False):
         rule(img, yb + 20 * V, M, W - M, PAPER, 0.09, max(1, int(1 * V)))
 
     fy = y0 + step * len(ROWS) + 34 * V
-    paint(img, tmask(EV.NOTE, KR, int(18 * V), 0.01), M, fy, color=DIM, a=0.95)
+    paint(img, tmask(EV.RESERVE, KR, int(18 * V), 0.01), M, fy, color=DIM, a=0.98)
     paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), W - M, fy,
           color=AMBER, a=0.98, anchor='r')
     paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 34 * V,

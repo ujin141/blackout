@@ -104,6 +104,10 @@ def build(W, H, story=False):
           color=DIM, a=0.60)
     paint(img, tmask(EV.HANDLE, BRAND, int(15 * V), 0.26), M, yb + 70 * V,
           color=CYAN, a=0.90)
+    # 예매 경로. **핸들과 같은 줄 오른쪽 끝**에 둔다 — 세로 자리를 안 먹어서
+    # 짜임이 안 흔들리고, 눈은 핸들과 한 덩어리로 읽는다.
+    paint(img, tmask(EV.RESERVE, KR, int(13 * V), 0.02), W - M, yb + 70 * V,
+          color=CYAN, a=0.90, anchor='r')
 
 
     vignette(img, 0.44, 1.9)
