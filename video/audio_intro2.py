@@ -214,7 +214,7 @@ def build():
     # **전부 또렷하게 간다.** A안은 몇 마디만 풀고 나머지는 기계처럼 걸었는데,
     # 밝은 판에서는 링·비트크러시가 스플래시와 섞여 지저분해지기만 한다.
     CLEAR = dict(ring=0.12, crush=72, glide=True)
-    SPOKEN = [('BLACKOUT CREW', 1.70, 100, 0.84),
+    SPOKEN = [('BLACKOUT', 1.70, 100, 0.84),
               ('SYSTEM ONLINE',  5.20, 104, 0.98),
               ('SOUND CHECK',    6.62, 104, 0.92),
               ('DOORS ARMED',    8.02, 100, 0.95),
