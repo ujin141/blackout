@@ -33,8 +33,11 @@ const MEMBERS = [
     },
     instagram: '_hogil',
     soundcloud: '',
-    cutout: 'assets/img/members/v-cutout.webp',
-    photo: ''
+    // **누끼가 아니라 사진으로 간다.** 원본이 정수리에서 잘려 있어서 누끼로 세우면
+    // 머리가 잘린 실루엣이 그대로 보인다. 카드를 꽉 채우면 그냥 타이트한 크롭으로
+    // 읽힌다 — 머리 위가 여유 있는 사진이 생기면 누끼로 되돌리면 된다.
+    cutout: '',
+    photo: 'assets/img/members/v-photo.webp'
   },
   {
     name: 'LYNN',
