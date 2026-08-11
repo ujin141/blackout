@@ -60,7 +60,9 @@ def build(W, H, story=False):
 
     # 정보가 네 줄에서 **다섯 줄**로 늘었다(입장 조건 추가). 한 줄(46V)만큼
     # 발치를 더 올려야 캔버스를 안 넘는다.
-    fy = H - 404 * V
+    # 줄이 다섯에서 **여섯**으로 늘었고(애프터파티) 잔글씨 한 줄이 붙었다.
+    # 발치를 그만큼 올려야 핸들이 캔버스를 안 넘는다 — 안 올렸더니 잘려 나왔다.
+    fy = H - 452 * V
     img *= (1 - 0.74 * np.clip((yy - (fy - 34 * V)) / (68 * V), 0, 1))
     rule(img, fy, M, W - M, PAPER, 0.20, max(1, int(2 * V)))
     yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER)

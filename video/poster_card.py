@@ -33,6 +33,7 @@ ROWS = [('일시', f'{EV.DATE}   {EV.TIME_EN}'),
         ('주소', EV.ADDR),
         ('라인업', EV.LINEUP_STR),
         ('입장', EV.ENTRY),
+        ('애프터', EV.AFTER),
         ('안내', EV.AGE)]
 
 
@@ -82,7 +83,9 @@ def build(W, H, story=False):
         paint_bl(img, tmask_bl(vv, KR, sz, 0.01), M + CWD * 0.20, yb, color=PAPER)
         rule(img, yb + 20 * V, M, W - M, PAPER, 0.09, max(1, int(1 * V)))
 
-    fy = y0 + step * len(ROWS) + 34 * V
+    paint_bl(img, tmask_bl(EV.DRESS, KR, int(13 * V), 0.01),
+             M, y0 + step * len(ROWS) + 16 * V, color=DIM, a=0.72)
+    fy = y0 + step * len(ROWS) + 44 * V
     paint(img, tmask(EV.RESERVE, KR, int(18 * V), 0.01), M, fy, color=DIM, a=0.98)
     paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), W - M, fy,
           color=AMBER, a=0.98, anchor='r')

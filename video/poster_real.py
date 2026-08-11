@@ -35,6 +35,7 @@ ROWS = [('일시', f'{EV.DATE}  {EV.TIME_EN}'),
         ('장소', f'{EV.VENUE}  {EV.ADDR}'),
         ('라인업', EV.LINEUP_STR),
         ('입장', EV.ENTRY),
+        ('애프터', EV.AFTER),
         ('안내', EV.AGE)]
 
 
@@ -76,7 +77,11 @@ def build(W, H, story=False):
         if i < len(ROWS) - 1:
             rule(img, yb + 20 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
 
-    fy = y0 + step * len(ROWS) + 26 * V
+    # 복장·입장 제한은 **잔글씨 한 줄.** 표의 한 줄로 넣으면 날짜·장소와 같은
+    # 무게가 되는데, 이건 읽는 정보가 아니라 걸어 두는 단서다.
+    paint_bl(img, tmask_bl(EV.DRESS, KR, int(14 * V), 0.01),
+             M, y0 + step * (len(ROWS) - 1) + 34 * V, color=DIM, a=0.72)
+    fy = y0 + step * len(ROWS) + 34 * V
     # 상세는 캡션·구글폼으로 간다. 포스터에는 **거기로 가는 길**만
     paint(img, tmask(EV.RESERVE, KR, int(19 * V), 0.01), M, fy, color=DIM, a=0.98)
     # **핸들을 다른 줄과 같은 y 에 두지 않는다.** 오른쪽 정렬이라 값이 길어지면

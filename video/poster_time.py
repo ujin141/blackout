@@ -53,7 +53,10 @@ def build(W, H, story=False):
 
     # ── 타임테이블 : 여덟 줄을 한 줄씩 ───────────────────
     top = ny + ns * 0.82 + 60 * V
-    bot = H * (0.760 if story else 0.740)
+    # 발치에 두 줄이 늘었다(애프터파티 · 복장 안내). 표를 그만큼 일찍 끝낸다
+    # **줄이 늘면 간격도 같이 벌려야 한다.** 줄만 끼워 넣었더니 발치가
+    # 작은 글자 덩어리 하나로 뭉쳐 보였다 — 아래에 자리는 남아 있었다.
+    bot = H * (0.712 if story else 0.676)
     rows = EV.TIMETABLE
     step = (bot - top) / len(rows)
     rule(img, top - 26 * V, M, W - M, PAPER, 0.26, max(2, int(3 * V)))
@@ -75,15 +78,19 @@ def build(W, H, story=False):
     fy = bot + 44 * V
     paint_bl(img, tmask_bl(f'{EV.VENUE}   {EV.ADDR}', KR, int(19 * V), 0.01), M, fy,
              color=PAPER, a=0.96)
-    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 32 * V,
+    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 36 * V,
              color=AQUA, a=0.95)
-    paint_bl(img, tmask_bl(EV.AGE, KR, int(17 * V), 0.01), M, fy + 60 * V,
+    paint_bl(img, tmask_bl(EV.AGE, KR, int(17 * V), 0.01), M, fy + 70 * V,
              color=PAPER, a=0.85)
-    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 92 * V,
+    paint_bl(img, tmask_bl(f'애프터파티  {EV.AFTER}', KR, int(17 * V), 0.01), M, fy + 104 * V,
+             color=AQUA, a=0.92)
+    paint_bl(img, tmask_bl(EV.DRESS, KR, int(13 * V), 0.01), M, fy + 136 * V,
+             color=DIM, a=0.72)
+    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 176 * V,
           color=AQUA, a=0.98)
-    paint(img, tmask(EV.RESERVE, KR, int(17 * V), 0.02), W - M, fy + 92 * V,
+    paint(img, tmask(EV.RESERVE, KR, int(17 * V), 0.02), W - M, fy + 176 * V,
           color=AQUA, a=0.90, anchor='r')
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 124 * V,
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 208 * V,
           color=DIM, a=0.65)
 
     vignette(img, 0.26, 2.5)

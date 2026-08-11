@@ -37,8 +37,10 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, int(17 * V), 0.42), W / 2, ty,
           color=PAPER, a=0.90, anchor='c')
 
-    # 행사명은 수면 위에 크게. 물이 어두워 흰 글자가 그대로 산다
-    ny = H * (0.700 if story else 0.680)
+    # 행사명은 수면 위에 크게. 물이 어두워 흰 글자가 그대로 산다.
+    # **자리는 발치에서 역산한다** — 비율로 박아 뒀더니 정보가 여섯 줄로 늘어
+    # 발치가 올라왔을 때 제목 위로 그대로 겹쳤다.
+    ny = (H - 448 * V) - 210 * V
     img *= (1 - 0.66 * np.exp(-((yy - ny) / (H * 0.070)) ** 2))
     ns = justify(EV.NAME, CWD, 0.10, cap=int(150 * V))
     paint(img, tmask(EV.NAME, BRAND, ns, 0.10), W / 2, ny, color=PAPER, anchor='c')
@@ -49,7 +51,9 @@ def build(W, H, story=False):
 
     # 정보가 네 줄에서 **다섯 줄**로 늘었다(입장 조건 추가). 한 줄(46V)만큼
     # 발치를 더 올려야 캔버스를 안 넘는다.
-    fy = H - 374 * V
+    # 줄이 다섯에서 **여섯**으로 늘었고(애프터파티) 잔글씨 한 줄이 붙었다.
+    # 발치를 그만큼 올려야 핸들이 캔버스를 안 넘는다 — 안 올렸더니 잘려 나왔다.
+    fy = H - 448 * V
     img *= (1 - 0.76 * np.clip((yy - (fy - 30 * V)) / (60 * V), 0, 1))
     rule(img, fy, M, W - M, PAPER, 0.20, max(1, int(2 * V)))
     yb = info_block(img, M, fy + 42 * V, CWD, V, AQUA, PAPER, step=42 * V)

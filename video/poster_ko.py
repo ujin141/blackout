@@ -72,7 +72,10 @@ def build(W, H, story=False):
           color=PAPER, a=0.80)
 
     # ── 발 : 장소 · 라인업 · 입장 ────────────────────────
-    fy = H * (0.720 if story else 0.700)
+    # 줄이 둘 늘었다(애프터파티 · 복장 안내). 시작점을 그만큼 올린다
+    # **줄이 늘면 간격도 같이 벌려야 한다.** 줄만 끼워 넣었더니 발치가
+    # 작은 글자 덩어리 하나로 뭉쳐 보였다 — 아래에 자리는 남아 있었다.
+    fy = H * (0.676 if story else 0.640)
     paint_bl(img, tmask_bl(EV.VENUE, KR, int(28 * V), 0.01), M, fy, color=PAPER)
     paint_bl(img, tmask_bl(EV.ADDR, KR, int(17 * V), 0.01), M, fy + 34 * V,
              color=DIM, a=0.95)
@@ -80,16 +83,21 @@ def build(W, H, story=False):
     # 같은 간격이 되어 발치가 뭉쳤다. 줄마다 제 크기만큼 띄운다.
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD, 0.12)), 0.12),
           M, fy + 88 * V, color=PAPER, a=0.96)
-    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 138 * V,
+    paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 146 * V,
              color=AQUA, a=0.95)
     # **입장 조건은 반드시 넣는다** — 문 앞에서 실랑이가 나는 자리다
-    paint_bl(img, tmask_bl(EV.AGE, KR, int(17 * V), 0.01), M, fy + 168 * V,
+    paint_bl(img, tmask_bl(EV.AGE, KR, int(17 * V), 0.01), M, fy + 180 * V,
              color=PAPER, a=0.85)
-    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 204 * V,
+    # 애프터파티 — 본 행사 뒤로 이어지는 자리라 입장 조건 바로 밑에 둔다
+    paint_bl(img, tmask_bl(f'애프터파티  {EV.AFTER}', KR, int(17 * V), 0.01), M, fy + 214 * V,
+             color=AQUA, a=0.92)
+    paint_bl(img, tmask_bl(EV.DRESS, KR, int(13 * V), 0.01), M, fy + 246 * V,
+             color=DIM, a=0.72)
+    paint(img, tmask(EV.HANDLE, BRAND, int(18 * V), 0.24), M, fy + 286 * V,
           color=AQUA, a=0.98)
-    paint(img, tmask(EV.RESERVE, KR, int(17 * V), 0.02), W - M, fy + 204 * V,
+    paint(img, tmask(EV.RESERVE, KR, int(17 * V), 0.02), W - M, fy + 286 * V,
           color=AQUA, a=0.90, anchor='r')
-    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 238 * V,
+    paint(img, tmask(EV.PARTNERS_STR, BRAND, int(12 * V), 0.30), M, fy + 320 * V,
           color=DIM, a=0.65)
 
     vignette(img, 0.30, 2.3)

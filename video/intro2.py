@@ -125,14 +125,21 @@ def field(t):
         return DEEP if int((t - base) / step) % 2 else AQUA
     if t < T_GO:
         return INK
-    # 한 방 뒤로는 마디마다 갈린다. 셋뿐이라 어지럽지 않다
-    return (AQUA, CORAL, AQUA)[min(2, int((t - T_GO) / BAR))]
+    # 한 방 뒤로는 **1초마다 갈린다.** 마디마다(2초) 갈랐더니 제일 센 구간이
+    # 화면에서는 2초 동안 아무 일도 안 일어난 채 지나갔다 — 소리는 최대인데
+    # 화면이 멈춰 있으면 그게 "마무리가 이상하다"로 읽힌다.
+    # **마지막 카운트(22.5)에서 흰 판.** 판이 제일 밝아지는 자리가 곧 걸 자리다.
+    if t >= T_GO + BAR * 2 + BEAT * 3:
+        return PAPER
+    return (AQUA, DEEP, CORAL, DEEP, AQUA, DEEP)[min(5, int((t - T_GO) / 1.0))]
 
 
 def ink_for(col):
     """판이 밝으면 글자는 검정, 짙으면 흰색. **자동으로 뒤집는다** —
     한쪽으로 고정하면 판이 갈릴 때마다 글자가 사라진다."""
-    return INK if float(col @ np.float32([0.299, 0.587, 0.114])) > 0.45 else PAPER
+    # 경계는 0.62 다. 0.45 로 뒀더니 코랄(0.54)에서 글자가 검정으로 나와
+    # 대비가 거의 안 났다 — 채도 높은 색 위에서는 흰 글자가 훨씬 잘 읽힌다.
+    return INK if float(col @ np.float32([0.299, 0.587, 0.114])) > 0.62 else PAPER
 
 
 def light(t):
@@ -207,9 +214,9 @@ def frame(t, i, A, rng):
             if k2 > 0.004:
                 wipe(img, EV.FORMAT, 26 * S, 0.40, y1, ink, k2)
         else:
-            kf = np.clip((t - T_SETTLE) / 0.4, 0, 1)
-            center(img, EV.DATE_EN, 26 * S, 0.40, y1, ink, kf)
-            center(img, EV.VENUE, 24 * S, 0.06, y1 + H * 0.048, ink, kf * 0.82, KR)
+            # **여기도 컷이다.** 이 줄만 페이드로 들어오면 판의 규칙을 혼자 어긴다
+            center(img, EV.DATE_EN, 26 * S, 0.40, y1, ink)
+            center(img, EV.VENUE, 24 * S, 0.06, y1 + H * 0.048, ink, 0.86, KR)
 
     # 14 · 15 · 16  카운트다운. 판 아래쪽에 크게 하나 — 이름과 안 겹친다
     for j, n in enumerate(('3', '2', '1')):
@@ -223,13 +230,15 @@ def frame(t, i, A, rng):
     CUE = T_GO + BAR * 2
     if t >= CUE - 0.05:
         n = int(np.floor((t - CUE) / BEAT)) + 1
-        bw, gp = W * 0.048, W * 0.018
+        # **작으면 아무도 안 센다.** 폭 7.5% · 두께 16px 로 키우고 글자 바로 밑에 둔다.
+        # 발치에 얇게 뒀더니 화면에서 제일 중요한 신호가 제일 안 보이는 것이 됐다.
+        bw, gp = W * 0.075, W * 0.022
         x0 = W / 2 - (bw * 4 + gp * 3) / 2
-        y = int(H * (0.855 if W > H else 0.815))
-        th = max(3, int(7 * S))
+        y = int(H * (0.760 if W > H else 0.715))
+        th = max(4, int(16 * S))
         for j in range(4):
             x = int(x0 + j * (bw + gp))
-            a = 1.0 if j < n else 0.20
+            a = 1.0 if j < n else 0.22
             c2 = CORAL if j == 3 else ink
             sub = img[y:y + th, x:x + int(bw)]
             img[y:y + th, x:x + int(bw)] = sub * (1 - a) + c2 * a

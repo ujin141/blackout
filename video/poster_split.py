@@ -384,7 +384,10 @@ def build(W, H, story=False):
         paint(img, tmask(k, BRAND, int(15 * V), 0.24), M, y, color=CYAN, a=0.75)
         sz = min(int(24 * V), fit(v, KR, W - M - lx))
         paint(img, tmask(v, KR, sz, 0.01), lx, y, a=0.97)
-    ibot = y0 + step * (len(ROWS) - 0.46)
+    # 복장·입장 제한은 잔글씨 한 줄. 표의 한 줄로 넣으면 무게가 같아진다
+    paint(img, tmask(EV.DRESS, KR, int(13 * V), 0.01), M,
+          y0 + step * (len(ROWS) - 1) + step * 0.62, a=0.62)
+    ibot = y0 + step * (len(ROWS) - 0.46) + step * 0.30
     img[int(ibot):int(ibot) + 1, M:W - M] = img[int(ibot):int(ibot) + 1, M:W - M] * 0.7 + CYAN * 0.3
 
     # ── 타임테이블 — 여덟 줄을 두 칸으로 접는다 ─────────────

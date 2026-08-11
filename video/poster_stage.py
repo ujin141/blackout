@@ -112,7 +112,8 @@ def build(W, H, story=False):
     # **발치는 비율이 아니라 바닥에서 역산한다.** 0.79H 로 잡았더니 피드(1350)에서
     # 정보 네 줄 + 협업 + 핸들이 캔버스를 넘어갔다. 블록 높이가 정해져 있으니
     # 아래에서 빼는 게 맞다 — 두 사이즈에서 같은 자리에 앉는다.
-    dy = H - 308 * V
+    # 정보가 여섯 줄이 되고 잔글씨가 붙었다. 발치를 그만큼 올린다
+    dy = H - 410 * V
     yb = info_block(img, M, dy, CWD, V, np.float32([1.0, 0.55, 0.80]), PAPER)
     paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.30), M, yb + 34 * V,
           color=DIM, a=0.60)
