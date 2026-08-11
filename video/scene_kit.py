@@ -271,7 +271,11 @@ def poolscene(W, H, story=False, wy=0.52, dj=0.74):
 
 
 # ── 사진으로 만드는 장면 ───────────────────────────────────
-def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5):
+import os
+
+
+def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5,
+               photo=None, focus=None, zoom=None):
     """**사진 한 장.** 밤 수영장 수면 위에 파티 조명이 떨어진 그림입니다.
 
     처음엔 클럽 사진과 수영장 사진을 물가에서 이어 붙였는데, 서로 다른 장소라
@@ -283,15 +287,29 @@ def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5):
     파티를 만든다는 규칙은 여기서도 같습니다.
 
     `wy` 는 남겨 뒀지만 이제 이음새가 없어 안 씁니다(호출부를 안 고치려고 둡니다)."""
-    from poster_kit import duotone, POOL
+    from poster_kit import duotone, POOL, STOCK
     V = W / 1080.0
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 
-    # **거의 물만.** 다이빙대가 크게 들어오면 사진이 주인공이 되어 앞의 글자가 진다.
-    # zoom 2.4 · focus 0.30 이 물이 제일 많이 나오는 자리다(왼쪽 아래에 판 모서리만).
-    img = duotone(POOL, W, H, np.float32([0.006, 0.020, 0.034]),
-                  np.float32([0.115, 0.235, 0.290]), contrast=1.34, keep=0.07,
-                  focus=0.20, zoom=2.4)
+    # **인물 사진이 있으면 그걸 쓴다.** `assets/img/stock/pool-model.jpg` 를 넣어 두면
+    # 자동으로 잡히고, 없으면 빈 수영장 사진으로 돌아간다. 파일 하나로 갈린다.
+    #
+    # 인물 사진은 **원본을 조금 더 남긴다**(keep 0.07 → 0.16). 듀오톤을 세게 걸면
+    # 살결이 금속처럼 보여서 사람이 아니라 조각으로 읽힌다.
+    MODEL = os.path.join(STOCK, 'pool-model.jpg')
+    if photo is None and os.path.exists(MODEL):
+        photo = MODEL
+    if photo:
+        img = duotone(photo, W, H, np.float32([0.010, 0.024, 0.040]),
+                      np.float32([0.150, 0.270, 0.330]), contrast=1.24, keep=0.16,
+                      focus=0.42 if focus is None else focus,
+                      zoom=1.00 if zoom is None else zoom)
+    else:
+        # **거의 물만.** 다이빙대가 크게 들어오면 사진이 주인공이 되어 앞의 글자가 진다.
+        img = duotone(POOL, W, H, np.float32([0.006, 0.020, 0.034]),
+                      np.float32([0.115, 0.235, 0.290]), contrast=1.34, keep=0.07,
+                      focus=0.20 if focus is None else focus,
+                      zoom=2.4 if zoom is None else zoom)
 
     # 파티 조명이 물에 떨어진다. **한 색이면 수영장이고 두 색이 섞여야 파티다**
     for cx, cy, rx, ry, col, a in ((0.92, 0.12, 0.52, 0.30, (1.00, 0.22, 0.62), 0.30),

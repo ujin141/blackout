@@ -53,6 +53,7 @@ video/poster_kit.py     포스터 공통 도구 (C·D·E안이 씀. A·B안은 �
 video/fest_kit.py       페스티벌 시안 전용 도구 (G~K안)
 video/scene_kit.py      풀파티 '장면' 을 그리는 도구 (AF~AH안)
 assets/img/partners/    협업 브랜드 로고 4종 — 포스터에 자동으로 들어감 (README 참고)
+assets/img/stock/       배경 사진. `pool-model.jpg` 를 넣으면 장면 배경이 그걸로 바뀜
 proposal/               웨이비 스튜디오 제안서 (18p)
 proposal2/              디제이코리아 제안서 (15p) — style.css 는 proposal/ 것을 공유
 llms.txt robots.txt sitemap.xml   AI·검색 노출
