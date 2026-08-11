@@ -22,10 +22,10 @@ from fest_kit import vignette, justify, night
 from fonts import KR
 import event as EV
 
-DEEP  = np.float32([0.020, 0.045, 0.075])          # 밤 물빛 그림자
+DEEP  = np.float32([0.034, 0.066, 0.100])          # 밤 물빛 그림자
 # 밝은 쪽을 0.62 로 두니 평균 0.32 · 밝은 픽셀 13% 로 낮 수영장이 됐다.
 # **밤 물은 빛나는 게 아니라 젖어 있다** — 밝은 쪽을 반으로 내린다.
-LIT   = np.float32([0.44, 0.62, 0.72])             # 물에 닿은 빛
+LIT   = np.float32([0.52, 0.69, 0.79])             # 물에 닿은 빛
 PAPER = np.float32([0.98, 0.99, 1.00])
 AQUA  = np.float32([0.30, 0.92, 1.00])
 DIM   = np.float32([0.66, 0.78, 0.86])

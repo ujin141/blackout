@@ -22,8 +22,8 @@ from fest_kit import vignette, justify, night
 from fonts import KR, KRD
 import event as EV
 
-DEEP  = np.float32([0.016, 0.038, 0.062])
-LIT   = np.float32([0.40, 0.58, 0.70])
+DEEP  = np.float32([0.030, 0.058, 0.090])
+LIT   = np.float32([0.48, 0.66, 0.77])
 PAPER = np.float32([0.98, 0.99, 1.00])
 AQUA  = np.float32([0.32, 0.92, 1.00])
 DIM   = np.float32([0.64, 0.74, 0.82])

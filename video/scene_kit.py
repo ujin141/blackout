@@ -307,8 +307,11 @@ def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5,
         # **사진이 너무 어두웠다.** 듀오톤 밝은 쪽을 0.15/0.27/0.33 로 두니
         # 인물이 그림자로만 남았다. 한 단 올리고 원본도 더 남긴다(0.16 → 0.20) —
         # 밤 톤은 판 전체를 누르는 데서 나오지 사진을 죽여서 나오는 게 아니다.
-        img = duotone(photo, W, H, np.float32([0.014, 0.030, 0.048]),
-                      np.float32([0.250, 0.415, 0.495]), contrast=1.22, keep=0.20,
+        # **색 방향은 그대로 두고 밝기만 올린다.** 그림자 끝을 들어 올리고
+        # 밝은 끝을 키우면 톤은 안 변하고 사진의 원래 밝기가 돌아온다.
+        # 원본 비율(keep)도 올린다 — 듀오톤이 덜 먹을수록 사진이 사진으로 보인다.
+        img = duotone(photo, W, H, np.float32([0.022, 0.046, 0.070]),
+                      np.float32([0.335, 0.525, 0.620]), contrast=1.20, keep=0.27,
                       focus=0.42 if focus is None else focus,
                       zoom=1.00 if zoom is None else zoom,
                       offx=HERO_CROP.get('offx', 0.0) if photo is HERO else 0.0)
