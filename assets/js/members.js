@@ -107,6 +107,22 @@ const MEMBERS = [
     soundcloud: '',
     cutout: 'assets/img/members/demic-cutout.webp',
     photo: ''
+  },
+  {
+    name: 'XANTHIC',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['EDM', '테크하우스', '힙합'],
+      en: ['EDM', 'Tech House', 'Hip-hop']
+    },
+    bio: {
+      ko: '다중다색의 사운드, 경계 없는 플레이. 매 순간 다른 플로어를 만듭니다.',
+      en: 'Many colours, no borders. Builds a different floor every time.'
+    },
+    instagram: 'dj_xanthic',
+    soundcloud: '',
+    cutout: 'assets/img/members/xanthic-cutout.webp',
+    photo: ''
   }
 ];
 
