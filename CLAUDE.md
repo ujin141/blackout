@@ -85,6 +85,7 @@ python poster_photo.py                        # F안 실사 물 사진 — 밤 �
 python band.py                                # 입장 밴드 인쇄 원고 4종 (GUEST · VIP · VVIP · STAFF)
 python audio_intro.py && python intro.py      # 행사 인트로 23초 · 120BPM. 가로(행사장)·세로(인스타)
                                               #   한 방 17.0초 · 21~22.5초 시보음 카운트인 · **23.0초가 노래 첫 박**
+python audio_intro2.py && python intro2.py    # 인트로 B안 — 밝은 풀파티(물속→수면). 격자는 A안과 같음
 python poster_split.py                        # A안 물×클럽, 기울인 축 · 시안×마젠타
 python poster_club.py                         # B안 클럽, 직각 격자 + 쌓은 타이포 · 검정×레드
 python poster_ticket.py                       # C안 입장권, 유일한 밝은 판 · 파랑
