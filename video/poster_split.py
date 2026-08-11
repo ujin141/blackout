@@ -306,7 +306,7 @@ def build(W, H, story=False):
     # 타이틀 자리는 사진을 살리고, 표가 앉는 자리만 확실히 죽인다.
     d = (np.clip((yy - SEAM) / (H - SEAM), 0, 1) ** 0.55 * (1 - top[..., 0]) * 0.80)[..., None]
     img = img * (1 - d) + INK * d
-    d2 = np.clip((yy - H * (0.560 if HOOK else 0.455)) / (H * 0.085), 0, 1)[..., None] * 0.68
+    d2 = np.clip((yy - (SEAM + 95 * U + H * 0.012)) / (H * 0.085), 0, 1)[..., None] * 0.68
     img = img * (1 - d2) + INK * d2
     t = np.clip(1 - yy / (H * 0.30), 0, 1)[..., None] * 0.56
     img = img * (1 - t) + INK * t
@@ -362,8 +362,20 @@ def build(W, H, story=False):
         paint(img, mh, M, hy, color=CYAN)
 
     # ── 정보표 ────────────────────────────────────────────
-    y0 = H * (0.482 if story else 0.492)
-    step = H * (0.034 if story else 0.036)
+    # **자리를 비율로 흩어 두지 않는다.** 정보가 네 줄에서 다섯 줄로 늘었을 때
+    # 마지막 줄과 TIME TABLE 사이가 줄 간격과 똑같아졌고, 그 순간 타임테이블이
+    # 정보표의 여섯 번째 줄로 읽혔다. 위에서부터 쌓고 **블록 사이 간격은
+    # 줄 간격의 1.6배 이상**으로 벌린다 — 같으면 한 덩어리가 된다.
+    # 위는 SOLO PARTY 발밑, 아래는 협업 줄에 못을 박고 **남는 높이를 간격으로
+    # 나눈다.** 시작 자리만 정하면 feed 는 타이틀에 붙고 story 는 발치가 텅 빈다 —
+    # 두 판의 세로 비율이 다르니 고정값으로는 둘 다 맞출 수 없다.
+    step = H * (0.0318 if story else 0.0335)
+    tstep = H * (0.0335 if story else 0.036)
+    THEAD = H * 0.033                       # TIME TABLE 머리글에서 첫 행까지
+    y0 = SEAM + 95 * U + H * (0.055 if story else 0.068)
+    pbot = H * 0.893                        # 협업 줄이 앉는 자리
+    blocks = step * (len(ROWS) - 1) + THEAD + tstep * (len(EV.TIMETABLE) / 2 - 1)
+    GAP = float(np.clip((pbot - y0 - blocks) / 2, step * 1.6, step * 3.2))
     lx = M + int(W * 0.215)                 # 값이 시작하는 열
     for i, (k, v) in enumerate(ROWS):
         y = y0 + step * i
@@ -372,20 +384,21 @@ def build(W, H, story=False):
         paint(img, tmask(k, BRAND, int(15 * V), 0.24), M, y, color=CYAN, a=0.75)
         sz = min(int(24 * V), fit(v, KR, W - M - lx))
         paint(img, tmask(v, KR, sz, 0.01), lx, y, a=0.97)
-    ry = int(y0 + step * (len(ROWS) - 0.46))
-    img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
+    ibot = y0 + step * (len(ROWS) - 0.46)
+    img[int(ibot):int(ibot) + 1, M:W - M] = img[int(ibot):int(ibot) + 1, M:W - M] * 0.7 + CYAN * 0.3
 
     # ── 타임테이블 — 여덟 줄을 두 칸으로 접는다 ─────────────
-    ty = H * (0.660 if story else 0.672)
+    ty = y0 + step * (len(ROWS) - 1) + GAP
     paint(img, tmask('TIME TABLE', BRAND, int(15 * V), 0.24), M, ty, color=CYAN, a=0.75)
-    timetable(img, EV.TIMETABLE, M, W - M, ty + H * 0.035, H * 0.036,
+    timetable(img, EV.TIMETABLE, M, W - M, ty + THEAD, tstep,
               V, CYAN, WHITE, cols=2, ksize=14, vsize=18,
               program=EV.PROGRAM, prog_color=MAGENTA)
+    tbot = ty + THEAD + tstep * (len(EV.TIMETABLE) / 2 - 1)
 
     # ── 협업 브랜드 ───────────────────────────────────────
     # 파일이 없으면 통째로 건너뛴다. 자리를 비워 두면 아래가 뜬 것처럼 보인다.
     if EV.PARTNERS_STR:
-        py = H * (0.868 if story else 0.878)
+        py = tbot + GAP
         ry = int(py - H * 0.030)
         img[ry:ry + 1, M:W - M] = img[ry:ry + 1, M:W - M] * 0.7 + CYAN * 0.3
         paint(img, tmask('PARTNERS', BRAND, int(15 * V), 0.24), M, py, color=CYAN, a=0.75)
@@ -395,7 +408,7 @@ def build(W, H, story=False):
     # ── 하단 ──────────────────────────────────────────────
     by = H * 0.955
     paint(img, tmask(EV.HANDLE, BRAND, int(19 * V), 0.16), M, by, a=0.92)
-    paint(img, tmask(EV.NOTE, KR, int(21 * V), 0.02), W - M, by, color=MAGENTA, a=0.95, anchor='r')
+    paint(img, tmask(EV.RESERVE, KR, int(21 * V), 0.02), W - M, by, color=MAGENTA, a=0.95, anchor='r')
 
     # ── 여백 디테일 — 인쇄물처럼 보이게 하는 잔손질 ─────────
     # 네 귀퉁이 십자. 세로로 세웠던 옆 글자는 뺐다 — 타임테이블이 들어오면서
