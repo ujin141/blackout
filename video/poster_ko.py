@@ -89,7 +89,7 @@ def build(W, H, story=False):
     paint_bl(img, tmask_bl(EV.AGE, KR, int(17 * V), 0.01), M, fy + 180 * V,
              color=PAPER, a=0.85)
     # 애프터파티 — 본 행사 뒤로 이어지는 자리라 입장 조건 바로 밑에 둔다
-    paint_bl(img, tmask_bl(f'애프터파티  {EV.AFTER}', KR, int(17 * V), 0.01), M, fy + 214 * V,
+    paint_bl(img, tmask_bl(f'AFTER PARTY   {EV.AFTER}', KR, int(17 * V), 0.01), M, fy + 214 * V,
              color=AQUA, a=0.92)
     paint_bl(img, tmask_bl(EV.DRESS, KR, int(13 * V), 0.01), M, fy + 246 * V,
              color=DIM, a=0.72)

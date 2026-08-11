@@ -33,7 +33,7 @@ ROWS = [('일시', f'{EV.DATE}   {EV.TIME_EN}'),
         ('주소', EV.ADDR),
         ('라인업', EV.LINEUP_STR),
         ('입장', EV.ENTRY),
-        ('애프터', EV.AFTER),
+        ('AFTER', EV.AFTER),
         ('안내', EV.AGE)]
 
 
