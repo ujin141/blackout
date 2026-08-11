@@ -31,13 +31,31 @@ POOL = os.path.join(STOCK, 'pool-cc0.jpg')
 CLUB = os.path.join(STOCK, 'club-cc0.jpg')
 CLUB_SAFE = dict(focus=0.16, zoom=2.9)      # 값은 올리기만. 낮추면 얼굴이 딸려 들어온다.
 
-# 인물 사진. `pool-model.jpg` 를 넣어 두면 이걸 쓰고, 없으면 빈 수영장으로 돌아간다.
+# ── 인물 배경 사진 ────────────────────────────────────────
+# `pool-model.jpg` · `pool-model-2.jpg` · `pool-model-3.jpg` 를 넣어 두면 골라 쓴다.
+# 하나도 없으면 빈 수영장 사진으로 돌아가므로 코드는 항상 돈다.
+#
+#     python poster_real.py                    1번 사진
+#     BLACKOUT_HERO=2 python poster_real.py    2번 사진 → real_h2_story.png
+#
 # **인물이 주인공인 사진은 가운데에 그래픽이 있는 판과 부딪힌다** —
-# 위·아래에만 글자가 있는 판(ko · real · night)에서 쓸 것.
-MODEL = os.path.join(STOCK, 'pool-model.jpg')
-HERO = MODEL if os.path.exists(MODEL) else POOL
-HERO_CROP = (dict(focus=0.40, zoom=1.00) if HERO is MODEL
-             else dict(focus=0.62, zoom=1.25))
+# 위·아래에만 글자가 있는 판(real · ko · night)에서 쓸 것.
+#
+# 크롭은 사진마다 다르다. 세로 전신은 그대로, 가로 사진은 확대해서 인물만 잡는다 —
+# 가로 사진을 세로 판에 그냥 넣으면 좌우가 잘려 무슨 그림인지 모르게 된다.
+_MODELS = [('pool-model.jpg',   dict(focus=0.40, zoom=1.00)),
+           ('pool-model-2.jpg', dict(focus=0.46, zoom=1.85)),
+           ('pool-model-3.jpg', dict(focus=0.40, zoom=1.05))]
+
+HEROES = [(os.path.join(STOCK, f), c) for f, c in _MODELS
+          if os.path.exists(os.path.join(STOCK, f))]
+
+_N = max(1, int(os.environ.get('BLACKOUT_HERO', '1')))
+if HEROES:
+    HERO, HERO_CROP = HEROES[min(_N, len(HEROES)) - 1]
+    HERO_TAG = '' if _N <= 1 else f'_h{_N}'
+else:
+    HERO, HERO_CROP, HERO_TAG = POOL, dict(focus=0.62, zoom=1.25), ''
 
 
 def tmask(text, path, size, track_em=0.0):
@@ -326,7 +344,9 @@ def grain(img, amt, seed=3):
 
 
 def save(img, name):
-    p = os.path.join(OUT, f'{name}.png')
+    # 사진을 바꿔 뽑으면 이름이 갈려야 덮어쓰지 않는다.
+    # 여기 한 곳만 고치면 판 전체가 따라온다.
+    p = os.path.join(OUT, f'{name}{HERO_TAG}.png')
     Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
     print(p)
     return p
