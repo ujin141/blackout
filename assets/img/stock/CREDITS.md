@@ -23,3 +23,15 @@
 - **주의: 픽사베이는 모델 릴리스(초상권)를 보장하지 않습니다.** 인물이 식별되는
   사진을 행사 홍보에 쓰는 건 저작권과 별개 문제이고, 사용자가 확인한 뒤 진행했습니다.
 
+## pool-model-2.jpg
+- 출처: Pixabay (원본 `chanelwestcoast-woman-5812813.jpg`, 업로더 chanelwestcoast)
+- 라이선스: Pixabay Content License — 상업적 사용 가능, 출처 표기 의무 없음
+- **원본에 `FUNBOY` 상표가 크게 찍혀 있습니다.** 협찬이 아닌데 포스터에 들어가면
+  협찬처럼 읽히므로, 크롭으로 로고를 빼고 씁니다.
+- 주의: 픽사베이는 모델 릴리스(초상권)를 보장하지 않습니다.
+
+## pool-model-3.jpg
+- 출처: Pixabay (원본 `ptksgc-girl-2161235.jpg`, 업로더 ptksgc)
+- 라이선스: Pixabay Content License — 상업적 사용 가능, 출처 표기 의무 없음
+- 주의: 픽사베이는 모델 릴리스(초상권)를 보장하지 않습니다.
+

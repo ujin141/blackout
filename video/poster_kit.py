@@ -43,9 +43,12 @@ CLUB_SAFE = dict(focus=0.16, zoom=2.9)      # 값은 올리기만. 낮추면 얼
 #
 # 크롭은 사진마다 다르다. 세로 전신은 그대로, 가로 사진은 확대해서 인물만 잡는다 —
 # 가로 사진을 세로 판에 그냥 넣으면 좌우가 잘려 무슨 그림인지 모르게 된다.
-_MODELS = [('pool-model.jpg',   dict(focus=0.40, zoom=1.00)),
-           ('pool-model-2.jpg', dict(focus=0.46, zoom=1.85)),
-           ('pool-model-3.jpg', dict(focus=0.40, zoom=1.05))]
+# 크롭은 후보를 나란히 놓고 골랐다(눈대중 금지).
+#   2번은 **가로 사진**이라 세로 판에서 좌우가 크게 잘린다 — 얼굴·상반신만 잡는다.
+#   3번은 세로라 위에 물이 남게 잡아 헤드라인 자리를 비운다.
+_MODELS = [('pool-model.jpg',   dict(focus=0.40, zoom=1.00, offx=0.00)),
+           ('pool-model-2.jpg', dict(focus=0.42, zoom=2.40, offx=-0.15)),
+           ('pool-model-3.jpg', dict(focus=0.30, zoom=1.35, offx=0.00))]
 
 HEROES = [(os.path.join(STOCK, f), c) for f, c in _MODELS
           if os.path.exists(os.path.join(STOCK, f))]

@@ -287,7 +287,7 @@ def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5,
     파티를 만든다는 규칙은 여기서도 같습니다.
 
     `wy` 는 남겨 뒀지만 이제 이음새가 없어 안 씁니다(호출부를 안 고치려고 둡니다)."""
-    from poster_kit import duotone, POOL, STOCK
+    from poster_kit import duotone, POOL, HERO, HERO_CROP
     V = W / 1080.0
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 
@@ -296,14 +296,19 @@ def photoscene(W, H, story=False, wy=0.46, warm=1.0, seed=5,
     #
     # 인물 사진은 **원본을 조금 더 남긴다**(keep 0.07 → 0.16). 듀오톤을 세게 걸면
     # 살결이 금속처럼 보여서 사람이 아니라 조각으로 읽힌다.
-    MODEL = os.path.join(STOCK, 'pool-model.jpg')
-    if photo is None and os.path.exists(MODEL):
-        photo = MODEL
+    # 어느 사진을 쓸지는 `poster_kit.HERO` 가 정한다 — 환경변수 하나로 판 전체가
+    # 같은 사진을 쓴다. 인물 사진은 **원본을 조금 더 남긴다**(keep 0.07 → 0.16):
+    # 듀오톤을 세게 걸면 살결이 금속처럼 보여서 사람이 아니라 조각으로 읽힌다.
+    if photo is None and HERO is not POOL:
+        photo = HERO
+        if focus is None and zoom is None:
+            focus, zoom = HERO_CROP['focus'], HERO_CROP['zoom']
     if photo:
         img = duotone(photo, W, H, np.float32([0.010, 0.024, 0.040]),
                       np.float32([0.150, 0.270, 0.330]), contrast=1.24, keep=0.16,
                       focus=0.42 if focus is None else focus,
-                      zoom=1.00 if zoom is None else zoom)
+                      zoom=1.00 if zoom is None else zoom,
+                      offx=HERO_CROP.get('offx', 0.0) if photo is HERO else 0.0)
     else:
         # **거의 물만.** 다이빙대가 크게 들어오면 사진이 주인공이 되어 앞의 글자가 진다.
         img = duotone(POOL, W, H, np.float32([0.006, 0.020, 0.034]),

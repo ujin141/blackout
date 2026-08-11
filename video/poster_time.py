@@ -14,7 +14,7 @@ AD안 — **타임테이블이 주인공.** 사람들이 제일 궁금해하는 
 python poster_time.py  →  out/poster/time_{feed,story}.png
 """
 import numpy as np
-from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
+from poster_kit import (BRAND, HERO, HERO_CROP, SIZES, tmask, tmask_bl, paint, paint_bl,
                         rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
 from fonts import KR
@@ -31,7 +31,7 @@ DIM   = np.float32([0.58, 0.70, 0.78])
 def build(W, H, story=False):
     V = W / 1080.0
     # 사진은 **아주 옅게.** 표를 읽는 게 목적이라 배경은 배경이어야 한다
-    img = duotone(POOL, W, H, DEEP, LIT, contrast=1.10, keep=0.10, focus=0.62, zoom=1.30)
+    img = duotone(HERO, W, H, DEEP, LIT, contrast=1.10, keep=0.14, **HERO_CROP)
     img *= 0.34
     # 발치는 더 눌러 둔다. 표 아래 한글이 사진 위에 뜨면 흐릿하게 읽힌다
     yv = np.arange(H, dtype=np.float32)[:, None, None] / H
