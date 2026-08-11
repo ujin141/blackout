@@ -28,11 +28,12 @@ PAPER  = np.float32([0.97, 0.97, 0.96])
 AMBER  = np.float32([1.00, 0.72, 0.28])
 DIM    = np.float32([0.58, 0.59, 0.62])
 
-ROWS = [('일시', f'{EV.DATE}   {EV.TIME}'),
+ROWS = [('일시', f'{EV.DATE}   {EV.TIME_EN}'),
         ('장소', EV.VENUE),
         ('주소', EV.ADDR),
         ('라인업', EV.LINEUP_STR),
-        ('입장', EV.ENTRY)]
+        ('입장', EV.ENTRY),
+        ('안내', EV.AGE)]
 
 
 def build(W, H, story=False):

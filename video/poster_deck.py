@@ -56,7 +56,9 @@ def build(W, H, story=False):
 
     # **라인업도 발치에서 역산한다.** 이름 바로 밑에 붙이면 스토리(1920)에서
     # 그 아래가 250px 넘게 비어 판이 끊긴 것처럼 보인다.
-    fy = H - 352 * V
+    # 정보가 네 줄에서 **다섯 줄**로 늘었다(입장 조건 추가). 한 줄(46V)만큼
+    # 발치를 더 올려야 캔버스를 안 넘는다.
+    fy = H - 404 * V
     ly = fy - 62 * V
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD, 0.12)), 0.12),
           M, ly, color=PAPER, a=0.97)

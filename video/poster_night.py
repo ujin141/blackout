@@ -58,7 +58,9 @@ def build(W, H, story=False):
     paint(img, tmask(EV.LINEUP_STR, BRAND, int(justify(EV.LINEUP_STR, CWD * 0.96, 0.12)), 0.12),
           W / 2, ly, color=PAPER, a=0.97, anchor='c')
 
-    fy = H - 352 * V
+    # 정보가 네 줄에서 **다섯 줄**로 늘었다(입장 조건 추가). 한 줄(46V)만큼
+    # 발치를 더 올려야 캔버스를 안 넘는다.
+    fy = H - 404 * V
     img *= (1 - 0.74 * np.clip((yy - (fy - 34 * V)) / (68 * V), 0, 1))
     rule(img, fy, M, W - M, PAPER, 0.20, max(1, int(2 * V)))
     yb = info_block(img, M, fy + 44 * V, CWD, V, AQUA, PAPER)

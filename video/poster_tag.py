@@ -109,7 +109,9 @@ def build(W, H, story=False):
           color=DIM, a=0.80, anchor='c')
 
     # 자리는 **발치에서 역산한다** — 비율로 두면 짧은 피드에서 정보와 겹친다
-    fy = H - 352 * V
+    # 정보가 네 줄에서 **다섯 줄**로 늘었다(입장 조건 추가). 한 줄(46V)만큼
+    # 발치를 더 올려야 캔버스를 안 넘는다.
+    fy = H - 404 * V
     ny = fy - 168 * V
     img *= (1 - 0.55 * np.exp(-((yy - (ny + 26 * V)) / (H * 0.070)) ** 2))[..., None]
     ns = justify(EV.NAME, CWD, 0.10, cap=int(138 * V))

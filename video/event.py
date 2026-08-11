@@ -30,8 +30,12 @@ ADDR  = '서울특별시 서초구 양재동 122-6'   # 한 줄에 몰면 글자
 # 다시 넣을 일이 생기면 PRICE 에 값을 채우면 ENTRY 가 알아서 붙는다.
 PRICE = ''
 PERKS = '웰컴드링크 1잔'
-ENTRY = (f'{PRICE} · ' if PRICE else '') + f'사전 예약제 · {PERKS}'
-FINE  = f'{PERKS} 포함 · 사전 예약자 우선 입장'
+# **"사전예매제" 가 아니라 "사전예매".** 사용자가 정한 표기다.
+ENTRY = (f'{PRICE} · ' if PRICE else '') + f'사전예매 · {PERKS}'
+
+# 입장 조건. **포스터에 반드시 들어간다** — 문 앞에서 실랑이가 나는 자리다.
+AGE   = '미성년자 입장 불가 · 신분증 지참'
+FINE  = f'{PERKS} 포함 · {AGE}'
 
 # ── 인스타 표기 ───────────────────────────────────────────
 # **사용자가 정한 형식이다. 순서와 표기를 바꾸지 말 것.**
@@ -39,15 +43,23 @@ FINE  = f'{PERKS} 포함 · 사전 예약자 우선 입장'
 # 한글 헤드라인 판에는 한글을, 정보 블록에는 영문 점 표기를 쓴다.
 # 시간 구간은 **물결표(~)** 를 쓴다. 다른 자산의 en dash 규칙보다 이 지시가 우선한다.
 DATE_EN  = '2026.08.29. SAT.'
-TIME_EN  = '19:00 ~ 24:00'
+# 사용자가 정한 표기 그대로. 19시는 이미 오후라 PM 이 겹치지만 지시를 따른다.
+TIME_EN  = 'PM 19:00 ~ CLOSE AM 12:00'
 VENUE_IG = '@another.lounge._'          # 장소 인스타 계정
-ENTRY_EN = '사전예매제 + Welcome Drink'
+ENTRY_EN = '사전예매 + Welcome Drink'
 
 # 포스터 정보 블록. 라벨이 빈 줄은 헤드(날짜)라 크게 찍는다.
-INFO = [('',      DATE_EN),
-        ('TIME',  TIME_EN),
-        ('VENUE', f'{VENUE_IG}   ({VENUE})'),
-        ('ENTRY', ENTRY_EN)]
+# 장소는 **인스타 계정이 아니라 주소**로 (사용자 지시). 계정은 아래 VENUE_IG 에
+# 남겨 뒀지만 포스터에는 안 쓴다 — 처음 오는 사람은 계정이 아니라 주소로 찾아온다.
+INFO = [('',       DATE_EN),
+        ('OPEN',   TIME_EN),
+        ('VENUE',  f'{VENUE}   {ADDR}'),
+        ('ENTRY',  ENTRY_EN),
+        ('NOTICE', AGE)]
+
+# 포스터에 들어가는 유일한 카피. **한 줄이면 카피고 네 줄이면 광고 문구다.**
+# 사용자가 준 소개글에서 사실만 남겼다 — 칵테일은 아직 확정이 아니라 뺐다.
+TAGLINE = '혼자 와도 어색하지 않은 밤'
 
 HANDLE = '@BLACKOUTCREW_OFFICIAL'
 NOTE   = '예약 · 문의는 DM'

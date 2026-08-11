@@ -31,10 +31,11 @@ AQUA  = np.float32([0.30, 0.92, 1.00])
 DIM   = np.float32([0.66, 0.78, 0.86])
 
 # 라벨과 값. **문장으로 늘어놓지 않고 표로 씁니다** — 라벨이 있어야 눈이 훑습니다.
-ROWS = [('일시', f'{EV.DATE}  {EV.TIME}'),
-        ('장소', f'{EV.VENUE}  ({EV.ADDR})'),
+ROWS = [('일시', f'{EV.DATE}  {EV.TIME_EN}'),
+        ('장소', f'{EV.VENUE}  {EV.ADDR}'),
         ('라인업', EV.LINEUP_STR),
-        ('입장', EV.ENTRY)]
+        ('입장', EV.ENTRY),
+        ('안내', EV.AGE)]
 
 
 def build(W, H, story=False):
@@ -59,10 +60,13 @@ def build(W, H, story=False):
     paint(img, tmask(EV.NAME, BRAND, ns, 0.08), M, ny, color=PAPER)
     paint(img, tmask(EV.FORMAT, BRAND, int(23 * V), 0.30), M, ny + ns * 0.80,
           color=AQUA, a=0.98)
+    # 카피는 **한 줄까지.** 네 줄을 넣으면 포스터가 아니라 안내문이 된다
+    paint(img, tmask(EV.TAGLINE, KR, int(21 * V), 0.04), M, ny + ns * 0.80 + 34 * V,
+          color=PAPER, a=0.85)
 
     # ── 한글 정보 네 줄 ──────────────────────────────────
-    y0 = ny + ns * 0.80 + 74 * V
-    step = 60 * V
+    y0 = ny + ns * 0.80 + 104 * V
+    step = 54 * V
     rule(img, y0 - 30 * V, M, W - M, PAPER, 0.22, max(1, int(2 * V)))
     for i, (k, v) in enumerate(ROWS):
         yb = y0 + step * i
