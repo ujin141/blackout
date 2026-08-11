@@ -60,8 +60,10 @@ def build(W, H, story=False):
     dy = hy + hs * 0.86 + 76 * V
     ds = justify(EV.DATE, CWD * 0.86, 0.05, path=KRD, cap=int(72 * V))
     paint(img, tmask(EV.DATE, KRD, ds, 0.05), M, dy, color=PAPER)
-    paint(img, tmask(EV.TIME, KR, int(28 * V), 0.04), M, dy + ds * 0.86,
-          color=PAPER, a=0.90)
+    # **시간 표기는 판마다 같아야 한다.** 여기만 '오후 7시 — 자정' 이라
+    # 다른 판의 OPEN~CLOSE 와 달랐다. 같은 행사인데 표기가 둘이면 헷갈린다.
+    paint(img, tmask(f'OPEN {EV.TIME_EN}', BRAND, int(24 * V), 0.18), M, dy + ds * 0.86,
+          color=PAPER, a=0.92)
 
     # 이름은 그다음. 브랜드지만 정보는 아니다
     ny = dy + ds * 0.86 + 68 * V

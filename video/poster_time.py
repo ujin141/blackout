@@ -44,6 +44,9 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, int(17 * V), 0.42), M, ty,
           color=PAPER, a=0.90)
     paint(img, tmask(EV.DATE, KR, int(20 * V), 0.02), W - M, ty, color=AQUA, anchor='r')
+    # 표는 누가 언제 트는지를 말할 뿐, **문이 언제 열고 닫는지는 따로** 적는다
+    paint(img, tmask(f'OPEN {EV.TIME_EN}', BRAND, int(16 * V), 0.24), W - M, ty + 30 * V,
+          color=PAPER, a=0.88, anchor='r')
 
     ny = H * (0.128 if story else 0.120)
     ns = justify(EV.NAME, CWD, 0.08, cap=int(124 * V))
