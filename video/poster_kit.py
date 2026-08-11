@@ -31,6 +31,14 @@ POOL = os.path.join(STOCK, 'pool-cc0.jpg')
 CLUB = os.path.join(STOCK, 'club-cc0.jpg')
 CLUB_SAFE = dict(focus=0.16, zoom=2.9)      # 값은 올리기만. 낮추면 얼굴이 딸려 들어온다.
 
+# 인물 사진. `pool-model.jpg` 를 넣어 두면 이걸 쓰고, 없으면 빈 수영장으로 돌아간다.
+# **인물이 주인공인 사진은 가운데에 그래픽이 있는 판과 부딪힌다** —
+# 위·아래에만 글자가 있는 판(ko · real · night)에서 쓸 것.
+MODEL = os.path.join(STOCK, 'pool-model.jpg')
+HERO = MODEL if os.path.exists(MODEL) else POOL
+HERO_CROP = (dict(focus=0.40, zoom=1.00) if HERO is MODEL
+             else dict(focus=0.62, zoom=1.25))
+
 
 def tmask(text, path, size, track_em=0.0):
     """글자를 알파 마스크로. 자간은 em 비율."""
@@ -152,14 +160,17 @@ def box(dst, x0, y0, x1, y1, color, a=1.0):
         dst[int(y0):int(y1), int(x0):int(x1)] * (1 - a) + color * a
 
 
-def duotone(path, W, H, shadow, light, contrast=1.25, keep=0.10, focus=0.5, zoom=1.0):
+def duotone(path, W, H, shadow, light, contrast=1.25, keep=0.10, focus=0.5, zoom=1.0,
+            offx=0.0):
     """명암만 남기고 두 색 사이로 다시 칠한다.
     색조(HSV)를 돌리면 원본 색이 남아 엉뚱한 색이 튄다 — 반드시 이걸 쓸 것.
     zoom 을 올리면 더 확대해 잘라낸다. 사진의 일부만 쓰고 싶을 때."""
     im = Image.open(path).convert('RGB')
     s = max(W / im.width, H / im.height) * zoom
     im = im.resize((int(im.width * s) + 1, int(im.height * s) + 1), Image.LANCZOS)
-    x0 = max(0, (im.width - W) // 2)
+    # offx 는 가로 크롭 위치. 0 이 가운데, +면 오른쪽을 본다(=피사체가 왼쪽으로 간다).
+    # 인물 사진에서 사람이 화면 가운데 오면 앞의 글자와 정면으로 부딪혀서 필요하다.
+    x0 = int(np.clip((im.width - W) * (0.5 + offx), 0, max(0, im.width - W)))
     y0 = int(max(0, min(im.height - H, im.height * focus - H * 0.5)))
     a = np.asarray(im.crop((x0, y0, x0 + W, y0 + H))).astype(np.float32) / 255.0
     lum = a[..., 0] * .299 + a[..., 1] * .587 + a[..., 2] * .114

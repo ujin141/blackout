@@ -14,7 +14,7 @@ python poster_tag.py  →  out/poster/tag_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import BRAND, SIZES, tmask, paint, rule, box, grain, save, info_block
+from poster_kit import BRAND, SIZES, tmask, fit, paint, rule, box, grain, save, info_block
 from fest_kit import reflect, specks, vignette, justify, night
 from scene_kit import photoscene
 from fonts import KR
@@ -62,8 +62,10 @@ def tag(img, cx, cy, w, h, face, ink, num, label, accent, V, tilt=0.0):
 
     paint(img, tmask(label, BRAND, int(17 * V), 0.34), cx, cy - h * 0.235,
           color=ink, a=0.65, anchor='c')
-    paint(img, tmask(num, BRAND, int(h * 0.40), 0.02), cx, cy + h * 0.045,
-          color=ink, anchor='c')
+    # **번호 크기는 카드 높이가 아니라 폭에서 뽑는다.** 높이 기준으로 두면
+    # 카드를 좁힐 때 글자가 그대로 남아 옆으로 넘친다 — 실제로 그렇게 잘렸다.
+    paint(img, tmask(num, BRAND, fit(num, BRAND, w * 0.62, 0.02), 0.02),
+          cx, cy + h * 0.045, color=ink, anchor='c')
     rule(img, cy + h * 0.255, cx - w * 0.30, cx + w * 0.30, accent, 0.95, max(2, int(3 * V)))
     paint(img, tmask('SOLO', BRAND, int(19 * V), 0.34), cx, cy + h * 0.345,
           color=accent, anchor='c')
@@ -82,17 +84,20 @@ def build(W, H, story=False):
     img = photoscene(W, H, story, wy=0.52 if story else 0.495) * 0.82
 
     CYm = H * (0.410 if story else 0.405)
-    tw, th = W * 0.290, W * 0.290 * 1.42
-    dx = tw * 0.80          # 겹치면 번호가 잘린다. 나란히 두되 살짝만 물린다
+    # **가운데를 비운다.** 배경이 인물 사진일 때 카드가 정면에 오면 얼굴·몸을
+    # 정확히 가린다. 양옆으로 밀면 가운데가 열리고, 두 장이 '핀으로 꽂힌 표'
+    # 처럼 읽혀서 컨셉도 안 죽는다.
+    tw, th = W * 0.245, W * 0.245 * 1.42
+    dx = W * 0.285
 
     # **두 장.** 한 장이면 그냥 표이고, 나란히 둘이면 만나는 이야기가 된다
-    tag(img, W / 2 - dx, CYm + th * 0.03, tw, th, CARD, CARD2, '01', 'GUEST NO.', CORAL, V, tilt=-4)
-    tag(img, W / 2 + dx, CYm - th * 0.03, tw, th, CARD2, CARD, '02', 'GUEST NO.', AQUA, V, tilt=5)
+    tag(img, W / 2 - dx, CYm + th * 0.05, tw, th, CARD, CARD2, '01', 'GUEST NO.', CORAL, V, tilt=-6)
+    tag(img, W / 2 + dx, CYm - th * 0.05, tw, th, CARD2, CARD, '02', 'GUEST NO.', AQUA, V, tilt=7)
 
     # 둘 사이의 빛 — 만나는 자리
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-    g = np.exp(-(((xx - W / 2) / (W * 0.075)) ** 2 + ((yy - CYm) / (H * 0.075)) ** 2))
-    img += g[..., None] * np.float32([0.9, 0.95, 1.0]) * 0.32
+    g = np.exp(-(((xx - W / 2) / (W * 0.105)) ** 2 + ((yy - CYm) / (H * 0.090)) ** 2))
+    img += g[..., None] * np.float32([0.9, 0.95, 1.0]) * 0.20
 
     reflect(img, CYm + th * 0.60, int(H * 0.16), wob=6.0 * V, damp=0.30, seed=5)
     specks(img, 70, H * 0.08, H * 0.80, PAPER, 0.13, seed=51, rmax=1.7)

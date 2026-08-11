@@ -16,3 +16,10 @@
   - `club-cc0.jpg`는 아래쪽에 관객 얼굴이 또렷합니다. **위 38%(디스코볼·연기·트러스)만 잘라** `poster_split.py`에서 씁니다 — `zoom=2.6`, `focus=0.16`. 이 값을 낮추면 얼굴이 딸려 들어오니 올리기만 하세요.
   - `mixer-cc0.jpg`는 손만 나와서 초상권 문제가 없습니다.
 - Wikimedia Commons API 로 라이선스를 확인하고 받습니다 (`LicenseShortName` 이 CC0 인지).
+
+## pool-model.jpg
+- 출처: Pixabay (원본 파일명 `antoniojroficial-girl-4248065.jpg`, 업로더 antoniojroficial)
+- 라이선스: Pixabay Content License — 상업적 사용 가능, 출처 표기 의무 없음
+- **주의: 픽사베이는 모델 릴리스(초상권)를 보장하지 않습니다.** 인물이 식별되는
+  사진을 행사 홍보에 쓰는 건 저작권과 별개 문제이고, 사용자가 확인한 뒤 진행했습니다.
+

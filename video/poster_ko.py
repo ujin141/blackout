@@ -16,7 +16,7 @@ AE안 — **한글 헤드라인.** 한국 사람이 보는 포스터라 한국�
 python poster_ko.py  →  out/poster/ko_{feed,story}.png
 """
 import numpy as np
-from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
+from poster_kit import (BRAND, HERO, HERO_CROP, SIZES, tmask, tmask_bl, paint, paint_bl,
                         rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
 from fonts import KR, KRD
@@ -36,7 +36,7 @@ SUB  = '풀파티 × 솔로파티'
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = duotone(POOL, W, H, DEEP, LIT, contrast=1.18, keep=0.13, focus=0.62, zoom=1.22)
+    img = duotone(HERO, W, H, DEEP, LIT, contrast=1.18, keep=0.17, **HERO_CROP)
 
     # 위에서 아래로 눌러 글자 자리를 만든다. 위쪽이 헤드라인 자리다
     yy = np.arange(H, dtype=np.float32)[:, None, None] / H

@@ -16,7 +16,7 @@ python poster_real.py  →  out/poster/real_{feed,story}.png
 """
 import numpy as np
 import cv2
-from poster_kit import (BRAND, POOL, SIZES, tmask, tmask_bl, paint, paint_bl,
+from poster_kit import (BRAND, HERO, HERO_CROP, SIZES, tmask, tmask_bl, paint, paint_bl,
                         rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
 from fonts import KR
@@ -40,7 +40,7 @@ ROWS = [('일시', f'{EV.DATE}  {EV.TIME}'),
 def build(W, H, story=False):
     V = W / 1080.0
     # 물 사진. zoom·focus 는 다이빙대가 대각선으로 들어오는 자리
-    img = duotone(POOL, W, H, DEEP, LIT, contrast=1.20, keep=0.14, focus=0.62, zoom=1.25)
+    img = duotone(HERO, W, H, DEEP, LIT, contrast=1.20, keep=0.18, **HERO_CROP)
 
     # **아래를 확실히 눌러 정보 자리를 만든다.** 그림자가 아니라 사진을 죽인다
     yy = np.arange(H, dtype=np.float32)[:, None, None]
