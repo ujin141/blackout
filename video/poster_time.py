@@ -32,7 +32,7 @@ def build(W, H, story=False):
     V = W / 1080.0
     # 사진은 **아주 옅게.** 표를 읽는 게 목적이라 배경은 배경이어야 한다
     img = duotone(HERO, W, H, DEEP, LIT, contrast=1.10, keep=0.14, **HERO_CROP)
-    img *= 0.34
+    img *= 0.46
     # 발치는 더 눌러 둔다. 표 아래 한글이 사진 위에 뜨면 흐릿하게 읽힌다
     yv = np.arange(H, dtype=np.float32)[:, None, None] / H
     img *= (1 - 0.72 * np.clip((yv - (0.790 if story else 0.770)) / 0.20, 0, 1))

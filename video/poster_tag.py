@@ -81,7 +81,7 @@ def build(W, H, story=False):
     # **그린 장면은 자연스럽지 않다.** 선으로 그린 실루엣은 도표로 읽히고
     # 그 위에 네온을 얹으면 둘이 따로 논다. 자연스러움은 **사진의 결**에서
     # 온다 — 헤이즈의 얼룩, 물결의 불규칙은 코드로 흉내 낼수록 가짜 티가 난다.
-    img = photoscene(W, H, story, wy=0.52 if story else 0.495) * 0.82
+    img = photoscene(W, H, story, wy=0.52 if story else 0.495) * 0.94
 
     CYm = H * (0.410 if story else 0.405)
     # **가운데를 비운다.** 배경이 인물 사진일 때 카드가 정면에 오면 얼굴·몸을

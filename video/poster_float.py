@@ -37,7 +37,7 @@ def build(W, H, story=False):
     # **그린 장면은 자연스럽지 않다.** 선으로 그린 실루엣은 도표로 읽히고
     # 그 위에 네온을 얹으면 둘이 따로 논다. 자연스러움은 **사진의 결**에서
     # 온다 — 헤이즈의 얼룩, 물결의 불규칙은 코드로 흉내 낼수록 가짜 티가 난다.
-    img = photoscene(W, H, story, wy=0.52 if story else 0.495) * 0.86
+    img = photoscene(W, H, story, wy=0.52 if story else 0.495) * 0.94
 
     CYm = H * (0.395 if story else 0.395)
     R = W * 0.235

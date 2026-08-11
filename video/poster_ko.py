@@ -23,7 +23,7 @@ from fonts import KR, KRD
 import event as EV
 
 DEEP  = np.float32([0.016, 0.038, 0.062])
-LIT   = np.float32([0.30, 0.48, 0.60])
+LIT   = np.float32([0.40, 0.58, 0.70])
 PAPER = np.float32([0.98, 0.99, 1.00])
 AQUA  = np.float32([0.32, 0.92, 1.00])
 DIM   = np.float32([0.64, 0.74, 0.82])
@@ -40,8 +40,8 @@ def build(W, H, story=False):
 
     # 위에서 아래로 눌러 글자 자리를 만든다. 위쪽이 헤드라인 자리다
     yy = np.arange(H, dtype=np.float32)[:, None, None] / H
-    img *= (1 - 0.82 * np.clip((0.640 - yy) / 0.64, 0, 1) ** 0.85)
-    img *= (1 - 0.88 * np.clip((yy - (0.680 if story else 0.660)) / 0.26, 0, 1) ** 1.0)
+    img *= (1 - 0.70 * np.clip((0.640 - yy) / 0.64, 0, 1) ** 0.85)
+    img *= (1 - 0.78 * np.clip((yy - (0.680 if story else 0.660)) / 0.26, 0, 1) ** 1.0)
 
     M = int(W * 0.085)
     CWD = W - M * 2
