@@ -30,11 +30,11 @@ import os
 import numpy as np
 import cv2
 from PIL import Image
-from poster_kit import BRAND, tmask, tmask_bl, fit, paint, paint_bl, rule, grain
+from poster_kit import (BRAND, HEROES, tmask, tmask_bl, fit, paint, paint_bl,
+                        rule, duotone, grain)
 from fest_kit import justify, vignette
 from fonts import KR, KRB
 import event as EV
-import short
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'feed_event')
@@ -44,7 +44,13 @@ TW, TH = 1080, 1350
 W, H = TW * 3, TH
 SAFE_T = 135
 SEAM = 90
-FRAME = ('crowd', 1.0)            # 물 안이 제일 꽉 찬 프레임
+# **배경은 인물 사진으로 간다.** 처음엔 현장 영상 프레임을 1920→3240 으로
+# 늘려 썼는데, 원본이 영상이라 물러서 판이 흐릿했다. 포스터에 쓰는 3번 사진은
+# 얼굴이 가운데에 오고 양옆이 물이라 3.2:1 에서 글자 자리가 깨끗하다.
+HERO3 = HEROES[2][0]
+CROP = dict(focus=0.34, zoom=1.15)
+DEEP = np.float32([0.014, 0.032, 0.052])
+LIT = np.float32([0.320, 0.500, 0.590])
 
 PAPER = np.float32([0.99, 1.00, 1.00])
 AQUA = np.float32([0.34, 0.94, 1.00])
@@ -53,29 +59,14 @@ DIM = np.float32([0.62, 0.74, 0.82])
 
 
 def wide():
-    """영상에서 2.4:1 띠를 떠서 3240×1350 으로 늘린다."""
-    key, at = FRAME
-    c = short.load(key)
-    fps = c.get(cv2.CAP_PROP_FPS) or 30.0
-    c.set(cv2.CAP_PROP_POS_FRAMES, int(at * fps))
-    ok, fr = c.read()
-    c.release()
-    if not ok:
-        raise SystemExit('프레임을 못 읽었습니다')
-    fr = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB).astype(np.float32) / 255
-    h, w = fr.shape[:2]
-    bh = int(w * TH / W)
-    y0 = (h - bh) // 2
-    return cv2.resize(fr[y0:y0 + bh], (W, H), interpolation=cv2.INTER_CUBIC)
+    """3240×1350 배경. 인물 사진을 그대로 쓴다 — 영상 프레임을 늘리는 것보다
+    훨씬 또렷하고, 이 사진은 원래 포스터에 쓰던 것이라 톤도 이미 맞는다."""
+    return duotone(HERO3, W, H, DEEP, LIT, contrast=1.16, keep=0.26, **CROP)
 
 
 def build():
     img = wide()
-    # 릴스와 같은 톤으로 맞춘다 — 한 계정에서 나온 두 판이 색이 다르면 따로 논다
-    img = np.clip((img - 0.5) * 1.14 + 0.5, 0, 1)
-    g = img @ np.float32([0.299, 0.587, 0.114])
-    img = np.clip(g[..., None] + (img - g[..., None]) * 1.20, 0, 1)
-    img *= 0.60
+    img *= 0.72
 
     yy = np.arange(H, dtype=np.float32)[:, None, None]
     xx = np.arange(W, dtype=np.float32)[None, :, None]
@@ -97,13 +88,13 @@ def build():
     # ── 2칸 · 릴스가 앉는 자리 ────────────────────────────
     x0 = TW
     ns = fit(EV.NAME, BRAND, TW - SEAM * 2, 0.10)
-    paint(img, tmask(EV.NAME, BRAND, ns, 0.10), x0 + TW / 2, 520, color=PAPER, anchor='c')
-    paint(img, tmask(EV.FORMAT, BRAND, 25, 0.36), x0 + TW / 2, 596, color=AQUA, anchor='c')
-    rule(img, 660, x0 + SEAM, x0 + TW - SEAM, PAPER, 0.20, 2)
-    paint(img, tmask(EV.DATE_EN, BRAND, 40, 0.20), x0 + TW / 2, 726, color=PAPER, anchor='c')
+    paint(img, tmask(EV.NAME, BRAND, ns, 0.10), x0 + TW / 2, 585, color=PAPER, anchor='c')
+    paint(img, tmask(EV.FORMAT, BRAND, 25, 0.36), x0 + TW / 2, 660, color=AQUA, anchor='c')
+    rule(img, 724, x0 + SEAM, x0 + TW - SEAM, PAPER, 0.20, 2)
+    paint(img, tmask(EV.DATE_EN, BRAND, 40, 0.20), x0 + TW / 2, 800, color=PAPER, anchor='c')
     paint(img, tmask(EV.LINEUP_STR, BRAND,
                      int(justify(EV.LINEUP_STR, TW - SEAM * 2, 0.13)), 0.13),
-          x0 + TW / 2, 806, color=PAPER, a=0.92, anchor='c')
+          x0 + TW / 2, 876, color=PAPER, a=0.92, anchor='c')
 
     # ── 3칸 · 정보 · 예약 ─────────────────────────────────
     x0 = TW * 2
