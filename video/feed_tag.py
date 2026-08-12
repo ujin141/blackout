@@ -127,7 +127,11 @@ def build():
                      min(13, fit(EV.PARTNERS_STR, BRAND, TW - SEAM * 2, 0.16)), 0.16),
           TW / 2, FY + 46, color=DIM, a=0.62, anchor='c')
 
-    vignette(img, 0.26, 2.4)
+    # **비네트는 칸마다 따로 건다.** 3240 폭 전체에 걸면 타원이 양 끝 칸의
+    # 바깥쪽만 세게 눌러서, 1칸 왼쪽과 3칸 오른쪽에 어두운 띠가 생긴다 —
+    # 그리드에서 보면 그 두 칸만 반쯤 그늘진 판이 된다.
+    for _c in range(3):
+        vignette(img[:, _c * TW:(_c + 1) * TW], 0.22, 2.4)
     grain(img, 0.006, 23)
     return np.clip(img, 0, 1)
 

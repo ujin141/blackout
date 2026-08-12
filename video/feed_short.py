@@ -47,8 +47,16 @@ SEAM = 90
 # **배경은 인물 사진으로 간다.** 처음엔 현장 영상 프레임을 1920→3240 으로
 # 늘려 썼는데, 원본이 영상이라 물러서 판이 흐릿했다. 포스터에 쓰는 3번 사진은
 # 얼굴이 가운데에 오고 양옆이 물이라 3.2:1 에서 글자 자리가 깨끗하다.
-HERO3 = HEROES[2][0]
-CROP = dict(focus=0.34, zoom=1.15)
+# **칸마다 다른 사진을 쓴다.** 한 장을 3.2:1 로 늘리면 인물이 가운데 칸에만
+# 남고 양옆은 빈 물이 된다 — 세 칸 중 둘이 배경만 있는 판이 된다.
+# 사진 셋을 한 칸씩 쓰면 칸마다 그림이 있고, 4:5 는 세로 사진에 원래 맞는 비율이라
+# 크롭도 안 아깝다. 톤·괘선·발치를 세 칸에 똑같이 걸어 한 세트로 묶는다.
+#
+# 자리는 **얼굴이 아니라 몸**이 주가 되게 잡았다. 얼굴을 크게 잡으면 인물 사진이
+# 되고, 이 판은 풀파티 판이다.
+TILES = [(HEROES[0][0], dict(focus=0.52, zoom=1.05)),
+         (HEROES[1][0], dict(focus=0.50, zoom=1.05)),
+         (HEROES[2][0], dict(focus=0.60, zoom=1.05))]
 DEEP = np.float32([0.014, 0.032, 0.052])
 LIT = np.float32([0.320, 0.500, 0.590])
 
@@ -59,9 +67,11 @@ DIM = np.float32([0.62, 0.74, 0.82])
 
 
 def wide():
-    """3240×1350 배경. 인물 사진을 그대로 쓴다 — 영상 프레임을 늘리는 것보다
-    훨씬 또렷하고, 이 사진은 원래 포스터에 쓰던 것이라 톤도 이미 맞는다."""
-    return duotone(HERO3, W, H, DEEP, LIT, contrast=1.16, keep=0.26, **CROP)
+    """3240×1350 배경 — **사진 셋을 한 칸씩 이어 붙인다.**
+    같은 듀오톤을 쓰기 때문에 이어 놓으면 세 장이 한 세트로 읽힌다."""
+    parts = [duotone(path, TW, H, DEEP, LIT, contrast=1.16, keep=0.26, **crop)
+             for path, crop in TILES]
+    return np.concatenate(parts, axis=1)
 
 
 def build():
@@ -70,7 +80,8 @@ def build():
 
     yy = np.arange(H, dtype=np.float32)[:, None, None]
     xx = np.arange(W, dtype=np.float32)[None, :, None]
-    img *= 1 - 0.40 * np.exp(-((xx - W / 2) / (TW * 0.55)) ** 2)   # 가운데(릴스 칸)
+    for c in range(3):                       # 칸마다 글자 자리를 눌러 둔다
+        img *= 1 - 0.42 * np.exp(-((xx - (c + 0.5) * TW) / (TW * 0.58)) ** 2)
     img *= 1 - 0.66 * np.exp(-((xx - W * 5 / 6) / (TW * 0.52)) ** 2) * \
         np.clip((yy - 560) / 200, 0, 1)
     # **원본이 현장 사진이라 밝은 사람이 그대로 뒤에 온다** — 0.46 으로는
@@ -125,7 +136,11 @@ def build():
     paint(img, tmask(EV.HANDLE, BRAND, 17, 0.24), TW * 2.5, FY + 46,
           color=DIM, a=0.85, anchor='c')
 
-    vignette(img, 0.24, 2.4)
+    # **비네트는 칸마다 따로 건다.** 3240 폭 전체에 걸면 타원이 양 끝 칸의
+    # 바깥쪽만 세게 눌러서, 1칸 왼쪽과 3칸 오른쪽에 어두운 띠가 생긴다 —
+    # 그리드에서 보면 그 두 칸만 반쯤 그늘진 판이 된다.
+    for _c in range(3):
+        vignette(img[:, _c * TW:(_c + 1) * TW], 0.22, 2.4)
     grain(img, 0.006, 29)
     return np.clip(img, 0, 1)
 
