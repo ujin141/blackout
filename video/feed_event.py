@@ -26,11 +26,20 @@ python feed_event.py  →  out/feed_event/event_{1,2,3}.png · event_full.png ·
 import os
 import numpy as np
 from PIL import Image
-from poster_kit import (BRAND, HERO, HERO_CROP, tmask, tmask_bl, fit, paint, paint_bl,
-                        rule, box, duotone, grain, logo, HERO_TAG)
+from poster_kit import (BRAND, HEROES, tmask, tmask_bl, fit, paint, paint_bl,
+                        rule, box, duotone, grain, logo)
 from fest_kit import justify, vignette
 from fonts import KR
 import event as EV
+
+# **가로로 아주 긴 판(3.2:1)에서는 세로 사진이 몸의 한 부분만 남는다.**
+# 어느 자리를 잡아도 그렇고, 그래서 어둡게 눌렀더니 이번엔 사진이 안 보였다.
+# HEROES 중 **2번만 인물이 가로로 누워 있어서** 이 비율에 그대로 들어간다 —
+# 자르는 게 아니라 원래 구도가 가로다. 그래서 줄판의 기본 사진은 2번이다.
+_N = max(1, int(os.environ.get('BLACKOUT_HERO', '2')))
+ROW_HERO = HEROES[min(_N, len(HEROES)) - 1][0]
+ROW_TAG = '' if _N == 2 else f'_h{_N}'
+ROW_FOCUS = 0.28          # 셋 다 이 자리가 제일 잘 읽힌다
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'feed_event')
@@ -56,11 +65,11 @@ def build():
     # 그대로 쓰면 그 띠가 몸 한가운데에 걸린다 — 포스터는 세로라 괜찮지만
     # 3.2:1 에서는 그 부분만 크게 남는다. 물 쪽으로 내리고 한 단 더 눌러
     # **사진을 결로만** 쓴다. 여기서 읽혀야 하는 건 사진이 아니라 정보다.
-    img = duotone(HERO, W, H, DEEP, LIT, contrast=1.18, keep=0.16,
-                  focus=0.88, zoom=1.55, offx=HERO_CROP.get('offx', 0.0))
+    img = duotone(ROW_HERO, W, H, DEEP, LIT, contrast=1.18, keep=0.24,
+                  focus=ROW_FOCUS, zoom=1.30)
     yy = np.arange(H, dtype=np.float32)[:, None, None]
     xx = np.arange(W, dtype=np.float32)[None, :, None]
-    img *= 0.46
+    img *= 0.62
     # 칸마다 글자가 앉는 자리를 눌러 둔다. 누르는 자리는 이음새를 안 건드린다
     for c in range(3):
         cx = c * TW + TW / 2
@@ -155,14 +164,14 @@ def cover(tile3):
 
 if __name__ == '__main__':
     full = Image.fromarray((build() * 255).astype(np.uint8))
-    full.save(os.path.join(OUT, f'event_full{HERO_TAG}.png'), optimize=True)
+    full.save(os.path.join(OUT, f'event_full{ROW_TAG}.png'), optimize=True)
     tiles = []
     for i in range(3):
         t = full.crop((i * TW, 0, (i + 1) * TW, TH))
-        p = os.path.join(OUT, f'event_{i + 1}{HERO_TAG}.png')
+        p = os.path.join(OUT, f'event_{i + 1}{ROW_TAG}.png')
         t.save(p, optimize=True)
         tiles.append(t)
         print(p)
-    cover(tiles[2]).save(os.path.join(OUT, f'event_3_cover{HERO_TAG}.png'), optimize=True)
-    print(os.path.join(OUT, f'event_3_cover{HERO_TAG}.png'), '← 릴스 커버 (1080×1920)')
+    cover(tiles[2]).save(os.path.join(OUT, f'event_3_cover{ROW_TAG}.png'), optimize=True)
+    print(os.path.join(OUT, f'event_3_cover{ROW_TAG}.png'), '← 릴스 커버 (1080×1920)')
     print('\n올리는 순서: 3칸 → 2칸 → 1칸  (최신이 왼쪽 위라 거꾸로 올려야 이어진다)')

@@ -29,7 +29,7 @@ BLACKOUT_HERO=2 python feed_tag.py    사진 2번 (파일명에 _h2)
 import os
 import numpy as np
 from PIL import Image
-from poster_kit import (BRAND, HERO, HERO_CROP, HERO_TAG, tmask, tmask_bl, fit,
+from poster_kit import (BRAND, HEROES, tmask, tmask_bl, fit,
                         paint, paint_bl, rule, duotone, grain)
 from fest_kit import justify, vignette
 from fonts import KR
@@ -39,6 +39,15 @@ from poster_tag import tag, CARD, CORAL, AQUA
 # 카드가 배경에 묻혀 사라진다 — 카드는 물건이지 그림자가 아니다. 한 단 올린다.
 CARD2 = np.float32([0.19, 0.24, 0.27])
 import event as EV
+
+# **가로로 아주 긴 판(3.2:1)에서는 세로 사진이 몸의 한 부분만 남는다.**
+# 어느 자리를 잡아도 그렇고, 그래서 어둡게 눌렀더니 이번엔 사진이 안 보였다.
+# HEROES 중 **2번만 인물이 가로로 누워 있어서** 이 비율에 그대로 들어간다 —
+# 자르는 게 아니라 원래 구도가 가로다. 그래서 줄판의 기본 사진은 2번이다.
+_N = max(1, int(os.environ.get('BLACKOUT_HERO', '2')))
+ROW_HERO = HEROES[min(_N, len(HEROES)) - 1][0]
+ROW_TAG = '' if _N == 2 else f'_h{_N}'
+ROW_FOCUS = 0.28          # 셋 다 이 자리가 제일 잘 읽힌다
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'feed_event')
@@ -60,13 +69,13 @@ def build():
     # 사진 한 장이 세 칸을 관통한다. **가로로 긴 판이라 세로로 얇게 잘리므로**
     # 포스터의 크롭을 그대로 쓰면 몸의 한 부분만 크게 남는다. 한 단 내리고
     # 세게 눌러 결로만 쓴다 — 여기서 읽혀야 하는 건 번호표와 이름이다.
-    img = duotone(HERO, W, H, DEEP, LIT, contrast=1.16, keep=0.16,
-                  focus=0.90, zoom=1.50, offx=HERO_CROP.get('offx', 0.0))
-    img *= 0.46
+    img = duotone(ROW_HERO, W, H, DEEP, LIT, contrast=1.16, keep=0.24,
+                  focus=ROW_FOCUS, zoom=1.30)
+    img *= 0.64
     yy = np.arange(H, dtype=np.float32)[:, None, None]
     xx = np.arange(W, dtype=np.float32)[None, :, None]
     # 가운데 칸을 한 번 더 눌러 둔다 — 제일 큰 글자가 앉는 자리다
-    img *= 1 - 0.34 * np.exp(-((xx - W / 2) / (TW * 0.52)) ** 2)
+    img *= 1 - 0.40 * np.exp(-((xx - W / 2) / (TW * 0.52)) ** 2)
     # 발치는 세 칸 모두 눌러 한 줄을 세운다
     img *= 1 - 0.62 * np.clip((yy - 1040) / 130, 0, 1)
 
@@ -81,13 +90,13 @@ def build():
     # ── 2칸 · 이름 ────────────────────────────────────────
     x0 = TW
     ns = fit(EV.NAME, BRAND, TW - SEAM * 2, 0.10)
-    paint(img, tmask(EV.NAME, BRAND, ns, 0.10), x0 + TW / 2, 520, color=PAPER, anchor='c')
-    paint(img, tmask(EV.FORMAT, BRAND, 25, 0.36), x0 + TW / 2, 598, color=AQUA, anchor='c')
-    rule(img, 660, x0 + SEAM, x0 + TW - SEAM, PAPER, 0.20, 2)
+    paint(img, tmask(EV.NAME, BRAND, ns, 0.10), x0 + TW / 2, 462, color=PAPER, anchor='c')
+    paint(img, tmask(EV.FORMAT, BRAND, 25, 0.36), x0 + TW / 2, 536, color=AQUA, anchor='c')
+    rule(img, 598, x0 + SEAM, x0 + TW - SEAM, PAPER, 0.20, 2)
     paint(img, tmask(EV.LINEUP_STR, BRAND,
                      int(justify(EV.LINEUP_STR, TW - SEAM * 2, 0.13)), 0.13),
-          x0 + TW / 2, 716, color=PAPER, a=0.94, anchor='c')
-    paint(img, tmask(EV.TAGLINE, KR, 27, 0.03), x0 + TW / 2, 820, color=PAPER,
+          x0 + TW / 2, 654, color=PAPER, a=0.94, anchor='c')
+    paint(img, tmask(EV.TAGLINE, KR, 27, 0.03), x0 + TW / 2, 742, color=PAPER,
           a=0.90, anchor='c')
 
     # ── 3칸 · GUEST NO. 02 + 정보 ─────────────────────────
@@ -139,14 +148,14 @@ def cover(tile):
 
 if __name__ == '__main__':
     full = Image.fromarray((build() * 255).astype(np.uint8))
-    full.save(os.path.join(OUT, f'tagrow_full{HERO_TAG}.png'), optimize=True)
+    full.save(os.path.join(OUT, f'tagrow_full{ROW_TAG}.png'), optimize=True)
     tiles = []
     for i in range(3):
         t = full.crop((i * TW, 0, (i + 1) * TW, TH))
-        p = os.path.join(OUT, f'tagrow_{i + 1}{HERO_TAG}.png')
+        p = os.path.join(OUT, f'tagrow_{i + 1}{ROW_TAG}.png')
         t.save(p, optimize=True)
         tiles.append(t)
         print(p)
-    cover(tiles[2]).save(os.path.join(OUT, f'tagrow_3_cover{HERO_TAG}.png'), optimize=True)
-    print(os.path.join(OUT, f'tagrow_3_cover{HERO_TAG}.png'), '← 릴스 커버 (1080×1920)')
+    cover(tiles[2]).save(os.path.join(OUT, f'tagrow_3_cover{ROW_TAG}.png'), optimize=True)
+    print(os.path.join(OUT, f'tagrow_3_cover{ROW_TAG}.png'), '← 릴스 커버 (1080×1920)')
     print('\n올리는 순서: 3칸 → 2칸 → 1칸')
