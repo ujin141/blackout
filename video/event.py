@@ -54,13 +54,17 @@ ENTRY_EN = '사전예매 + Welcome Drink'
 # ── 모집 차수 ─────────────────────────────────────────────
 # 사전예약제라 한 번에 다 열지 않고 나눠 받는다. **여기 숫자만 고치면**
 # 현황 판(poster_wave.py)과 캡션이 같이 따라온다 — 두 곳에 적으면 어긋난다.
-#   (이름, 정원, 마감 여부)
-WAVES = [('1차', 18, True),
-         ('2차', 20, False),
-         ('3차', 20, False)]
-CAP = sum(n for _, n, _ in WAVES)                    # 58
-DONE = sum(n for _, n, d in WAVES if d)              # 마감된 인원
-OPEN_WAVE = next((w for w in WAVES if not w[2]), None)   # 지금 받는 차수
+#   (이름, 정원, 지금까지 모인 수)
+WAVES = [('1차', 20, 18),
+         ('2차', 20, 0),
+         ('3차', 20, 0)]
+CAP = sum(c for _, c, _ in WAVES)                    # 60
+DONE = sum(n for _, _, n in WAVES)                   # 18
+LEFT = CAP - DONE
+# 지금 받는 차수와 남은 자리. **"마감" 보다 "몇 자리 남음" 이 훨씬 세다** —
+# 마감은 끝난 얘기이고 남은 자리는 지금 움직일 이유다.
+OPEN_WAVE = next(((w, c, n) for w, c, n in WAVES if n < c), None)
+OPEN_LEFT = (OPEN_WAVE[1] - OPEN_WAVE[2]) if OPEN_WAVE else 0
 
 # 성비. **밖으로 내보낼지는 따로 정한다** — 예전에 성비 문구를 한 번 뺐다.
 # 운영용 숫자로만 두고, 판·캡션에 넣을 때는 SHOW_RATIO 를 켠다.

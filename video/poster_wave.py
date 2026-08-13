@@ -4,9 +4,12 @@
 사전예약제라 한 번에 다 열지 않고 나눠 받는다. **차수가 넘어갈 때마다 다시
 뽑는 판**이라 `event.py` 의 WAVES 만 고치면 그림·숫자가 같이 따라온다.
 
-이 판이 하는 일은 하나다 — **지금 안 하면 다음이 없다는 걸 숫자로 보여 주는 것.**
-그래서 마감된 차수를 지우지 않고 남겨 둔다. 1차가 찼다는 사실이 2차를
-재촉하는 근거이고, 빈 판에 "2차 모집 중" 만 있으면 아무 힘이 없다.
+이 판이 하는 일은 하나다 — **지금 움직일 이유를 숫자로 주는 것.**
+그래서 제목이 "모집 현황" 이 아니라 "1차 2자리 남았습니다" 다. 현황은 게시판이고
+남은 자리는 이유다. 마감은 끝난 얘기라 아무 행동도 안 만든다.
+
+마감된 차수도 지우지 않는다. 앞 차수가 찼다는 사실이 다음 차수를 재촉하는
+근거이고, 빈 판에 "2차 모집 중" 만 있으면 아무 힘이 없다.
 
 **막대는 정원 전체를 한 줄로 그린다.** 차수마다 따로 그리면 각 차수가 얼마나
 찼는지를 말하게 되는데, 그건 우리가 모르는 숫자다(예약이 들어오는 중이니까).
@@ -61,7 +64,12 @@ def build(W, H, story=False):
     top = ny + 52 * V + 70 * V
     bot = H - (270 if story else 250) * V - 60 * V
     hy = top + max(0, (bot - top - blkh)) * 0.50
-    paint(img, tmask('사전예약 모집 현황', KRB, int(56 * V), 0.02), M, hy, color=PAPER)
+    # **제목이 '현황' 이면 게시판이고 '몇 자리 남음' 이면 이유가 된다.**
+    # 마감은 끝난 얘기라 아무 행동도 안 만든다.
+    head = (f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리 남았습니다'
+            if EV.OPEN_WAVE else '사전예약 마감')
+    paint(img, tmask(head, KRB, int(fit(head, KRB, CWD, 0.02)) if len(head) > 12
+                     else int(56 * V), 0.02), M, hy, color=PAPER)
 
     by = hy + 78 * V
     bh = 22 * V
@@ -71,24 +79,28 @@ def build(W, H, story=False):
     # **숫자 폭을 재고 그 뒤에 붙인다.** 96V 로 박아 뒀더니 두 자리 수에서 겹쳤다
     nm = tmask_bl(f'{EV.DONE} / {EV.CAP}', BRAND, int(20 * V), 0.16)
     paint_bl(img, nm, M, by + 44 * V, color=PAPER, a=0.95)
-    paint_bl(img, tmask_bl('명 마감', KR, int(17 * V), 0.02),
+    paint_bl(img, tmask_bl('명 예약', KR, int(17 * V), 0.02),
              M + nm[0].shape[1] + 12 * V, by + 44 * V, color=DIM, a=0.85)
 
     # ── 차수 ──────────────────────────────────────────────
     y = by + 96 * V
-    for name, n, closed in EV.WAVES:
-        # 마감된 차수를 지우지 않는다. **1차가 찼다는 사실이 2차를 재촉한다**
-        col = DIM if closed else PAPER
-        box(img, M, y, M + 6 * V, y + 58 * V, CORAL if not closed else DIM,
-            0.95 if not closed else 0.45)
-        # **차수 이름은 한글 서체로.** BRAND(Michroma)에는 '차' 가 없어서 □ 로 나온다
+    for name, cap, got in EV.WAVES:
+        # 세 상태가 다 다르게 읽혀야 한다 —
+        #   마감      끝났다. 흐리게 두되 지우지는 않는다(1차가 찼다는 게 근거다)
+        #   n자리 남음 지금 움직일 이유. 여기만 색을 준다
+        #   오픈 예정  아직 안 열렸다. 존재만 알린다
+        full = got >= cap
+        openning = (not full) and got > 0
+        col = DIM if full else PAPER
+        acc = CORAL if openning else (DIM if full else AQUA)
+        box(img, M, y, M + 6 * V, y + 58 * V, acc, 0.95 if openning else 0.45)
         paint_bl(img, tmask_bl(name, KRB, int(30 * V), 0.02), M + 28 * V, y + 42 * V,
-                 color=col, a=1.0 if not closed else 0.60)
-        paint_bl(img, tmask_bl(f'{n}명', KR, int(30 * V), 0.02), M + CWD * 0.22, y + 42 * V,
-                 color=col, a=1.0 if not closed else 0.60)
-        tag = '마감' if closed else '모집 중'
+                 color=col, a=1.0 if not full else 0.60)
+        paint_bl(img, tmask_bl(f'{got} / {cap}명', KR, int(28 * V), 0.02),
+                 M + CWD * 0.22, y + 42 * V, color=col, a=1.0 if not full else 0.60)
+        tag = '마감' if full else (f'{cap - got}자리 남음' if openning else '오픈 예정')
         paint_bl(img, tmask_bl(tag, KRB, int(26 * V), 0.02), W - M, y + 42 * V,
-                 color=DIM if closed else CORAL, a=0.75 if closed else 1.0, anchor='r')
+                 color=acc, a=0.75 if full else 1.0, anchor='r')
         rule(img, y + 70 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
         y += step
 
