@@ -18,6 +18,10 @@
 ⚠ 성비(RATIO)는 기본으로 안 넣는다. 예전에 성비 문구를 한 번 뺐다 —
    `event.SHOW_RATIO` 를 켜야 나온다.
 
+**마감은 정원이 차서가 아니라 날짜로 넘어간다.** 주 단위라 "몇 자리 남음" 과
+"언제까지" 를 같이 말해야 움직인다 — 자리만 말하면 급할 이유가 없고,
+날짜만 말하면 얼마나 급한지를 모른다.
+
 python poster_wave.py  →  out/poster/wave_{feed,story}.png
 """
 import numpy as np
@@ -60,7 +64,7 @@ def build(W, H, story=False):
     # **블록을 통째로 가운데에 앉힌다.** 제목 자리를 비율로 박아 뒀더니 스토리에서
     # 가운데가 통째로 비었다 — 이름 아래와 발치 사이의 남는 높이에 맞춘다.
     step = 92 * V
-    blkh = 78 * V + 56 * V + 96 * V + step * len(EV.WAVES)
+    blkh = 46 * V + 78 * V + 56 * V + 96 * V + step * len(EV.WAVES)
     top = ny + 52 * V + 70 * V
     bot = H - (270 if story else 250) * V - 60 * V
     hy = top + max(0, (bot - top - blkh)) * 0.50
@@ -68,10 +72,15 @@ def build(W, H, story=False):
     # 마감은 끝난 얘기라 아무 행동도 안 만든다.
     head = (f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리 남았습니다'
             if EV.OPEN_WAVE else '사전예약 마감')
+    sub = (f'{EV.OPEN_WAVE[0]} 마감 {EV.OPEN_WAVE[3]}' if EV.OPEN_WAVE else '')
     paint(img, tmask(head, KRB, int(fit(head, KRB, CWD, 0.02)) if len(head) > 12
                      else int(56 * V), 0.02), M, hy, color=PAPER)
+    if sub:
+        # **몇 자리 남았는지와 언제까지인지는 붙어 있어야 한다.** 자리만 말하면
+        # 급할 이유가 없고, 날짜만 말하면 얼마나 급한지를 모른다.
+        paint(img, tmask(sub, KRB, int(26 * V), 0.02), M, hy + 46 * V, color=CORAL)
 
-    by = hy + 78 * V
+    by = hy + 124 * V
     bh = 22 * V
     box(img, M, by - bh / 2, W - M, by + bh / 2, PAPER, 0.14)
     done = CWD * (EV.DONE / max(EV.CAP, 1))
@@ -84,11 +93,11 @@ def build(W, H, story=False):
 
     # ── 차수 ──────────────────────────────────────────────
     y = by + 96 * V
-    for name, cap, got in EV.WAVES:
+    for name, cap, got, due in EV.WAVES:
         # 세 상태가 다 다르게 읽혀야 한다 —
-        #   마감      끝났다. 흐리게 두되 지우지는 않는다(1차가 찼다는 게 근거다)
+        #   마감      끝났다. 흐리게 두되 지우지는 않는다(앞 차수가 찼다는 게 근거다)
         #   n자리 남음 지금 움직일 이유. 여기만 색을 준다
-        #   오픈 예정  아직 안 열렸다. 존재만 알린다
+        #   오픈 예정  아직 안 열렸다. 존재와 마감일만 알린다
         full = got >= cap
         openning = (not full) and got > 0
         col = DIM if full else PAPER
@@ -96,9 +105,13 @@ def build(W, H, story=False):
         box(img, M, y, M + 6 * V, y + 58 * V, acc, 0.95 if openning else 0.45)
         paint_bl(img, tmask_bl(name, KRB, int(30 * V), 0.02), M + 28 * V, y + 42 * V,
                  color=col, a=1.0 if not full else 0.60)
-        paint_bl(img, tmask_bl(f'{got} / {cap}명', KR, int(28 * V), 0.02),
-                 M + CWD * 0.22, y + 42 * V, color=col, a=1.0 if not full else 0.60)
-        tag = '마감' if full else (f'{cap - got}자리 남음' if openning else '오픈 예정')
+        paint_bl(img, tmask_bl(f'{got} / {cap}명', KR, int(27 * V), 0.02),
+                 M + CWD * 0.20, y + 42 * V, color=col, a=1.0 if not full else 0.60)
+        # **마감일을 줄마다 적는다.** 주 단위로 넘어가니 어느 주에 걸린 건지가
+        # 그 자체로 정보다 — 지금 안 하면 다음 주까지 기다린다는 뜻이다
+        paint_bl(img, tmask_bl(f'~{due}', KR, int(21 * V), 0.02),
+                 M + CWD * 0.48, y + 42 * V, color=col, a=0.80 if not full else 0.50)
+        tag = '마감' if full else (f'{cap - got}자리' if openning else '오픈 예정')
         paint_bl(img, tmask_bl(tag, KRB, int(26 * V), 0.02), W - M, y + 42 * V,
                  color=acc, a=0.75 if full else 1.0, anchor='r')
         rule(img, y + 70 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
