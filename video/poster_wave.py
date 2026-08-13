@@ -25,11 +25,21 @@
 python poster_wave.py  →  out/poster/wave_{feed,story}.png
 """
 import numpy as np
-from poster_kit import (BRAND, HERO, HERO_CROP, SIZES, tmask, tmask_bl, fit,
+from poster_kit import (BRAND, HEROES, SIZES, tmask, tmask_bl, fit,
                         paint, paint_bl, rule, box, duotone, grain, save)
 from fest_kit import vignette, justify, night
 from fonts import KR, KRB
+import os
 import event as EV
+
+# 사진 번호. **기본은 3번** — 다른 판들이 1·2번을 쓰고 있어서, 현황 판까지
+# 같은 사진이면 며칠마다 올리는 게시물이 전부 같은 그림이 된다.
+# 파일명 뒤의 _h1 · _h2 는 poster_kit 의 save() 가 붙인다(여기서 또 붙이면 두 번 붙는다).
+HERO_N = max(1, min(3, int(os.environ.get('BLACKOUT_HERO', '3'))))
+# 자리는 **얼굴이 아니라 몸**. 세로 판이라 인물이 통째로 들어간다
+CROPS = {1: dict(focus=0.52, zoom=1.06),
+         2: dict(focus=0.46, zoom=1.30),
+         3: dict(focus=0.50, zoom=1.06)}
 
 DEEP = np.float32([0.016, 0.034, 0.054])
 LIT = np.float32([0.340, 0.520, 0.610])
@@ -41,7 +51,10 @@ DIM = np.float32([0.58, 0.70, 0.78])
 
 def build(W, H, story=False):
     V = W / 1080.0
-    img = duotone(HERO, W, H, DEEP, LIT, contrast=1.16, keep=0.16, **HERO_CROP)
+    # **다른 판과 다른 사진을 쓴다.** 현황 판은 며칠마다 다시 올리는 판이라
+    # 포스터와 같은 사진이면 같은 게시물을 또 올린 것처럼 보인다.
+    path, crop = HEROES[HERO_N - 1]
+    img = duotone(path, W, H, DEEP, LIT, contrast=1.16, keep=0.18, **CROPS[HERO_N])
     img *= 0.42
     yy = np.arange(H, dtype=np.float32)[:, None, None]
     img *= 1 - 0.42 * np.exp(-((yy - H * 0.52) / (H * 0.34)) ** 2)
