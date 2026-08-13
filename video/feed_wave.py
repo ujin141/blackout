@@ -2,6 +2,8 @@
 모집 현황 줄판 — 세 칸으로 그리드 한 줄을 채운다.
 
     │ 남은 자리 │ 차수 표 │ 정보 · 예약 │
+      ↑ 릴스로 올린다. 커버는 wave_1_cover.png — 그리드에서 제자리에 앉는다
+      ↑ 1칸은 릴스로 올린다. 커버(wave_1_cover.png)를 쓰면 그리드에서 제자리에 앉는다
 
 **차수가 넘어갈 때마다 다시 올리는 줄이다.** `event.py` 의 WAVES 만 고치면
 숫자·문구·막대가 다 따라온다 — 한 줄을 통째로 갈아 끼우면 그리드가 안 어긋난다.
@@ -16,7 +18,7 @@
 
 ⚠ 브랜드 흑백 규칙 예외(컬러). 행사 모객용이고 포스터와 같은 톤을 쓴다.
 
-python feed_wave.py  →  out/feed_event/wave_{1,2,3}.png · wave_full.png
+python feed_wave.py  →  out/feed_event/wave_{1,2,3}.png · wave_1_cover.png · wave_full.png
 """
 import os
 import numpy as np
@@ -147,11 +149,37 @@ def build():
     return np.clip(img, 0, 1)
 
 
+def cover(tile):
+    """릴스 커버(1080×1920). **그리드는 이 커버의 가운데를 4:5 로 잘라 보여준다** —
+    1350 짜리를 그대로 커버로 주면 잘린 결과가 밀려서 줄이 안 이어진다.
+    타일을 정확히 가운데(위 285px)에 앉히면 그리드에서 다른 두 칸과 딱 맞는다.
+
+    위아래 여백은 타일 끝 줄을 늘여 어둡게 채운다 — 릴스를 전체 화면으로 봐도
+    검은 띠가 아니라 판이 이어진 것으로 보인다."""
+    CH = 1920
+    top = (CH - TH) // 2
+    a = np.asarray(tile).astype(np.float32) / 255.0
+    canvas = np.zeros((CH, TW, 3), np.float32)
+    canvas[top:top + TH] = a
+    for i in range(top):
+        f = (1 - i / top) ** 1.6
+        canvas[top - 1 - i] = a[0] * f
+        canvas[top + TH + i] = a[-1] * f
+    return Image.fromarray((np.clip(canvas, 0, 1) * 255).astype(np.uint8))
+
+
 if __name__ == '__main__':
     full = Image.fromarray((build() * 255).astype(np.uint8))
     full.save(os.path.join(OUT, 'wave_full.png'), optimize=True)
+    tiles = []
     for i in range(3):
         p = os.path.join(OUT, f'wave_{i + 1}.png')
-        full.crop((i * TW, 0, (i + 1) * TW, TH)).save(p, optimize=True)
+        t = full.crop((i * TW, 0, (i + 1) * TW, TH))
+        t.save(p, optimize=True)
+        tiles.append(t)
         print(p)
+    # **1칸은 릴스로 올린다.** 커버를 이걸로 주면 그리드에서 제자리에 앉는다
+    cp = os.path.join(OUT, 'wave_1_cover.png')
+    cover(tiles[0]).save(cp, optimize=True)
+    print(cp, '← 릴스 커버 (1080×1920, 1칸 자리)')
     print('\n올리는 순서: 3칸 → 2칸 → 1칸')
