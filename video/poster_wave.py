@@ -88,7 +88,10 @@ def build(W, H, story=False):
     # 열려 있을 때 얘기다. 테이블만 남았는데 자리 수를 크게 쓰면, 들어온 사람이
     # 개인 자리를 찾다가 없어서 그냥 나간다.
     if EV.SALE == 'table':
-        head, sub = EV.SALE_NOTE, f'{EV.OPEN_WAVE[0]} 마감 {EV.OPEN_WAVE[3]}'
+        # 방금 닫힌 차수를 말한다. 아직 안 열린 차수의 마감일을 쓰면
+        # 이미 받는 중인 줄로 읽힌다
+        head = EV.SALE_NOTE
+        sub = f'{EV.LAST_FULL[0]} 마감' if EV.LAST_FULL else ''
     elif EV.OPEN_WAVE:
         head, sub = (f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리 남았습니다',
                      f'{EV.OPEN_WAVE[0]} 마감 {EV.OPEN_WAVE[3]}')

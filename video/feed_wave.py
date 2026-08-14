@@ -67,14 +67,27 @@ def build():
     ns = fit(EV.NAME, BRAND, TW - SEAM * 2, 0.09)
     paint(img, tmask(EV.NAME, BRAND, min(64, ns), 0.09), TW / 2, 300, color=PAPER, anchor='c')
 
-    head = (f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리' if EV.OPEN_WAVE else '사전예약 마감')
-    paint(img, tmask(head, KRB, min(112, fit(head, KRB, TW - SEAM * 2, 0.02)), 0.02),
+    # **제목은 지금 살 수 있는 것.** 포스터(poster_wave.py)와 같은 규칙이다 —
+    # 두 판이 다른 말을 하면 어느 쪽이 맞는지 아무도 모른다.
+    if EV.SALE == 'table':
+        head, sub = EV.SALE_NOTE, (f'{EV.LAST_FULL[0]} 마감' if EV.LAST_FULL else '')
+        tail = ''
+    elif EV.OPEN_WAVE:
+        head = f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리'
+        sub, tail = f'{EV.OPEN_WAVE[0]} 마감  {EV.OPEN_WAVE[3]}', '남았습니다'
+    else:
+        head, sub, tail = '사전예약 마감', '', ''
+    paint(img, tmask(head, KRB, min(96, fit(head, KRB, TW - SEAM * 2, 0.02)), 0.02),
           TW / 2, 500, color=PAPER, anchor='c')
-    paint(img, tmask('남았습니다' if EV.OPEN_WAVE else '', KRB, 40, 0.02), TW / 2, 590,
-          color=PAPER, a=0.92, anchor='c')
-    if EV.OPEN_WAVE:
-        paint(img, tmask(f'{EV.OPEN_WAVE[0]} 마감  {EV.OPEN_WAVE[3]}', KRB, 30, 0.02),
-              TW / 2, 672, color=CORAL, anchor='c')
+    if tail:
+        paint(img, tmask(tail, KRB, 40, 0.02), TW / 2, 590, color=PAPER, a=0.92, anchor='c')
+    if sub:
+        paint(img, tmask(sub, KRB, 30, 0.02), TW / 2, 600 if not tail else 672,
+              color=CORAL, anchor='c')
+    if EV.NEXT_OPEN:
+        # 다음 차수가 언제 열리는지. **닫는 말만 하면 그냥 끝난 행사로 읽힌다**
+        paint(img, tmask(EV.NEXT_OPEN, KRB, 26, 0.02), TW / 2, 660 if not tail else 720,
+              color=AQUA, a=0.95, anchor='c')
 
     # 막대 — **제일 먼저 보이는 칸에 둔다**
     by, bh = 790, 20
@@ -101,7 +114,12 @@ def build():
                  color=col, a=1.0 if not full else 0.60)
         paint_bl(img, tmask_bl(f'{got} / {cap}명', KR, 32, 0.02), x0 + TW * 0.34, y + 46,
                  color=col, a=1.0 if not full else 0.60)
-        tag = '마감' if full else (f'{cap - got}자리' if opening else '오픈 예정')
+        if full:
+            tag = '마감'
+        elif opening:
+            tag = '테이블만' if EV.SALE == 'table' else f'{cap - got}자리'
+        else:
+            tag = '오픈 예정'
         paint_bl(img, tmask_bl(tag, KRB, 28, 0.02), x0 + TW - SEAM, y + 46,
                  color=acc, a=0.75 if full else 1.0, anchor='r')
         paint_bl(img, tmask_bl(f'마감 {due}', KR, 21, 0.02), x0 + SEAM + 32, y + 84,
