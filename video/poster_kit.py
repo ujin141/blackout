@@ -51,7 +51,9 @@ CLUB_SAFE = dict(focus=0.16, zoom=2.9)      # 값은 올리기만. 낮추면 얼
 # 얼굴은 작게 걸치거나 프레임 밖으로 나가게 잡는다.
 _MODELS = [('pool-model.jpg',   dict(focus=0.66, zoom=1.15, offx=0.00)),
            ('pool-model-2.jpg', dict(focus=0.46, zoom=1.60, offx=0.06)),
-           ('pool-model-3.jpg', dict(focus=0.62, zoom=1.75, offx=0.05))]
+           # 3번은 **가로 사진(6000×4000)** 이고 이미 몸통만 담은 클로즈업이다.
+           # 세로 판에서는 확대할 여지가 없다 — zoom 1.0 에 가운데로 둔다.
+           ('pool-model-3.jpg', dict(focus=0.50, zoom=1.00, offx=0.50))]
 
 HEROES = [(os.path.join(STOCK, f), c) for f, c in _MODELS
           if os.path.exists(os.path.join(STOCK, f))]

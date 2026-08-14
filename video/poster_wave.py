@@ -38,11 +38,16 @@ import event as EV
 # 사진 번호. **기본은 3번** — 다른 판들이 1·2번을 쓰고 있어서, 현황 판까지
 # 같은 사진이면 며칠마다 올리는 게시물이 전부 같은 그림이 된다.
 # 파일명 뒤의 _h1 · _h2 는 poster_kit 의 save() 가 붙인다(여기서 또 붙이면 두 번 붙는다).
-HERO_N = max(1, min(3, int(os.environ.get('BLACKOUT_HERO', '3'))))
-# 자리는 **얼굴이 아니라 몸**. 세로 판이라 인물이 통째로 들어간다
+# **판 비율에 맞는 사진을 고른다.** 3번은 가로(6000×4000)에 몸통만 담은
+# 클로즈업이라 9:16 으로 자르면 폭의 37% 만 남아 무슨 그림인지 안 보인다 —
+# 크롭 값 문제가 아니라 사진에 세로가 없는 것이다.
+#   story(9:16)  세로 사진만
+#   feed(4:5)    가로 사진도 들어간다
+HERO_BY_SIZE = {True: 1, False: 3}          # True = story
 CROPS = {1: dict(focus=0.52, zoom=1.06),
          2: dict(focus=0.46, zoom=1.30),
-         3: dict(focus=0.50, zoom=1.06)}
+         3: dict(focus=0.50, zoom=1.00, offx=0.50)}
+_ENV = os.environ.get('BLACKOUT_HERO')      # 지정하면 그걸 우선한다
 
 DEEP = np.float32([0.016, 0.034, 0.054])
 LIT = np.float32([0.340, 0.520, 0.610])
@@ -56,8 +61,9 @@ def build(W, H, story=False):
     V = W / 1080.0
     # **다른 판과 다른 사진을 쓴다.** 현황 판은 며칠마다 다시 올리는 판이라
     # 포스터와 같은 사진이면 같은 게시물을 또 올린 것처럼 보인다.
-    path, crop = HEROES[HERO_N - 1]
-    img = duotone(path, W, H, DEEP, LIT, contrast=1.16, keep=0.18, **CROPS[HERO_N])
+    n = int(_ENV) if _ENV else HERO_BY_SIZE[story]
+    n = max(1, min(len(HEROES), n))
+    img = duotone(HEROES[n - 1][0], W, H, DEEP, LIT, contrast=1.16, keep=0.18, **CROPS[n])
     img *= 0.42
     yy = np.arange(H, dtype=np.float32)[:, None, None]
     img *= 1 - 0.42 * np.exp(-((yy - H * 0.52) / (H * 0.34)) ** 2)
