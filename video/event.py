@@ -68,6 +68,17 @@ LEFT = CAP - DONE
 OPEN_WAVE = next((w for w in WAVES if w[2] < w[1]), None)
 OPEN_LEFT = (OPEN_WAVE[1] - OPEN_WAVE[2]) if OPEN_WAVE else 0
 
+# **지금 무엇을 파는지.** 차수가 열려 있어도 개인 자리와 테이블은 따로 나간다 —
+# 개인이 다 차도 테이블은 남을 수 있고, 그때 "예약 받습니다" 만 쓰면 들어온 사람이
+# 개인 자리를 찾다가 없어서 그냥 나간다. 뭘 살 수 있는지를 먼저 말해야 한다.
+#   'table' 테이블만 · 'all' 개인·테이블 둘 다 · 'closed' 마감
+SALE = 'table'
+SALE_NOTE = {'table': '현재 테이블만 예약 가능',
+             'all': '개인 · 테이블 예약 가능',
+             'closed': '예약 마감'}[SALE]
+# 다음 차수가 열리는 날. 이번 차수 마감일과 같은 날이다
+NEXT_OPEN = ('2차 신청  8/17(월)부터' if SALE != 'closed' else '')
+
 # 성비. **밖으로 내보낼지는 따로 정한다** — 예전에 성비 문구를 한 번 뺐다.
 # 운영용 숫자로만 두고, 판·캡션에 넣을 때는 SHOW_RATIO 를 켠다.
 RATIO = '남녀 반반'

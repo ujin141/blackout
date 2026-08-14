@@ -4,8 +4,11 @@
 사전예약제라 한 번에 다 열지 않고 나눠 받는다. **차수가 넘어갈 때마다 다시
 뽑는 판**이라 `event.py` 의 WAVES 만 고치면 그림·숫자가 같이 따라온다.
 
-이 판이 하는 일은 하나다 — **지금 움직일 이유를 숫자로 주는 것.**
-그래서 제목이 "모집 현황" 이 아니라 "1차 2자리 남았습니다" 다. 현황은 게시판이고
+이 판이 하는 일은 하나다 — **지금 움직일 이유를 주는 것.**
+그래서 제목이 "모집 현황" 이 아니라 **지금 살 수 있는 것**이다.
+개인 자리가 열려 있으면 "1차 2자리 남았습니다", 테이블만 남았으면
+"현재 테이블만 예약 가능" — 자리 수를 크게 썼는데 개인 자리가 없으면
+들어온 사람이 찾다가 그냥 나간다. 현황은 게시판이고
 남은 자리는 이유다. 마감은 끝난 얘기라 아무 행동도 안 만든다.
 
 마감된 차수도 지우지 않는다. 앞 차수가 찼다는 사실이 다음 차수를 재촉하는
@@ -77,23 +80,33 @@ def build(W, H, story=False):
     # **블록을 통째로 가운데에 앉힌다.** 제목 자리를 비율로 박아 뒀더니 스토리에서
     # 가운데가 통째로 비었다 — 이름 아래와 발치 사이의 남는 높이에 맞춘다.
     step = 92 * V
-    blkh = 46 * V + 78 * V + 56 * V + 96 * V + step * len(EV.WAVES)
+    blkh = 46 * V + 62 * V + 78 * V + 56 * V + 96 * V + step * len(EV.WAVES)
     top = ny + 52 * V + 70 * V
     bot = H - (270 if story else 250) * V - 60 * V
     hy = top + max(0, (bot - top - blkh)) * 0.50
-    # **제목이 '현황' 이면 게시판이고 '몇 자리 남음' 이면 이유가 된다.**
-    # 마감은 끝난 얘기라 아무 행동도 안 만든다.
-    head = (f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리 남았습니다'
-            if EV.OPEN_WAVE else '사전예약 마감')
-    sub = (f'{EV.OPEN_WAVE[0]} 마감 {EV.OPEN_WAVE[3]}' if EV.OPEN_WAVE else '')
-    paint(img, tmask(head, KRB, int(fit(head, KRB, CWD, 0.02)) if len(head) > 12
-                     else int(56 * V), 0.02), M, hy, color=PAPER)
+    # **제목은 마감일이 아니라 지금 살 수 있는 것.** '몇 자리 남음' 은 개인 자리가
+    # 열려 있을 때 얘기다. 테이블만 남았는데 자리 수를 크게 쓰면, 들어온 사람이
+    # 개인 자리를 찾다가 없어서 그냥 나간다.
+    if EV.SALE == 'table':
+        head, sub = EV.SALE_NOTE, f'{EV.OPEN_WAVE[0]} 마감 {EV.OPEN_WAVE[3]}'
+    elif EV.OPEN_WAVE:
+        head, sub = (f'{EV.OPEN_WAVE[0]} {EV.OPEN_LEFT}자리 남았습니다',
+                     f'{EV.OPEN_WAVE[0]} 마감 {EV.OPEN_WAVE[3]}')
+    else:
+        head, sub = '사전예약 마감', ''
+    # **상한 없이 fit 만 쓰면 짧은 문구가 판을 넘치고 아래 줄과 겹친다.**
+    hs = min(int(54 * V), fit(head, KRB, CWD, 0.02))
+    paint(img, tmask(head, KRB, hs, 0.02), M, hy, color=PAPER)
     if sub:
         # **몇 자리 남았는지와 언제까지인지는 붙어 있어야 한다.** 자리만 말하면
         # 급할 이유가 없고, 날짜만 말하면 얼마나 급한지를 모른다.
-        paint(img, tmask(sub, KRB, int(26 * V), 0.02), M, hy + 46 * V, color=CORAL)
+        paint(img, tmask(sub, KRB, int(26 * V), 0.02), M, hy + 54 * V, color=CORAL)
+    if EV.NEXT_OPEN:
+        # 다음 차수가 언제 열리는지. **닫는 말만 하면 그냥 끝난 행사로 읽힌다**
+        paint(img, tmask(EV.NEXT_OPEN, KRB, int(24 * V), 0.02), M, hy + 100 * V,
+              color=AQUA, a=0.95)
 
-    by = hy + 124 * V
+    by = hy + 186 * V
     bh = 22 * V
     box(img, M, by - bh / 2, W - M, by + bh / 2, PAPER, 0.14)
     done = CWD * (EV.DONE / max(EV.CAP, 1))
@@ -124,7 +137,14 @@ def build(W, H, story=False):
         # 그 자체로 정보다 — 지금 안 하면 다음 주까지 기다린다는 뜻이다
         paint_bl(img, tmask_bl(f'~{due}', KR, int(21 * V), 0.02),
                  M + CWD * 0.48, y + 42 * V, color=col, a=0.80 if not full else 0.50)
-        tag = '마감' if full else (f'{cap - got}자리' if openning else '오픈 예정')
+        # **테이블만 파는 동안에는 개인 자리 수를 안 쓴다.** 2자리 남았다고 해 놓고
+        # 개인 예약이 안 되면 들어온 사람이 속았다고 느낀다.
+        if full:
+            tag = '마감'
+        elif openning:
+            tag = '테이블만' if EV.SALE == 'table' else f'{cap - got}자리'
+        else:
+            tag = '오픈 예정'
         paint_bl(img, tmask_bl(tag, KRB, int(26 * V), 0.02), W - M, y + 42 * V,
                  color=acc, a=0.75 if full else 1.0, anchor='r')
         rule(img, y + 70 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
