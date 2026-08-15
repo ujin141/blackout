@@ -23,12 +23,15 @@
 
 python short_card.py           행사 소개판
 python short_card.py sale      판매 상태판 (1차 마감 · 테이블만 · 2차 일정)
+python short_card.py promo     참여 이벤트판 (팔로우·댓글·공유 → 무료 입장)
 """
 import os
 import re
 import subprocess
 import numpy as np
 import cv2
+from PIL import Image
+import poster_kit
 from poster_kit import BRAND, tmask, fit, paint
 from fonts import KR, KRB
 import event as EV
@@ -67,13 +70,63 @@ CORAL = np.float32([0.980, 0.360, 0.300])
 # **정보를 나열하면 안 움직인다.** 사람을 움직이는 건 막힌 지점이다 —
 # 이 행사의 상품은 "혼자 가도 되는 것" 이고, 그게 못 가던 이유이기도 하다.
 # 그래서 순서가 막힌 지점 → 답 → 어떻게 → 언제·어디다.
-INTRO = [(DEEP,  '혼자 가고 싶었죠'),
-         (INK,   '그래서 만들었습니다'),
+# **첫 장이 전부다.** 스크롤을 멈추는 건 정보가 아니라 대답하게 만드는 질문이다 —
+# 머릿속으로 "아니" 든 "맞아" 든 답하는 순간 이미 멈춘 것이다.
+# 바꿔 가며 시험할 것 (같은 판에 첫 장만 갈아 끼운다)
+#   혼자 가면 이상한가요?      질문. 제일 세다
+#   친구 없어서 못 갔죠        아픈 지점 직격
+#   아는 사람 없이 오세요       명령형
+INTRO = [(DEEP,  '혼자 가면 이상한가요?'),
+         (INK,   '아니라고 만들었습니다'),
          (AQUA,  '9시 반부터 한 시간 반'),
          (CORAL, '혼자 온 사람들끼리'),
          (DEEP,  '양재 루프탑 풀파티'),
          (AQUA,  '8월 29일 토요일'),
          (INK,   '밤은 신사 ACE에서')]
+
+
+_BOTTLE = None
+
+
+def bottle_on(img, cy, h):
+    """참여 이벤트판 첫 칸에만 병을 얹는다. **상품을 말로만 하면 안 믿는다** —
+    글자 일곱 칸 중 한 칸은 물건을 보여 주는 데 쓴다.
+
+    원본이 작은 JPG 라 확대하면 압축 블록이 뜬다. 가장자리를 살리는 필터로
+    한 번 편 뒤 캐시한다(칸마다 다시 열면 15초짜리가 느려진다)."""
+    global _BOTTLE
+    if _BOTTLE is None:
+        p = os.path.join(poster_kit.STOCK, EV.PROMO_BOTTLE)
+        if not os.path.exists(p):
+            return
+        raw = np.asarray(Image.open(p).convert('RGBA'))
+        rgb = cv2.bilateralFilter(raw[..., :3], 11, 46, 46)
+        _BOTTLE = np.dstack([rgb, raw[..., 3]]).astype(np.float32) / 255
+    b = _BOTTLE
+    w = int(h * b.shape[1] / b.shape[0])
+    b = cv2.resize(b, (w, int(h)), interpolation=cv2.INTER_AREA)
+    H, W = img.shape[:2]
+    x0, y0 = (W - w) // 2, int(cy - h / 2)
+    x1, y1 = min(W, x0 + w), min(H, y0 + int(h))
+    sx, sy = max(0, -x0), max(0, -y0)
+    x0, y0 = max(0, x0), max(0, y0)
+    sub = b[sy:sy + (y1 - y0), sx:sx + (x1 - x0)]
+    a = sub[..., 3:4]
+    img[y0:y1, x0:x1] = img[y0:y1, x0:x1] * (1 - a) + sub[..., :3] * a
+
+
+def promo_cards():
+    """참여 이벤트 판. **판매판과 섞으면 둘 다 죽는다** — 무료로 갈 수 있다는
+    말과 테이블만 남았다는 말이 한 판에 있으면 어느 쪽도 안 믿긴다.
+
+    조건 넷을 한 장에 다 적지 않는다. 한 장에 하나씩 넘겨야 읽힌다."""
+    c = [(CORAL, f'{EV.PROMO_GET} 드립니다'),
+         (INK,   f'선착순 {EV.PROMO_TEAMS}팀')]
+    for d in EV.PROMO_DO[:3]:
+        c.append((DEEP if len(c) % 2 else AQUA, d))
+    c.append((AQUA, f'팀당 {EV.PROMO_PER}명'))
+    c.append((INK, '8/29 양재 루프탑'))
+    return c
 
 
 def sale_cards():
@@ -83,7 +136,9 @@ def sale_cards():
     자극은 없는 말을 지어내는 게 아니라 **아는 사실을 센 순서로 놓는 것**이다.
     먼저 찼다(사회적 증거) → 남은 게 이것뿐(희소) → 언제까지(마감).
     성비·마지막 기회·가격은 안 쓴다. 확인이 안 됐거나 사실이 아니다."""
-    c = [(DEEP, '친구 없어도 됩니다')]
+    # 판매판의 첫 장은 **사회적 증거**다. 남은 걸 먼저 말하면 안 팔린 것으로 읽히고,
+    # 이미 간 사람을 먼저 말하면 안 가면 손해로 읽힌다.
+    c = [(DEEP, f'{EV.DONE}명은 이미 갔습니다')]
     if EV.LAST_FULL:
         c.append((INK, f'{EV.LAST_FULL[0]} {EV.LAST_FULL[1]}명 마감'))
     if EV.SALE == 'table':
@@ -145,7 +200,7 @@ def crop916(fr, ox=0.5):
 
 
 def render(mode='intro'):
-    CARDS = sale_cards() if mode == 'sale' else INTRO
+    CARDS = {'sale': sale_cards, 'promo': promo_cards}.get(mode, lambda: INTRO)()
     nseg = (NBEAT - TAIL) // SEG                  # 13 칸
     # 글자 판과 현장 컷을 번갈아. 칸 0·2·4… 는 글자, 1·3·5… 는 현장
     order = []
@@ -219,9 +274,14 @@ def render(mode='intro'):
             # **96 은 작다.** 판이 비어 있는데 글자를 안 키울 이유가 없다 —
             # 폭이 허락하는 데까지 키우고, 긴 줄만 fit 이 알아서 줄인다
             fs = min(132, fit(txt, KRB, W * 0.86, 0.02))
-            paint(img, tmask(txt, KRB, fs, 0.02), W / 2, H * 0.47, color=ink, anchor='c')
-            paint(img, tmask(EV.DATE_EN, BRAND, 24, 0.30), W / 2, H * 0.47 + fs * 0.95,
+            # 참여 이벤트판의 첫 칸에만 병이 들어간다 — 글자를 위로 올려 자리를 낸다
+            shot = (mode == 'promo' and k == 0)
+            ty = H * (0.255 if shot else 0.47)
+            paint(img, tmask(txt, KRB, fs, 0.02), W / 2, ty, color=ink, anchor='c')
+            paint(img, tmask(EV.DATE_EN, BRAND, 24, 0.30), W / 2, ty + fs * 0.95,
                   color=ink, a=0.62, anchor='c')
+            if shot:
+                bottle_on(img, H * 0.655, H * 0.44)
         else:
             key, at = v
             fr = grab(key, at, j)
@@ -247,7 +307,8 @@ def render(mode='intro'):
                   color=PAPER, a=float(kk) * 0.96, anchor='c')
             k2 = np.clip((b - (NBEAT - TAIL) - 1.2) / 0.5, 0, 1)
             if k2 > 0.004:
-                cta = EV.RESERVE_NOW if mode == 'sale' else '프로필 링크에서 예약'
+                cta = ('DM으로 인증' if mode == 'promo'
+                       else EV.RESERVE_NOW if mode == 'sale' else '프로필 링크에서 예약')
                 paint(img, tmask(cta, KRB, 52, 0.02), W / 2, H * 0.40 + 240,
                       color=CORAL, a=float(k2), anchor='c')
                 paint(img, tmask(EV.PARTNERS_STR, BRAND,
@@ -260,7 +321,8 @@ def render(mode='intro'):
         if c is not None:
             c.release()
 
-    final = os.path.join(OUT, 'short_card.mp4' if mode == 'intro' else 'short_sale.mp4')
+    final = os.path.join(OUT, {'sale': 'short_sale.mp4',
+                              'promo': 'short_promo.mp4'}.get(mode, 'short_card.mp4'))
     subprocess.run(['ffmpeg', '-y', '-i', raw, '-i', wav, '-c:v', 'libx264',
                     '-preset', 'slow', '-crf', '21', '-pix_fmt', 'yuv420p',
                     '-c:a', 'aac', '-b:a', '192k', '-shortest',
