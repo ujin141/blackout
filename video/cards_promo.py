@@ -28,7 +28,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from poster_kit import (BRAND, STOCK, tmask, tmask_bl, fit, paint, paint_bl, rule, box,
-                        logo, grain, status_block, status_tag)
+                        logo, grain, status_block, status_tag, sign)
 from fonts import KR, KRB
 from poster_promo import INK, BLUE, GOLD, PAPER, DIM
 import poster_promo as PP
@@ -156,12 +156,17 @@ def scrim(img, y0, y1, a=0.74, soft=64):
     img *= 1 - a * m
 
 
-def foot(img, page):
-    rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
-    PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
-             color=PAPER, a=0.88)
-    PB(img, tmask_bl(f'{page} / 3', BRAND, 20, 0.20), W - M, FY,
-             color=GOLD, a=0.85, anchor='r')
+def foot(img, page=None):
+    """발치 한 줄 — **로고와 아이디는 네 장 다 같은 자리에 있다.**
+    어떤 장은 로고만, 어떤 장은 아이디만 있으면 같은 크루가 만든 걸로
+    안 보인다. 캐러셀은 넘기면서 보는 물건이라 이 어긋남이 특히 잘 보인다."""
+    rule(img, FY - 44, M, W - M, PAPER, 0.14, 1)
+    sign(img, M, FY + 8, 21, color=PAPER, a=0.90)
+    PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 17, 0.01), W - M, FY,
+       color=PAPER, a=0.78, anchor='r')
+    if page is not None:
+        PB(img, tmask_bl(f'{page} / 3', BRAND, 17, 0.20), W - M, FY + 30,
+           color=GOLD, a=0.80, anchor='r')
 
 
 def cover():
@@ -184,11 +189,7 @@ def cover():
     status_tag(img, M, FY - 196, 34, color=PAPER, accent=GOLD, width=W - M * 2)
     P(img, tmask('넘기세요  →', KRB, 32, 0.02), W - M, FY - 96,
       color=GOLD, anchor='r')
-    rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
-    PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
-             color=PAPER, a=0.88)
-    PB(img, tmask_bl(EV.HANDLE, BRAND, 19, 0.22), W - M, FY,
-             color=PAPER, a=0.85, anchor='r')
+    foot(img)
     return img
 
 

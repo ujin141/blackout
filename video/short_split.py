@@ -32,7 +32,7 @@ import os
 import subprocess
 import numpy as np
 import cv2
-from poster_kit import BRAND, tmask, fit, paint, status_tag
+from poster_kit import BRAND, tmask, fit, paint, status_tag, sign, logo
 from fonts import KR, KRB
 import event as EV
 import short
@@ -175,6 +175,7 @@ def render():
 
         # 상태 — 어느 초에 멈춰도 보인다. 아래 판 위쪽 여백에 앉힌다
         if b < NBEAT - 6:
+            sign(img, W * 0.085, YB - 170, 24, color=PAPER, a=0.86)
             status_tag(img, W * 0.085, YB - 132, 34, color=PAPER, accent=CORAL,
                        width=W * 0.80)
 
@@ -183,6 +184,9 @@ def render():
         if b >= tail:
             k = np.clip((b - tail) / 0.5, 0, 1)
             img *= 1 - 0.90 * k
+            lg = logo(58)
+            paint(img, lg, W / 2 - lg.shape[1] / 2, H * 0.40 - 116,
+                  color=PAPER, a=float(k) * 0.94)
             paint(img, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, W * 0.84, 0.10), 0.10),
                   W / 2, H * 0.40, color=PAPER, a=float(k), anchor='c')
             paint(img, tmask(EV.FORMAT, BRAND, 26, 0.36), W / 2, H * 0.40 + 62,
@@ -196,9 +200,11 @@ def render():
             if k2 > 0.004:
                 paint(img, tmask('프로필 링크에서 예약', KRB, 50, 0.02), W / 2, yb + 84,
                       color=CORAL, a=float(k2), anchor='c')
+                sign(img, W / 2, yb + 160, 28, color=PAPER, a=float(k2) * 0.92,
+                     anchor='c')
                 paint(img, tmask(EV.PARTNERS_STR, BRAND,
                                  min(20, fit(EV.PARTNERS_STR, BRAND, W * 0.88, 0.16)), 0.16),
-                      W / 2, yb + 168, color=PAPER, a=float(k2) * 0.66, anchor='c')
+                      W / 2, yb + 234, color=PAPER, a=float(k2) * 0.60, anchor='c')
 
         p.stdin.write((np.clip(img, 0, 1) * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()

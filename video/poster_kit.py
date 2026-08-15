@@ -457,3 +457,30 @@ def status_chips(dst, cx, y, size=22, color=WHITE, accent=None, a=1.0, width=Non
     th = size * 2.1
     return status_tag(dst, cx, y - th * 0.62, size, color, accent, a, width,
                       font, bar, anchor='c')
+
+
+def sign(dst, x, y, size=26, color=WHITE, a=1.0, anchor='l', gap=None, mark=True):
+    """서명 — 로고 마크 + 계정 아이디 한 덩어리.
+
+    **판마다 따로 놓지 않는다.** 어떤 판은 로고만, 어떤 판은 아이디만 있으면
+    같은 크루가 만든 것으로 안 보인다. 둘은 항상 같이 다닌다.
+
+    릴스는 팔로워 밖으로 나간다 — 마음에 들어도 **어디로 가야 하는지 모르면**
+    그냥 지나간다. 그래서 영상에는 처음부터 끝까지 붙여 둔다.
+
+    y 는 덩어리의 세로 가운데. 돌려주는 값은 덩어리 폭."""
+    gap = int(size * 0.62) if gap is None else gap
+    m = tmask(HANDLE_STR(), BRAND, size, 0.20)
+    lg = logo(int(size * 1.55)) if mark else None
+    w = (lg.shape[1] + gap if lg is not None else 0) + m.shape[1]
+    x0 = x if anchor == 'l' else (x - w / 2 if anchor == 'c' else x - w)
+    if lg is not None:
+        paint(dst, lg, x0, y, color=color, a=a * 0.96)
+        x0 += lg.shape[1] + gap
+    paint(dst, m, x0, y, color=color, a=a * 0.92)
+    return w
+
+
+def HANDLE_STR():
+    import event as _EV
+    return _EV.HANDLE

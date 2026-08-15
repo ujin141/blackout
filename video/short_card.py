@@ -33,7 +33,8 @@ import cv2
 from PIL import Image
 import poster_kit
 from poster_kit import status_tag as _tag
-from poster_kit import BRAND, tmask, fit, paint
+from poster_kit import sign as _sign
+from poster_kit import BRAND, tmask, fit, paint, logo
 from fonts import KR, KRB
 import event as EV
 import short
@@ -310,6 +311,8 @@ def render(mode='intro'):
         # 인스타 UI 가 아래 25% 를 덮으니 그 위에 둔다.
         if b < NBEAT - TAIL:
             # 왼쪽 여백선에 붙인다. 가운데에 홀로 뜨면 나중에 얹은 것으로 읽힌다
+            # 서명이 위, 상태가 아래. 같은 여백선에 서서 한 덩어리로 읽힌다
+            _sign(img, W * 0.085, H * 0.648, 26, color=PAPER, a=0.86)
             _tag(img, W * 0.085, H * 0.688, 40, color=PAPER, accent=CORAL,
                  width=W * 0.80)
 
@@ -322,6 +325,9 @@ def render(mode='intro'):
         if b >= NBEAT - TAIL:
             kk = np.clip((b - (NBEAT - TAIL)) / 0.5, 0, 1)
             img = img * (1 - kk) + INK * kk
+            _lg = logo(58)
+            paint(img, _lg, W / 2 - _lg.shape[1] / 2, H * 0.40 - 116,
+                  color=PAPER, a=float(kk) * 0.94)
             paint(img, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, W * 0.86, 0.10), 0.10),
                   W / 2, H * 0.40, color=PAPER, a=float(kk), anchor='c')
             paint(img, tmask(EV.FORMAT, BRAND, 26, 0.36), W / 2, H * 0.40 + 62,
@@ -339,9 +345,11 @@ def render(mode='intro'):
                        else EV.RESERVE_NOW if mode == 'sale' else '프로필 링크에서 예약')
                 paint(img, tmask(cta, KRB, 52, 0.02), W / 2, yb + 86,
                       color=CORAL, a=float(k2), anchor='c')
+                _sign(img, W / 2, yb + 162, 28, color=PAPER, a=float(k2) * 0.92,
+                      anchor='c')
                 paint(img, tmask(EV.PARTNERS_STR, BRAND,
                                  min(20, fit(EV.PARTNERS_STR, BRAND, W * 0.88, 0.16)), 0.16),
-                      W / 2, yb + 170, color=PAPER, a=float(k2) * 0.66, anchor='c')
+                      W / 2, yb + 236, color=PAPER, a=float(k2) * 0.60, anchor='c')
 
         p.stdin.write((np.clip(img, 0, 1) * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()
