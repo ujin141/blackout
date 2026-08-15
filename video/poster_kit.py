@@ -367,3 +367,79 @@ def save(img, name):
 
 
 SIZES = {'feed': (1080, 1350, False), 'story': (1080, 1920, True)}
+
+
+def status_block(dst, cx, y, size=30, gap=44, color=WHITE, accent=None,
+                 a=1.0, width=None, font=None):
+    """지금 상태 세 줄 — 끝난 것 / 남은 것 / 규모.
+
+    **판마다 다시 쓰지 않는다.** `event.STATUS_LINES` 한 곳에서 나와야
+    포스터·줄판·카드뉴스·영상이 같은 말을 한다. 예전에 차수를 판마다 적었다가
+    한 곳만 안 고쳐서 두 판이 다른 말을 한 적이 있다.
+
+    가운데 줄(남은 차수)만 색을 준다 — 셋 다 강조하면 아무것도 안 남는다.
+    `width` 를 주면 그 폭에 맞춰 글자를 줄인다.
+
+    돌려주는 값은 블록의 아래 y. 다음 요소를 여기서 이어 내린다."""
+    import event as _EV
+    from fonts import KRB as _KRB
+    f = font or _KRB
+    accent = color if accent is None else accent
+    for i, t in enumerate(_EV.STATUS_LINES):
+        sz = int(min(size, fit(t, f, width, 0.02))) if width else int(size)
+        paint(dst, tmask(t, f, sz, 0.02), cx, y + i * gap,
+              color=accent if i == 1 else color,
+              a=a if i == 1 else a * 0.92, anchor='c')
+    return y + (len(_EV.STATUS_LINES) - 1) * gap
+
+
+def status_chips(dst, cx, y, size=22, color=WHITE, accent=None, a=1.0, width=None,
+                 font=None, pad=18, gap=16, bar=0.0):
+    """배지형 상태 — `1차 사전예약 SOLD OUT → 2차 OPEN → 80명 한정`.
+
+    **좁은 자리용이다.** 영상 한 줄이나 작은 칸에는 문장 셋이 안 들어간다.
+    가운데(지금 열린 차수)만 채운 배지로 그려서 눈이 거기 멈춘다.
+
+    `width` 를 주면 그 폭 안에 들어가게 글자를 줄인다.
+    `bar` 를 주면 띠 뒤를 그만큼 어둡게 깐다 — **사진 위에 얹을 때는 필수다.**
+    채운 배지(가운데)는 어디서나 읽히지만 양옆 글자는 밝은 사진에 묻힌다."""
+    import event as _EV
+    from fonts import KRB as _KRB
+    f = font or _KRB
+    accent = color if accent is None else accent
+    chips = _EV.STATUS_CHIPS
+    arrow = tmask('→', f, size, 0.02)
+
+    def measure(sz):
+        ms = [tmask(t, f, sz, 0.04) for t in chips]
+        w = sum(m.shape[1] + pad * 2 for m in ms) + (len(ms) - 1) * (gap * 2 + arrow.shape[1])
+        return ms, w
+
+    ms, total = measure(int(size))
+    if width and total > width:                     # 폭에서 역산 — 눈대중이면 잘린다
+        size = max(10, int(size * width / total))
+        ms, total = measure(int(size))
+        arrow = tmask('→', f, int(size), 0.02)
+    x = cx - total / 2
+    h = max(m.shape[0] for m in ms)
+    if bar:
+        yy = np.arange(dst.shape[0], dtype=np.float32)[:, None, None]
+        xx = np.arange(dst.shape[1], dtype=np.float32)[None, :, None]
+        soft = h * 1.1
+        m = (np.clip((yy - (y - h * 1.5 - soft)) / soft, 0, 1)
+             * np.clip(((y + h * 0.9 + soft) - yy) / soft, 0, 1)
+             * np.clip((xx - (cx - total / 2 - soft)) / soft, 0, 1)
+             * np.clip(((cx + total / 2 + soft) - xx) / soft, 0, 1))
+        dst *= 1 - bar * m
+    for i, m in enumerate(ms):
+        if i == 1:                                  # 지금 열린 것만 채운 배지
+            box(dst, x, y - h * 0.86 - pad * 0.5, x + m.shape[1] + pad * 2,
+                y + h * 0.52 + pad * 0.5, accent, a * 0.92)
+            paint(dst, m, x + pad, y - h * 0.16, color=BLACK, a=1.0)
+        else:
+            paint(dst, m, x + pad, y - h * 0.16, color=color, a=a * 0.94)
+        x += m.shape[1] + pad * 2
+        if i < len(ms) - 1:
+            paint(dst, arrow, x + gap, y - h * 0.16, color=color, a=a * 0.60)
+            x += gap * 2 + arrow.shape[1]
+    return y + h

@@ -28,7 +28,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from poster_kit import (BRAND, STOCK, tmask, tmask_bl, fit, paint, paint_bl, rule, box,
-                        logo, grain)
+                        logo, grain, status_block, status_chips)
 from fonts import KR, KRB
 from poster_promo import INK, BLUE, GOLD, PAPER, DIM
 import poster_promo as PP
@@ -179,7 +179,10 @@ def cover():
               W / 2, 322 + i * 104, color=PAPER, anchor='c')
     P(img, tmask('둘 다 드립니다', KRB, 46, 0.0), W / 2, 522, color=GOLD, anchor='c')
     PP.bottle(img, 856, 458, cx=W / 2, halo=0.32)
-    P(img, tmask('넘기세요  →', KRB, 34, 0.02), W / 2, FY - 96,
+    # **표지에 상태를 안 넣으면 아무도 급하지 않다.** 배지형은 좁은 자리용이라
+    # 표지처럼 글자가 큰 판에도 한 줄로 들어간다
+    status_chips(img, W / 2, FY - 152, 24, color=PAPER, accent=GOLD, width=W - M * 2)
+    P(img, tmask('넘기세요  →', KRB, 34, 0.02), W / 2, FY - 78,
           color=GOLD, anchor='c')
     rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
     PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
@@ -241,8 +244,9 @@ def page_count():
     PB(img, tmask_bl(EV.ADDR, KR, 17, 0.01), M + 140, y - 12, color=DIM, a=0.85)
     # 마감일은 판마다 되풀이한다. 한 장만 본 사람도 날짜는 봐야 한다
     P(img, tmask(EV.PROMO_PUSH, KRB,
-                 min(36, fit(EV.PROMO_PUSH, KRB, W - M * 2, 0.02)), 0.02),
-      W / 2, FY - 100, color=GOLD, anchor='c')
+                 min(32, fit(EV.PROMO_PUSH, KRB, W - M * 2, 0.02)), 0.02),
+      W / 2, FY - 170, color=GOLD, anchor='c')
+    status_chips(img, W / 2, FY - 96, 23, color=PAPER, accent=GOLD, width=W - M * 2)
     foot(img, 2)
     return img
 
@@ -306,7 +310,7 @@ def page_cta():
     예약 폼은 참가가 정해진 사람만 쓰는 것이라 판을 따로 가는 게 맞다."""
     img = field(3)
     scrim(img, 250, 660, 0.74)
-    scrim(img, 700, H, 0.78)
+    scrim(img, 700, H, 0.80)
     lg = logo(46)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 150, color=PAPER, a=0.88)
     P(img, tmask('조건 다 하셨으면', KR, 28, 0.02), W / 2, 306,
@@ -336,8 +340,10 @@ def page_cta():
         P(img, tmask(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
                      min(28, fit(f'{EV.NAME}   {EV.DATE_EN}', BRAND, W - M * 2, 0.14)),
                      0.14), W / 2, 916, color=PAPER, a=0.90, anchor='c')
-        P(img, tmask(f'{EV.VENUE}  ·  {EV.ADDR}', KR, 20, 0.01), W / 2, 962,
+        P(img, tmask(f'{EV.VENUE}  ·  {EV.ADDR}', KR, 20, 0.01), W / 2, 950,
           color=PAPER, a=0.82, anchor='c')
+        status_block(img, W / 2, 1040, 30, 42, color=PAPER, accent=GOLD,
+                     width=W - M * 2)
     P(img, tmask(EV.RULES, KR, 13, 0.01), W / 2, FY - 66, color=DIM, a=0.72,
       anchor='c')
     foot(img, 3)

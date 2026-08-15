@@ -32,6 +32,7 @@ import numpy as np
 import cv2
 from PIL import Image
 import poster_kit
+from poster_kit import status_chips as _chips
 from poster_kit import BRAND, tmask, fit, paint
 from fonts import KR, KRB
 import event as EV
@@ -295,6 +296,13 @@ def render(mode='intro'):
             else:
                 img = grade(crop916(fr).astype(np.float32) / 255)
 
+        # **상태 띠는 처음부터 끝까지 붙어 있다.** 스크롤로 지나가는 영상이라
+        # 어느 초에 멈춰도 "1차 끝났고 2차 열렸다" 가 보여야 한다.
+        # 인스타 UI 가 아래 25% 를 덮으니 그 위에 둔다.
+        if b < NBEAT - TAIL:
+            _chips(img, W / 2, H * 0.735, 26, color=PAPER, accent=CORAL,
+                   width=W * 0.90, bar=0.62)
+
         # 칸이 갈리는 첫 두 프레임에 흰 섬광 한 번 — 컷이 딱 끊긴 게 보인다
         if j < 2 and k > 0:
             g = 0.34 * (1 - j / 2)
@@ -310,6 +318,8 @@ def render(mode='intro'):
                   color=AQUA, a=float(kk), anchor='c')
             paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 34, 0.02), W / 2, H * 0.40 + 128,
                   color=PAPER, a=float(kk) * 0.96, anchor='c')
+            _chips(img, W / 2, H * 0.40 + 190, 26, color=PAPER, accent=CORAL,
+                   a=float(kk), width=W * 0.86)
             k2 = np.clip((b - (NBEAT - TAIL) - 1.2) / 0.5, 0, 1)
             if k2 > 0.004:
                 cta = (EV.PROMO_CTA if mode == 'promo'

@@ -32,7 +32,7 @@ import os
 import subprocess
 import numpy as np
 import cv2
-from poster_kit import BRAND, tmask, fit, paint
+from poster_kit import BRAND, tmask, fit, paint, status_chips
 from fonts import KR, KRB
 import event as EV
 import short
@@ -169,6 +169,11 @@ def render():
                 paint(img, tmask(EV.DATE_EN, BRAND, 22, 0.30), W / 2, MID + 46,
                       color=AQUA, a=float(k) * 0.80, anchor='c')
 
+        # 상태 띠 — 어느 초에 멈춰도 보인다. 아래 판 위쪽 여백에 앉힌다
+        if b < NBEAT - 6:
+            status_chips(img, W / 2, YB - 34, 24, color=PAPER, accent=CORAL,
+                         width=W * 0.90, bar=0.55)
+
         # ── 끝 여섯 박 — 판을 닫고 이름만 ─────────────────
         tail = NBEAT - 6
         if b >= tail:
@@ -180,6 +185,8 @@ def render():
                   color=AQUA, a=float(k), anchor='c')
             paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 34, 0.02), W / 2, H * 0.40 + 128,
                   color=PAPER, a=float(k) * 0.96, anchor='c')
+            status_chips(img, W / 2, H * 0.40 + 190, 26, color=PAPER, accent=CORAL,
+                         a=float(k), width=W * 0.86)
             k2 = np.clip((b - tail - 1.2) / 0.5, 0, 1)
             if k2 > 0.004:
                 paint(img, tmask('프로필 링크에서 예약', KRB, 50, 0.02), W / 2, H * 0.40 + 236,
