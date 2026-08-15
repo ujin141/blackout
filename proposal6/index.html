@@ -61,6 +61,21 @@
   .todo p { font-size: 9pt; line-height: 1.75; color: var(--w65); }
   .todo p + p { margin-top: 2.5mm; }
 
+  .sc { margin-top: 6mm; border-top: 1px solid var(--line-soft); }
+  .sc__r { display: grid; grid-template-columns: 1fr 22mm 22mm 22mm;
+           padding: 3.2mm 0; border-bottom: 1px solid var(--line-soft); }
+  .sc__r > div { font-size: 9.2pt; color: var(--w90); text-align: right; }
+  .sc__r > div:first-child { text-align: left; }
+  .sc__h > div { font-family: var(--brand); font-size: 7.6pt; letter-spacing: 0.2em;
+                 color: var(--w45); }
+  .sc__s { border-top: 1px solid var(--w45); }
+  .sc__s > div { font-weight: 700; color: var(--white); }
+  .sc__o { border-top: 1px solid var(--white); border-bottom: 0;
+           background: rgba(255,255,255,0.05); }
+  .sc__o > div { font-weight: 700; color: var(--white); padding: 1mm 0; }
+  .sc__o > div:not(:first-child) { padding-right: 0; }
+  .sc__u { font-size: 7.8pt; color: var(--w45); margin-top: 3mm; }
+
   .big { font-size: 15pt; font-weight: 700; line-height: 1.5; letter-spacing: -0.01em; }
   .big em { font-style: normal; color: var(--w45); }
 </style>
@@ -236,28 +251,38 @@
 
     <div class="rows" style="margin-top:9mm">
       <div class="rows__r">
+        <div class="rows__k">대관비<small>어나더 루프탑 라운지</small></div>
+        <div class="rows__v">1,000,000</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">라운지 측 비용<small>운영 분담</small></div>
+        <div class="rows__v">1,000,000</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">바틀 매입<small>딥 루미너스 샴페인 40병 — 이미 구매 완료</small></div>
+        <div class="rows__v">2,000,000</div>
+      </div>
+      <div class="rows__r">
         <div class="rows__k">마케팅<small>협찬 · 노출 · 광고 · 경품</small></div>
         <div class="rows__v">1,000,000</div>
       </div>
       <div class="rows__r">
-        <div class="rows__k">주류 · 현장 운영<small>주류 구매 · 웰컴드링크 · 인쇄물</small></div>
+        <div class="rows__k">주류 · 현장 운영<small>웰컴드링크 · 인쇄물 · 잡비</small></div>
         <div class="rows__v">1,000,000</div>
-      </div>
-      <div class="rows__r">
-        <div class="rows__k">그 밖의 집행<small>장소 · 인력 · 장비 등 — 자본금에서 부담</small></div>
-        <div class="rows__v">3,250,000</div>
       </div>
       <div class="rows__r sum">
         <div class="rows__k">총 집행</div>
-        <div class="rows__v">5,250,000</div>
+        <div class="rows__v">6,000,000</div>
       </div>
     </div>
 
     <div class="todo">
-      <b>확정 전 — 채워야 할 칸</b>
-      <p><strong>'그 밖의 집행' 325만 원의 내역</strong>이 아직 안 적혀 있습니다.
-         장소 대관 · DJ 개런티 · 인력 · 장비가 각각 얼마인지 넣어야 이 장이 완성됩니다.
-         투자자는 이 칸을 제일 먼저 봅니다.</p>
+      <b>⚠ 내부 확인 — 이 장은 아직 안 맞습니다</b>
+      <p>총 집행 <strong>600만</strong>인데 조달은 <strong>525만</strong>입니다.
+         <strong>75만이 비어 있습니다.</strong></p>
+      <p>바틀 200만은 <strong>이미 산 재고</strong>라 팔리면 테이블 매출로 돌아옵니다.
+         이걸 비용으로 볼지 재고로 볼지에 따라 이 표가 달라집니다.</p>
+      <p>보내기 전에 이 박스를 지우세요.</p>
     </div>
   </div>
 
@@ -323,15 +348,119 @@
   <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>06</span></div>
 </section>
 
+<!-- ══ 06 정산 구조 ═════════════════════════════════════════ -->
+<section class="page tight">
+  <div class="head">
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">05 — Revenue Split</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>05</i> 정산 구조</p>
+    <h1 class="title">라운지와<br /><em>항목별로 나눕니다.</em></h1>
+    <p class="lead">
+      한 덩어리로 나누지 않습니다. <strong>항목마다 비율이 다릅니다.</strong>
+      테이블은 저희가 많이 가져가고, 바 테이블은 라운지가 많이 가져갑니다.
+    </p>
+
+    <div class="rows" style="margin-top:6mm">
+      <div class="rows__r">
+        <div class="rows__k">테이블<small>사전 예약 테이블</small></div>
+        <div class="rows__v">BLACKOUT 7 : 라운지 3</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">입장비<small>사전예약 · 현장</small></div>
+        <div class="rows__v">BLACKOUT 5 : 라운지 5</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">바 테이블<small>현장 바</small></div>
+        <div class="rows__v">BLACKOUT 2 : 라운지 8</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">솔로파티 주류<small>대관 시간대 판매분</small></div>
+        <div class="rows__v">BLACKOUT 10 : 라운지 0</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">락커<small>1건 15,000원</small></div>
+        <div class="rows__v">BLACKOUT 5 : 라운지 5</div>
+      </div>
+      <div class="rows__r">
+        <div class="rows__k">물총 등 판매물<small>현장 굿즈</small></div>
+        <div class="rows__v">BLACKOUT 10 : 라운지 0</div>
+      </div>
+    </div>
+
+    <div class="why">
+      <b>THE POINT</b>
+      <p>매출이 제일 큰 <strong>테이블에서 7할</strong>을 가져가고,
+         <strong>솔로파티 시간대 주류는 전부</strong> 저희 몫입니다.
+         웰컴드링크는 저희가 부담합니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>06</span></div>
+</section>
+
+<!-- ══ 07 매출 시나리오 ═════════════════════════════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">06 — Scenarios</div>
+  </div>
+
+  <div class="body-wrap">
+    <p class="eyebrow"><i>06</i> 매출 시나리오</p>
+    <h1 class="title">세 가지로<br /><em>나눠 봤습니다.</em></h1>
+
+    <div class="sc">
+      <div class="sc__r sc__h">
+        <div>항목</div><div>최소</div><div>예상</div><div>최대</div>
+      </div>
+      <div class="sc__r">
+        <div>입장비</div><div>150</div><div>250</div><div>375</div>
+      </div>
+      <div class="sc__r">
+        <div>테이블</div><div>200</div><div>400</div><div>700</div>
+      </div>
+      <div class="sc__r">
+        <div>바 테이블</div><div>100</div><div>150</div><div>200</div>
+      </div>
+      <div class="sc__r">
+        <div>솔로파티 주류</div><div>50</div><div>80</div><div>100</div>
+      </div>
+      <div class="sc__r sc__s">
+        <div>총매출</div><div>500</div><div>880</div><div>1,375</div>
+      </div>
+      <div class="sc__r sc__o">
+        <div>정산 후 BLACKOUT 몫</div><div>285</div><div>515</div><div>818</div>
+      </div>
+    </div>
+    <p class="sc__u">단위: 만 원 · 총매출은 라운지 몫을 포함한 금액입니다</p>
+
+    <div class="todo">
+      <b>⚠ 내부 확인 — 보내기 전에 지우세요</b>
+      <p>항목을 더하면 <strong>최소 500 · 최대 1,375</strong>입니다.
+         말씀하신 <strong>최소 700 · 최대 1,500</strong>과 각각 200 · 125 차이가 납니다.
+         빠진 항목(락커 · 물총 · 현장 주류)이 있는지 확인해 주세요.</p>
+      <p>정산 비율을 적용하면 <strong>예상 시나리오에서 우리 몫이 515만</strong>입니다.
+         집행 600만을 그대로 비용으로 보면 <strong>85만이 모자랍니다.</strong>
+         바틀 200만을 재고로 보고 팔린 만큼만 원가로 잡으면 달라집니다 —
+         이 기준을 먼저 정해야 손익 장을 쓸 수 있습니다.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>07</span></div>
+</section>
+
 <!-- ══ 07 회수 조건 ═════════════════════════════════════════ -->
 <section class="page">
   <div class="head">
     <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
-    <div class="head__sec">06 — Terms</div>
+    <div class="head__sec">07 — Terms</div>
   </div>
 
   <div class="body-wrap">
-    <p class="eyebrow"><i>06</i> 회수 조건</p>
+    <p class="eyebrow"><i>07</i> 회수 조건</p>
     <h1 class="title">돈이 어떻게<br /><em>돌아가는지.</em></h1>
 
     <div class="todo">
@@ -354,14 +483,14 @@
     </div>
   </div>
 
-  <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>07</span></div>
+  <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>08</span></div>
 </section>
 
 <!-- ══ 08 마무리 ════════════════════════════════════════════ -->
 <section class="page close">
   <div class="head">
     <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
-    <div class="head__sec">07 — Close</div>
+    <div class="head__sec">08 — Close</div>
   </div>
 
   <div class="body-wrap">
@@ -391,7 +520,7 @@
     </div>
   </div>
 
-  <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>08</span></div>
+  <div class="foot"><span>BLACKOUT CREW — 투자 제안서</span><span>09</span></div>
 </section>
 
 </body>
