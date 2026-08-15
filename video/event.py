@@ -208,7 +208,7 @@ SHOW_RATIO = False
 
 
 # 애프터파티 — 본 행사가 끝나고 이어지는 자리. 협업 브랜드인 에이스에서 한다
-AFTER = 'ACE 힙합존  ·  8/29(토)'
+AFTER = '강남 ACE 힙합존  ·  8/29(토)'
 
 # 장내 규칙. **라벨을 안 붙이고 잔글씨 한 줄로 둔다** — 표의 한 줄로 넣으면
 # 날짜·장소와 같은 무게가 되는데, 이건 읽어야 하는 정보가 아니라 걸어 두는 단서다.
@@ -260,7 +260,10 @@ PARTNERS = []
 
 # 협업 브랜드 이름. 로고를 섞으면 글자 붙은 것과 심볼만 있는 것이 따로 놀아서
 # 전부 이름으로 통일했다.
-PARTNER_NAMES = ['CLUB ACE SEOUL', 'Z SPOT LOUNGE', 'SPACE SEOUL', 'ANOTHER LOUNGE']
+# 지점까지 적는다. 'ACE' 만 적으면 어느 지점인지 물어보고, 판마다 다르게
+# 적으면(신사 / 강남) 둘 중 하나는 틀린 말이 된다
+PARTNER_NAMES = ['CLUB ACE GANGNAM', 'Z SPOT LOUNGE GANGNAM',
+                 'SPACE SEOUL', 'ANOTHER LOUNGE']
 PARTNERS_STR  = ' · '.join(PARTNER_NAMES)
 
 
