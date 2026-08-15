@@ -98,15 +98,27 @@ NEXT_OPEN = ('2차 신청  8/17(월)부터' if SALE != 'closed' else '')
 # 같은 걸 주면 말이 나온다. 팀당 인원을 못 박아 두는 게 그 분쟁을 막는다.
 PROMO_TEAMS = 3
 PROMO_PER = 2                     # 한 팀 인원
-PROMO_DO = ['댓글에 친구 태그', '스토리 공유', '피드 공유']
-PROMO_GET = '샴페인 1병'
+# **문턱은 낮을수록 팔린다.** 넷이던 조건을 둘로 줄였다 — 스토리 공유와
+# 댓글 태그. 피드 공유는 뺐다. 자기 피드에 남의 행사 포스터를 올리는 건
+# 심리적으로 제일 비싼 요구고, 거기서 대부분 떨어져 나간다.
+#
+# 친구는 **DM 공유가 아니라 댓글 태그**로 받는다. DM 으로 보낸 건 우리가
+# 확인할 방법이 없고, 댓글은 그 자체로 노출이 된다.
+PROMO_DO = ['스토리 공유', '댓글에 같이 갈 친구 태그']
+PROMO_N_KO = {1: '하나', 2: '둘', 3: '셋', 4: '넷'}[len(PROMO_DO)]
+# 상품은 둘이다 — 입장비와 술. **한 줄로 붙이면 둘 다 작아 보인다.**
+# 큰 판에서는 두 줄로 쌓고, 좁은 자리에서만 PROMO_GET 한 줄을 쓴다.
+PROMO_GET_A = '입장 무료'
+PROMO_GET_B = '샴페인 한 병'
+PROMO_GET = f'{PROMO_GET_A} + {PROMO_GET_B}'
 PROMO_NOTE = f'선착순 {PROMO_TEAMS}팀 · 팀당 {PROMO_PER}명'
 PROMO_BOTTLE = 'champagne.png'    # assets/img/stock/ 안. 누끼 뜬 병
 # **CTA 는 설명이 아니라 지시다.** '인증은 DM 으로' 는 제도를 설명한 문장이라
 # 아무도 안 움직인다 — 동사를 앞에 놓고, 보낼 것까지 적어야 손이 간다.
 # 문턱을 낮추는 건 문구가 아니라 '무엇을 보내면 끝인지' 를 못 박는 한 줄이다.
 PROMO_CTA = '지금 DM 주세요'
-PROMO_CTA_SUB = f'스크린샷 {len(PROMO_DO)}장이면 끝'
+# 댓글 태그는 우리가 직접 본다 — 보내라고 할 건 스토리 캡처 한 장뿐이다
+PROMO_CTA_SUB = '스토리 캡처 한 장이면 끝'
 PROMO_PUSH = f'먼저 보낸 {PROMO_TEAMS}팀이 가져갑니다'
 PROMO_DO_STR = ' · '.join(PROMO_DO)
 

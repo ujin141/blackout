@@ -64,14 +64,15 @@ def cover():
     img = field(0)
     lg = logo(56)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 128, color=PAPER, a=0.92)
-    paint(img, tmask('FREE BOTTLE', BRAND, 20, 0.52), W / 2, 244, color=GOLD,
-          a=0.92, anchor='c')
-    # **표지는 상품만 말한다.** 조건을 여기 적으면 넘기기 전에 계산부터 한다
-    head = '샴페인 한 병'
-    paint(img, tmask(head, KRB, min(140, fit(head, KRB, W - M * 2, 0.0)), 0.0),
-          W / 2, 336, color=PAPER, anchor='c')
-    paint(img, tmask('그냥 드립니다', KRB, 62, 0.0), W / 2, 434, color=BLUE, anchor='c')
-    PP.bottle(img, 798, 596, cx=W / 2, halo=0.32)
+    paint(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, 19, 0.48), W / 2, 236,
+          color=GOLD, a=0.92, anchor='c')
+    # **표지는 상품만 말한다.** 조건을 여기 적으면 넘기기 전에 계산부터 한다.
+    # 상품이 둘이라 쌓는다 — 한 줄로 붙이면 둘 다 작아 보인다
+    for i, t in enumerate((EV.PROMO_GET_A, EV.PROMO_GET_B)):
+        paint(img, tmask(t, KRB, min(118, fit(t, KRB, W - M * 2, 0.0)), 0.0),
+              W / 2, 322 + i * 104, color=PAPER, anchor='c')
+    paint(img, tmask('둘 다 드립니다', KRB, 46, 0.0), W / 2, 522, color=BLUE, anchor='c')
+    PP.bottle(img, 856, 458, cx=W / 2, halo=0.32)
     paint(img, tmask('넘기세요  →', KRB, 34, 0.02), W / 2, FY - 96,
           color=GOLD, anchor='c')
     rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
@@ -84,10 +85,11 @@ def cover():
 
 def page_do():
     img = field(1)
-    paint(img, tmask('조건은 셋입니다', KRB, 64, 0.02), W / 2, 214, color=PAPER, anchor='c')
-    paint(img, tmask('셋 다 해야 인정됩니다', KR, 27, 0.02), W / 2, 288,
+    paint(img, tmask(f'조건은 {EV.PROMO_N_KO}입니다', KRB, 64, 0.02), W / 2, 214,
+          color=PAPER, anchor='c')
+    paint(img, tmask(f'{EV.PROMO_N_KO} 다 해야 인정됩니다', KR, 27, 0.02), W / 2, 288,
           color=BLUE, a=0.95, anchor='c')
-    y, step = 430, 178
+    y, step = (430, 178) if len(EV.PROMO_DO) > 2 else (470, 238)
     for i, d in enumerate(EV.PROMO_DO):
         box(img, M, y - 6, M + 8, y + 96, GOLD, 0.85)
         paint_bl(img, tmask_bl(f'{i + 1}', BRAND, 32, 0.02), M + 38, y + 44,
@@ -108,7 +110,7 @@ def page_count():
     paint(img, tmask('몇 팀 드리나요', KRB, 52, 0.02), W / 2, 196, color=PAPER, anchor='c')
     paint(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 210, 0.0), W / 2, 384,
           color=GOLD, anchor='c')
-    paint(img, tmask(f'팀당 {EV.PROMO_PER}명  ·  팀당 샴페인 1병', KR, 27, 0.02),
+    paint(img, tmask(f'팀당 {EV.PROMO_PER}명 입장 무료  ·  샴페인 1병', KR, 26, 0.02),
           W / 2, 520, color=PAPER, a=0.94, anchor='c')
     rule(img, 594, M, W - M, PAPER, 0.14, 1)
     y = 672

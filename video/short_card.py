@@ -120,13 +120,18 @@ def promo_cards():
     말과 테이블만 남았다는 말이 한 판에 있으면 어느 쪽도 안 믿긴다.
 
     조건 넷을 한 장에 다 적지 않는다. 한 장에 하나씩 넘겨야 읽힌다."""
-    c = [(CORAL, f'{EV.PROMO_GET} 드립니다'),
-         (INK,   f'선착순 {EV.PROMO_TEAMS}팀')]
-    for d in EV.PROMO_DO[:3]:
-        c.append((DEEP if len(c) % 2 else AQUA, d))
-    c.append((AQUA, f'팀당 {EV.PROMO_PER}명'))
+    # **상품 둘을 한 칸에 붙이면 글자가 68px 로 줄어든다.** 훅 칸에서 제일
+    # 하면 안 되는 짓이다 — 두 칸으로 쪼개면 둘 다 132px 로 꽉 찬다.
+    c = [(CORAL, EV.PROMO_GET_A),
+         (INK,   f'{EV.PROMO_GET_B}도')]
+    for d in EV.PROMO_DO:
+        c.append((AQUA if len(c) % 2 else DEEP, d))
+    c.append((AQUA, f'선착순 {EV.PROMO_TEAMS}팀'))
+    c.append((CORAL, EV.PROMO_CTA))
     c.append((INK, '8/29 양재 루프탑'))
-    return c
+    while len(c) < 7:                    # 칸 수는 판이 정한다
+        c.insert(-1, (DEEP, EV.PROMO_PUSH))
+    return c[:7]
 
 
 def sale_cards():
@@ -275,7 +280,7 @@ def render(mode='intro'):
             # 폭이 허락하는 데까지 키우고, 긴 줄만 fit 이 알아서 줄인다
             fs = min(132, fit(txt, KRB, W * 0.86, 0.02))
             # 참여 이벤트판의 첫 칸에만 병이 들어간다 — 글자를 위로 올려 자리를 낸다
-            shot = (mode == 'promo' and k == 0)
+            shot = (mode == 'promo' and k == 2)   # 병은 '샴페인 한 병도' 칸에
             ty = H * (0.255 if shot else 0.47)
             paint(img, tmask(txt, KRB, fs, 0.02), W / 2, ty, color=ink, anchor='c')
             paint(img, tmask(EV.DATE_EN, BRAND, 24, 0.30), W / 2, ty + fs * 0.95,

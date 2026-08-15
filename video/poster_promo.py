@@ -100,24 +100,25 @@ def build(W, H, story):
     paint(img, lg, cx - lg.shape[1] / 2, 108 * V, color=PAPER, a=0.92)
 
     # ── 상품이 제목이다. 조건이 아니라 ──────────────────
-    y = 236 * V
-    paint(img, tmask('FREE BOTTLE', BRAND, int(20 * V), 0.52), cx, y,
+    y = 226 * V
+    paint(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, int(19 * V), 0.48), cx, y,
           color=GOLD, a=0.90, anchor='c')
+    # **상품 둘을 한 줄로 붙이면 둘 다 작아진다.** 쌓아야 둘 다 크다
+    for t in (EV.PROMO_GET_A, EV.PROMO_GET_B):
+        y += 82 * V
+        paint(img, tmask(t, KRB, min(int(112 * V), fit(t, KRB, W * 0.86, 0.00)), 0.00),
+              cx, y, color=PAPER, anchor='c')
     y += 74 * V
-    head = EV.PROMO_GET                                  # '샴페인 1병'
-    paint(img, tmask(head, KRB, min(int(132 * V), fit(head, KRB, W * 0.86, 0.00)), 0.00),
-          cx, y, color=PAPER, anchor='c')
-    y += 92 * V
-    paint(img, tmask('조건 셋, 다 하면 드립니다', KR, int(31 * V), 0.02), cx, y,
+    paint(img, tmask(f'조건 {EV.PROMO_N_KO}, 다 하면 드립니다', KR, int(31 * V), 0.02), cx, y,
           color=BLUE, a=0.95, anchor='c')
 
     # ── 병 ──────────────────────────────────────────────
-    bh = H * (0.380 if story else 0.330)
-    bottle(img, H * (0.478 if story else 0.488), bh)
+    bh = H * (0.330 if story else 0.290)
+    bottle(img, H * (0.510 if story else 0.512), bh)
 
-    # ── 조건 셋. 번호를 붙여야 셋인 걸 안 놓친다 ────────
+    # ── 조건. 번호를 붙여야 몇 개인지 안 놓친다 ─────────
     y = H * (0.700 if story else 0.720)
-    step = 66 * V
+    step = 66 * V * (1.0 if len(EV.PROMO_DO) > 2 else 1.24)
     xn = W * 0.255
     for i, d in enumerate(EV.PROMO_DO):
         paint_bl(img, tmask_bl(f'{i + 1}', BRAND, int(30 * V), 0.02), xn - 44 * V, y,

@@ -1,6 +1,6 @@
 """참여 이벤트 줄판 — 세 칸으로 그리드 한 줄을 채운다.
 
-    │ 병 · 상품 │ 조건 셋 │ 셈 · 인증 │
+    │ 병 · 상품 │ 조건 │ 셈 · 인증 │
       ↑ 1칸은 릴스로 올린다. 커버(promo_1_cover.png)를 쓰면 그리드에서 제자리에 앉는다
 
 **세 칸이 이어져 보이게 하는 건 사진이 아니라 빛이다.** 칸마다 다른 사진을
@@ -59,20 +59,22 @@ def build():
     # ── 1칸 · 상품 ────────────────────────────────────────
     paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, 18, 0.42), TW / 2, SAFE_T + 30,
           color=DIM, a=0.85, anchor='c')
-    paint(img, tmask('FREE BOTTLE', BRAND, 20, 0.52), TW / 2, 268, color=GOLD, a=0.92,
-          anchor='c')
-    paint(img, tmask(EV.PROMO_GET, KRB, min(112, fit(EV.PROMO_GET, KRB, TW - SEAM * 2, 0.0)),
-                     0.0), TW / 2, 350, color=PAPER, anchor='c')
-    paint(img, tmask('조건 셋, 다 하면 드립니다', KR, 28, 0.02), TW / 2, 428,
+    paint(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, 19, 0.48), TW / 2, 254,
+          color=GOLD, a=0.92, anchor='c')
+    # **상품 둘을 한 줄로 붙이면 둘 다 작아진다.** 쌓아야 둘 다 크다
+    for i, t in enumerate((EV.PROMO_GET_A, EV.PROMO_GET_B)):
+        paint(img, tmask(t, KRB, min(96, fit(t, KRB, TW - SEAM * 2, 0.0)), 0.0),
+              TW / 2, 336 + i * 86, color=PAPER, anchor='c')
+    paint(img, tmask(f'조건 {EV.PROMO_N_KO}, 다 하면 드립니다', KR, 27, 0.02), TW / 2, 500,
           color=BLUE, a=0.96, anchor='c')
     # 발치 줄이 y=1086 이다. 병이 그 아래로 내려가면 글자를 밟는다
-    PP.bottle(img, 752, 578, cx=TW / 2, halo=0.30)
+    PP.bottle(img, 800, 484, cx=TW / 2, halo=0.30)
 
-    # ── 2칸 · 조건 셋 ─────────────────────────────────────
+    # ── 2칸 · 조건 ────────────────────────────────────────
     x0 = TW
     paint(img, tmask('이렇게 하시면 됩니다', KRB, 42, 0.02), x0 + TW / 2, SAFE_T + 90,
           color=PAPER, anchor='c')
-    y, step = 400, 172
+    y, step = (400, 172) if len(EV.PROMO_DO) > 2 else (452, 232)
     for i, d in enumerate(EV.PROMO_DO):
         box(img, x0 + SEAM, y - 4, x0 + SEAM + 7, y + 96, GOLD, 0.85)
         paint_bl(img, tmask_bl(f'{i + 1}', BRAND, 30, 0.02), x0 + SEAM + 34, y + 42,
@@ -89,7 +91,7 @@ def build():
           color=PAPER, anchor='c')
     paint(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 190, 0.0), x0 + TW / 2, 400,
           color=GOLD, anchor='c')
-    paint(img, tmask(f'선착순 · 팀당 {EV.PROMO_PER}명 · 팀당 1병', KR, 28, 0.02),
+    paint(img, tmask(f'선착순 · 팀당 {EV.PROMO_PER}명 입장 무료 · 샴페인 1병', KR, 26, 0.02),
           x0 + TW / 2, 530, color=PAPER, a=0.94, anchor='c')
     rule(img, 600, x0 + SEAM, x0 + TW - SEAM, PAPER, 0.14, 1)
     y = 672
