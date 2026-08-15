@@ -107,8 +107,9 @@ def build():
           color=GOLD, anchor='c')
     paint(img, tmask(EV.PROMO_CTA_SUB, KRB, 32, 0.02), x0 + TW / 2, 966,
           color=PAPER, anchor='c')
-    paint(img, tmask(EV.PROMO_PUSH, KRB, 26, 0.02), x0 + TW / 2, 1020,
-          color=BLUE, anchor='c')
+    paint(img, tmask(EV.PROMO_PUSH, KRB,
+                     min(26, fit(EV.PROMO_PUSH, KRB, TW - SEAM * 2, 0.02)), 0.02),
+          x0 + TW / 2, 1020, color=BLUE, anchor='c')
 
     # ── 발치 — 칸마다 한 줄 ───────────────────────────────
     FY = 1130

@@ -132,8 +132,9 @@ def build(W, H, story):
     paint(img, tmask(EV.PROMO_NOTE, KRB, int(38 * V), 0.02), cx, y,
           color=GOLD, anchor='c')
     y += 46 * V
-    paint(img, tmask(EV.PROMO_PUSH, KR, int(23 * V), 0.02), cx, y,
-          color=PAPER, a=0.90, anchor='c')
+    paint(img, tmask(EV.PROMO_PUSH, KRB,
+                     min(int(23 * V), fit(EV.PROMO_PUSH, KRB, W * 0.86, 0.02)), 0.02),
+          cx, y, color=PAPER, a=0.92, anchor='c')
     y += 48 * V
     paint(img, tmask(f'{EV.DATE_EN}   {EV.VENUE}', KR,
                      min(int(26 * V), fit(f'{EV.DATE_EN}   {EV.VENUE}', KR, W * 0.86, 0.02)),

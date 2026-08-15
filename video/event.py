@@ -133,7 +133,10 @@ QR_LINKS = [('reserve', '사전예약', FORM_URL),
 PROMO_CTA = '지금 응모하세요'
 # 댓글 태그는 우리가 직접 본다 — 보내라고 할 건 스토리 캡처 한 장뿐이다
 PROMO_CTA_SUB = '스토리 캡처 한 장이면 끝'
-PROMO_PUSH = f'{PROMO_DUE} 마감  ·  {PROMO_ANNOUNCE} 발표'
+# **발표를 어디로 하는지까지 적는다.** 그냥 '발표' 라고만 두면 어디를
+# 봐야 하는지 몰라서 스토리·피드를 계속 뒤진다. DM 이라고 못 박아야
+# 기다릴 자리가 정해진다.
+PROMO_PUSH = f'{PROMO_DUE} 마감  ·  {PROMO_ANNOUNCE} DM 발표'
 PROMO_DO_STR = ' · '.join(PROMO_DO)
 
 # 성비. **밖으로 내보낼지는 따로 정한다** — 예전에 성비 문구를 한 번 뺐다.

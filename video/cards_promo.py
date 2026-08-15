@@ -240,8 +240,9 @@ def page_count():
         y += 50
     PB(img, tmask_bl(EV.ADDR, KR, 17, 0.01), M + 140, y - 12, color=DIM, a=0.85)
     # 마감일은 판마다 되풀이한다. 한 장만 본 사람도 날짜는 봐야 한다
-    P(img, tmask(EV.PROMO_PUSH, KRB, 36, 0.02), W / 2, FY - 100,
-          color=GOLD, anchor='c')
+    P(img, tmask(EV.PROMO_PUSH, KRB,
+                 min(36, fit(EV.PROMO_PUSH, KRB, W - M * 2, 0.02)), 0.02),
+      W / 2, FY - 100, color=GOLD, anchor='c')
     foot(img, 2)
     return img
 
@@ -327,8 +328,9 @@ def page_cta():
         P(img, tmask('자리 예약은 여기서', KRB, 34, 0.02), W / 2, 1000,
           color=PAPER, anchor='c')
     else:
-        P(img, tmask(EV.PROMO_PUSH, KRB, 40, 0.02), W / 2, 760,
-          color=GOLD, anchor='c')
+        P(img, tmask(EV.PROMO_PUSH, KRB,
+                     min(40, fit(EV.PROMO_PUSH, KRB, W - M * 2, 0.02)), 0.02),
+          W / 2, 760, color=GOLD, anchor='c')
         P(img, tmask(f'{EV.PROMO_NOTE}  ·  {EV.PROMO_GET}', KR, 24, 0.02),
           W / 2, 812, color=PAPER, a=0.90, anchor='c')
         P(img, tmask(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
