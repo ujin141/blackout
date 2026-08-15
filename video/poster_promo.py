@@ -42,24 +42,42 @@ def field(W, H):
     return img
 
 
-def bottle(img, cy, h):
-    """누끼 병을 가운데에. **바닥에 그림자를 깔지 않는다** — 병이 서 있는 게
-    아니라 떠 있는 판이라 그림자를 넣으면 어디에 선 건지 물어보게 된다."""
-    p = os.path.join(STOCK, EV.PROMO_BOTTLE)
-    if not os.path.exists(p):
+_CACHE = None
+
+
+def art():
+    """누끼 병을 한 번만 읽어 캐시한다.
+
+    **원본이 299×500 JPG 라 목의 흰 포일에 압축 블록이 보인다.** 3배로 키운
+    누끼라 그 블록도 3배가 됐다 — 가장자리를 살리는 필터로만 편다.
+    가우시안으로 뭉개면 라벨 글자까지 같이 죽는다."""
+    global _CACHE
+    if _CACHE is None:
+        p = os.path.join(STOCK, EV.PROMO_BOTTLE)
+        if not os.path.exists(p):
+            return None
+        raw = np.asarray(Image.open(p).convert('RGBA'))
+        rgb = cv2.bilateralFilter(raw[..., :3], 11, 46, 46)
+        _CACHE = np.dstack([rgb, raw[..., 3]]).astype(np.float32) / 255
+    return _CACHE
+
+
+def bottle(img, cy, h, cx=None, halo=0.34):
+    """누끼 병. **바닥에 그림자를 깔지 않는다** — 병이 서 있는 게 아니라 떠 있는
+    판이라 그림자를 넣으면 어디에 선 건지 물어보게 된다.
+
+    포스터·카드뉴스·피드 줄판이 다 이걸 쓴다. 판마다 따로 그리면 병 크기가
+    조금씩 달라져서 같은 물건으로 안 보인다."""
+    b = art()
+    if b is None:
         return
-    raw = np.asarray(Image.open(p).convert('RGBA'))
-    # **원본이 299×500 JPG 라 목의 흰 포일에 압축 블록이 보인다.** 3배로 키운
-    # 누끼라 그 블록도 3배가 됐다 — 가장자리를 살리는 필터로만 편다.
-    # 가우시안으로 뭉개면 라벨 글자까지 같이 죽는다.
-    rgb = cv2.bilateralFilter(raw[..., :3], 11, 46, 46)
-    b = np.dstack([rgb, raw[..., 3]]).astype(np.float32) / 255
     bh, bw = b.shape[:2]
     w = int(h * bw / bh)
     b = np.asarray(Image.fromarray((b * 255).astype(np.uint8)).resize(
         (w, int(h)), Image.LANCZOS)).astype(np.float32) / 255
     H, W = img.shape[:2]
-    x0, y0 = (W - w) // 2, int(cy - h / 2)
+    cx = W / 2 if cx is None else cx
+    x0, y0 = int(cx - w / 2), int(cy - h / 2)
     x1, y1 = min(W, x0 + w), min(H, y0 + int(h))
     sx, sy = max(0, -x0), max(0, -y0)
     x0, y0 = max(0, x0), max(0, y0)
@@ -69,7 +87,7 @@ def bottle(img, cy, h):
     hal = np.zeros((H, W), np.float32)
     hal[y0:y1, x0:x1] = a[..., 0]
     hal = cv2.GaussianBlur(hal, (0, 0), 46)
-    img += (hal / max(hal.max(), 1e-6))[..., None] * BLUE * 0.34
+    img += (hal / max(hal.max(), 1e-6))[..., None] * BLUE * halo
     img[y0:y1, x0:x1] = img[y0:y1, x0:x1] * (1 - a) + sub[..., :3] * a
 
 
@@ -94,11 +112,11 @@ def build(W, H, story):
           color=BLUE, a=0.95, anchor='c')
 
     # ── 병 ──────────────────────────────────────────────
-    bh = H * (0.400 if story else 0.350)
-    bottle(img, H * (0.487 if story else 0.495), bh)
+    bh = H * (0.380 if story else 0.330)
+    bottle(img, H * (0.478 if story else 0.488), bh)
 
     # ── 조건 셋. 번호를 붙여야 셋인 걸 안 놓친다 ────────
-    y = H * (0.715 if story else 0.735)
+    y = H * (0.700 if story else 0.720)
     step = 66 * V
     xn = W * 0.255
     for i, d in enumerate(EV.PROMO_DO):
@@ -112,12 +130,17 @@ def build(W, H, story):
     y += 22 * V
     paint(img, tmask(EV.PROMO_NOTE, KRB, int(38 * V), 0.02), cx, y,
           color=GOLD, anchor='c')
-    y += 62 * V
+    y += 56 * V
     paint(img, tmask(f'{EV.DATE_EN}   {EV.VENUE}', KR,
                      min(int(26 * V), fit(f'{EV.DATE_EN}   {EV.VENUE}', KR, W * 0.86, 0.02)),
                      0.02), cx, y, color=PAPER, a=0.92, anchor='c')
-    y += 58 * V
-    paint(img, tmask('인증은 DM 으로', KRB, int(34 * V), 0.02), cx, y,
+    # **판의 마지막 줄은 시키는 말이다.** '인증은 DM 으로' 는 제도를 설명한
+    # 문장이라 아무도 안 움직인다 — 동사를 앞에 놓고 보낼 것까지 적는다.
+    y += 66 * V
+    paint(img, tmask(EV.PROMO_CTA, KRB, int(52 * V), 0.02), cx, y,
+          color=GOLD, anchor='c')
+    y += 54 * V
+    paint(img, tmask(EV.PROMO_CTA_SUB, KRB, int(30 * V), 0.02), cx, y,
           color=BLUE, anchor='c')
 
     paint(img, tmask(EV.RULES, KR, int(15 * V), 0.02), cx, H - 62 * V,

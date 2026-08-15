@@ -102,6 +102,12 @@ PROMO_DO = ['댓글에 친구 태그', '스토리 공유', '피드 공유']
 PROMO_GET = '샴페인 1병'
 PROMO_NOTE = f'선착순 {PROMO_TEAMS}팀 · 팀당 {PROMO_PER}명'
 PROMO_BOTTLE = 'champagne.png'    # assets/img/stock/ 안. 누끼 뜬 병
+# **CTA 는 설명이 아니라 지시다.** '인증은 DM 으로' 는 제도를 설명한 문장이라
+# 아무도 안 움직인다 — 동사를 앞에 놓고, 보낼 것까지 적어야 손이 간다.
+# 문턱을 낮추는 건 문구가 아니라 '무엇을 보내면 끝인지' 를 못 박는 한 줄이다.
+PROMO_CTA = '지금 DM 주세요'
+PROMO_CTA_SUB = f'스크린샷 {len(PROMO_DO)}장이면 끝'
+PROMO_PUSH = f'먼저 보낸 {PROMO_TEAMS}팀이 가져갑니다'
 PROMO_DO_STR = ' · '.join(PROMO_DO)
 
 # 성비. **밖으로 내보낼지는 따로 정한다** — 예전에 성비 문구를 한 번 뺐다.
