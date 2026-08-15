@@ -395,51 +395,57 @@ def status_block(dst, cx, y, size=30, gap=44, color=WHITE, accent=None,
 
 def status_chips(dst, cx, y, size=22, color=WHITE, accent=None, a=1.0, width=None,
                  font=None, pad=18, gap=16, bar=0.0):
-    """배지형 상태 — `1차 사전예약 SOLD OUT → 2차 OPEN → 80명 한정`.
+    """지금 상태 한 줄 — `1차 사전예약 SOLD OUT · 2차 OPEN · 80명 한정`.
 
-    **좁은 자리용이다.** 영상 한 줄이나 작은 칸에는 문장 셋이 안 들어간다.
-    가운데(지금 열린 차수)만 채운 배지로 그려서 눈이 거기 멈춘다.
+    **채운 배지를 얹지 않는다.** 앞선 판은 가운데를 네모로 채웠는데, 그게
+    판 위에 스티커를 붙인 것처럼 보였다 — 배지는 그 자체로 "광고 딱지" 라
+    아무리 색을 맞춰도 판의 일부로 안 읽힌다.
 
-    `width` 를 주면 그 폭 안에 들어가게 글자를 줄인다.
-    `bar` 를 주면 띠 뒤를 그만큼 어둡게 깐다 — **사진 위에 얹을 때는 필수다.**
-    채운 배지(가운데)는 어디서나 읽히지만 양옆 글자는 밝은 사진에 묻힌다."""
+    대신 판이 이미 쓰는 것들로만 만든다. 얇은 실선, 가운데점, 자간 넓힌
+    작은 글자. 강조는 **가운데 항목의 색과 그 아래 짧은 밑줄** 하나뿐이다.
+    작아 보이지만 어차피 이 줄은 훑는 눈에 0.3 초 걸리는 물건이고, 그 0.3 초
+    안에 남아야 하는 건 'OPEN' 한 단어다.
+
+    `width` 를 주면 그 폭에 맞춰 줄인다. `bar` 는 사진 위에 얹을 때 —
+    네모 띠가 아니라 위아래로 풀린 그늘이라 경계가 안 보인다."""
     import event as _EV
     from fonts import KRB as _KRB
     f = font or _KRB
     accent = color if accent is None else accent
     chips = _EV.STATUS_CHIPS
-    arrow = tmask('→', f, size, 0.02)
 
     def measure(sz):
-        ms = [tmask(t, f, sz, 0.04) for t in chips]
-        w = sum(m.shape[1] + pad * 2 for m in ms) + (len(ms) - 1) * (gap * 2 + arrow.shape[1])
-        return ms, w
+        # **구분점 좌우의 공백을 글자로 넣으면 안 된다.** tmask 는 빈 자리를
+        # 잘라내서 마스크가 점 하나로 줄고, 항목들이 붙어 버린다 —
+        # 간격은 픽셀로 잡는다
+        ms = [tmask(t, f, sz, 0.10) for t in chips]
+        sm = tmask('·', f, sz, 0.0)
+        pitch = sm.shape[1] + int(sz * 1.5) * 2
+        return ms, sm, pitch, sum(m.shape[1] for m in ms) + (len(ms) - 1) * pitch
 
-    ms, total = measure(int(size))
-    if width and total > width:                     # 폭에서 역산 — 눈대중이면 잘린다
-        size = max(10, int(size * width / total))
-        ms, total = measure(int(size))
-        arrow = tmask('→', f, int(size), 0.02)
-    x = cx - total / 2
+    ms, sm, pitch, total = measure(int(size))
+    if width and total > width:            # 폭에서 역산 — 눈대중이면 잘린다
+        size = max(9, int(size * width / total * 0.98))
+        ms, sm, pitch, total = measure(int(size))
+
     h = max(m.shape[0] for m in ms)
     if bar:
         yy = np.arange(dst.shape[0], dtype=np.float32)[:, None, None]
-        xx = np.arange(dst.shape[1], dtype=np.float32)[None, :, None]
-        soft = h * 1.1
-        m = (np.clip((yy - (y - h * 1.5 - soft)) / soft, 0, 1)
-             * np.clip(((y + h * 0.9 + soft) - yy) / soft, 0, 1)
-             * np.clip((xx - (cx - total / 2 - soft)) / soft, 0, 1)
-             * np.clip(((cx + total / 2 + soft) - xx) / soft, 0, 1))
-        dst *= 1 - bar * m
+        soft = h * 2.6
+        g = np.exp(-((yy - y + h * 0.3) / soft) ** 2)
+        dst *= 1 - bar * g
+
+    x = cx - total / 2
     for i, m in enumerate(ms):
-        if i == 1:                                  # 지금 열린 것만 채운 배지
-            box(dst, x, y - h * 0.86 - pad * 0.5, x + m.shape[1] + pad * 2,
-                y + h * 0.52 + pad * 0.5, accent, a * 0.92)
-            paint(dst, m, x + pad, y - h * 0.16, color=BLACK, a=1.0)
-        else:
-            paint(dst, m, x + pad, y - h * 0.16, color=color, a=a * 0.94)
-        x += m.shape[1] + pad * 2
+        mid = (i == 1)
+        paint(dst, m, x, y, color=accent if mid else color,
+              a=a if mid else a * 0.80)
+        if mid:
+            # 밑줄 한 줄. 네모로 감싸는 것보다 조용하고, 눈은 여기서 멈춘다
+            rule(dst, y + h * 0.86, x, x + m.shape[1], accent, a * 0.85,
+                 max(1, int(size / 11)))
+        x += m.shape[1]
         if i < len(ms) - 1:
-            paint(dst, arrow, x + gap, y - h * 0.16, color=color, a=a * 0.60)
-            x += gap * 2 + arrow.shape[1]
+            paint(dst, sm, x + (pitch - sm.shape[1]) / 2, y, color=color, a=a * 0.36)
+            x += pitch
     return y + h
