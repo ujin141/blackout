@@ -149,7 +149,7 @@ def build(W, H, story):
           color=BLUE, anchor='c')
 
     status_tag(img, cx, H - 168 * V, int(30 * V), color=PAPER, accent=GOLD,
-               width=W * 0.86, bar=0.26, anchor='c')
+               width=W * 0.86, anchor='c')
     paint(img, tmask(EV.RULES, KR, int(15 * V), 0.02), cx, H - 62 * V,
           color=DIM, a=0.78, anchor='c')
     grain(img, 0.008, 17)

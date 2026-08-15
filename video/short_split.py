@@ -169,7 +169,11 @@ def render():
                 paint(img, tmask(EV.DATE_EN, BRAND, 22, 0.30), W / 2, MID + 46,
                       color=AQUA, a=float(k) * 0.80, anchor='c')
 
-        # 상태 띠 — 어느 초에 멈춰도 보인다. 아래 판 위쪽 여백에 앉힌다
+        # 아래 판만 떨어뜨린다 — 검은 띠 대신 색보정으로 자막 자리를 만든다
+        yy = np.arange(H, dtype=np.float32)[:, None, None]
+        img *= 1 - 0.50 * np.clip((yy - (YB + BH * 0.10)) / (BH * 0.45), 0, 1) ** 1.15
+
+        # 상태 — 어느 초에 멈춰도 보인다. 아래 판 위쪽 여백에 앉힌다
         if b < NBEAT - 6:
             status_tag(img, W * 0.085, YB - 132, 34, color=PAPER, accent=CORAL,
                        width=W * 0.80)

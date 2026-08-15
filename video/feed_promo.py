@@ -113,7 +113,7 @@ def build():
 
     # **상태는 마지막 칸에 한 번.** 세 칸에 다 넣으면 줄이 잔소리가 된다
     status_tag(img, x0 + SEAM, 1024, 30, color=PAPER, accent=GOLD,
-               width=TW - SEAM * 2, bar=0.34)
+               width=TW - SEAM * 2)
 
     # ── 발치 — 칸마다 한 줄 ───────────────────────────────
     FY = 1130

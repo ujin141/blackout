@@ -441,7 +441,9 @@ def status_tag(dst, x, y, size=30, color=WHITE, accent=None, a=1.0, width=None,
 
     box(dst, x0, y, x0 + bw, y + th, accent, a * 0.92)
     tx = x0 + bw + pad
-    paint(dst, m1, tx, y, color=color, a=a * 0.74, valign='t')
+    # **그늘을 안 깔면 위 줄이 사진에 묻힌다.** 검은 띠를 두르는 대신
+    # 알파를 올려서 되찾는다 — 띠는 그 자체로 얹은 물건으로 읽힌다
+    paint(dst, m1, tx, y, color=color, a=a * 0.90, valign='t')
     paint(dst, m2, tx, y + m1.shape[0] + gap, color=accent, a=a, valign='t')
     return y + th
 
