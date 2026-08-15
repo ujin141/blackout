@@ -55,7 +55,14 @@ SPECS = {
     'ko':     ('poster_ko',     'heavy'),
     'time':   ('poster_time',   'dark'),
     'card':   ('poster_card',   'dark'),
+    # 모집 현황 — 숫자가 바뀔 때마다 다시 뽑는 판이라 곡도 제일 미는 것으로
+    'wave':   ('poster_wave',   'party'),
 }
+
+# 글리치가 튈 수 있는 세로 한계(비율). 기본은 0.68 — 발치의 정보만 지킨다.
+# **판마다 정보가 앉은 자리가 다르다.** 모집 현황 판은 차수 표가 화면 가운데에
+# 있고 그게 정보의 전부라, 한 프레임만 밀려도 숫자가 안 읽힌다.
+GLITCH_TOP = {'wave': 0.28}
 
 
 # ── 소리 ──────────────────────────────────────────────────
@@ -153,7 +160,7 @@ def slices(img, amt, rng, W, H, ylimit):
     return out
 
 
-def frame(base, glow, G, t, i, dur, A, rng, W, H, story):
+def frame(base, glow, G, t, i, dur, A, rng, W, H, story, GTOP=0.68):
     lo, mid, hi = A['low'][i], A['mid'][i], A['high'][i]
     hit, hhit = A['low_hit'][i], A['high_hit'][i]
 
@@ -182,7 +189,7 @@ def frame(base, glow, G, t, i, dur, A, rng, W, H, story):
 
     # 글리치는 어택에서만
     # 글자 영역 위에서만 튄다. 발치는 어느 판이든 아래 30% 안에 있다
-    img = slices(img, hhit, rng, W, H, H * 0.68)
+    img = slices(img, hhit, rng, W, H, H * GTOP)
     img = chroma(img, 4.0 * hit)
     img = img + rng.standard_normal((H, W, 1)).astype(np.float32) * 0.007
 
@@ -220,7 +227,8 @@ def render(key, cut='story'):
          '-crf', '19', '-pix_fmt', 'yuv420p', raw],
         stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for fi in range(nf):
-        im = frame(base, glow, G, fi / FPS, fi, dur, A, rng, W, H, story)
+        im = frame(base, glow, G, fi / FPS, fi, dur, A, rng, W, H, story,
+                   GLITCH_TOP.get(key, 0.68))
         p.stdin.write((im * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()
 
