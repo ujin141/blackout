@@ -66,17 +66,22 @@ def _base():
     h, w = a.shape[:2]
     # **사람이 있는 띠를 글자 사이 빈 자리에 맞춰 넣는다.** 그냥 꽉 채우면
     # 아래쪽 튜브·물이 열린 자리에 오고 정작 사람은 글자 뒤로 숨는다.
-    ZOOM, TOP = 1.35, 0.13
+    ZOOM, TOP = 1.06, 0.02
     sc = max(W / w, H / h) * ZOOM
     a = cv2.resize(a, (int(w * sc + 0.5), int(h * sc + 0.5)), interpolation=cv2.INTER_AREA)
     y0 = int((a.shape[0] - H) * TOP)
     x0 = (a.shape[1] - W) // 2
     a = a[y0:y0 + H, x0:x0 + W]
-    a = cv2.GaussianBlur(a, (0, 0), 4)
+    a = cv2.GaussianBlur(a, (0, 0), 2.2)
     # 병 라벨의 파랑 쪽으로 당기되 **명암은 살린다** — 눌러 버리면 사람이 사라진다
     g = (a @ np.float32([0.299, 0.587, 0.114]))[..., None]
-    a = a * 0.34 + (INK + (BLUE * 0.86 + PAPER * 0.30) * g ** 0.92) * 0.66
-    return np.clip(a * 0.92, 0, 1)
+    a = a * 0.55 + (INK + (BLUE * 0.94 + PAPER * 0.40) * g ** 0.85) * 0.45
+    a = np.clip((a - 0.5) * 1.14 + 0.5, 0, 1)        # 사람 윤곽이 서게 대비를 준다
+    # **하늘이 너무 밝아 작은 글자를 잡아먹는다.** 밝은 쪽만 눌러서
+    # 사람이 있는 중간 밝기는 안 건드린다 — 어둡게만 하면 사람도 같이 죽는다
+    g2 = (a @ np.float32([0.299, 0.587, 0.114]))[..., None]
+    a *= 1 - 0.46 * np.clip((g2 - 0.34) / 0.42, 0, 1)
+    return np.clip(a * 0.94, 0, 1)
 
 
 _BASE = None
@@ -97,6 +102,32 @@ def field(i):
     return img
 
 
+SHADOW = np.float32([0.004, 0.008, 0.016])
+
+
+def _blur(m, r):
+    """마스크를 부풀려 흐린다. **배열 크기는 그대로 유지된다** — tmask_bl 의
+    베이스라인 값이 그 배열 기준이라 크기가 바뀌면 줄이 어긋난다."""
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r * 2 + 1, r * 2 + 1))
+    return cv2.GaussianBlur(cv2.dilate(m, k), (0, 0), r * 0.95)
+
+
+def P(img, m, x, y, r=11, sa=0.92, **kw):
+    """그림자 + 글자. **판을 누르는 대신 글자를 세운다** — 그늘을 넓게 깔면
+    사진이 죽고, 글자 뒤에만 그림자를 붙이면 사진을 살린 채로 읽힌다.
+    이 판의 글자는 전부 이걸로 그린다."""
+    pos = {k: v for k, v in kw.items() if k in ('anchor', 'valign')}
+    paint(img, _blur(m, r), x, y, color=SHADOW, a=sa, **pos)
+    paint(img, m, x, y, **kw)
+
+
+def PB(img, pair, x, y, r=8, sa=0.90, **kw):
+    m, base = pair
+    pos = {k: v for k, v in kw.items() if k == 'anchor'}
+    paint_bl(img, (_blur(m, r), base), x, y, color=SHADOW, a=sa, **pos)
+    paint_bl(img, pair, x, y, **kw)
+
+
 def scrim(img, y0, y1, a=0.74, soft=64):
     """글자가 앉는 띠에만 그늘. **판 전체를 누르지 않는다** — 띠 밖으로는
     사진이 그대로 보여야 사람이 찼다는 게 전달된다.
@@ -111,57 +142,57 @@ def scrim(img, y0, y1, a=0.74, soft=64):
 
 def foot(img, page):
     rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
-    paint_bl(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
+    PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
              color=PAPER, a=0.88)
-    paint_bl(img, tmask_bl(f'{page} / 3', BRAND, 20, 0.20), W - M, FY,
+    PB(img, tmask_bl(f'{page} / 3', BRAND, 20, 0.20), W - M, FY,
              color=GOLD, a=0.85, anchor='r')
 
 
 def cover():
     img = field(0)
-    scrim(img, 200, 560)
-    scrim(img, 1130, H, 0.80)
+    scrim(img, 190, 570, 0.56)
+    scrim(img, 1130, H, 0.74)
     lg = logo(56)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 128, color=PAPER, a=0.92)
-    paint(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, 19, 0.48), W / 2, 236,
+    P(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, 19, 0.48), W / 2, 236,
           color=GOLD, a=0.92, anchor='c')
     # **표지는 상품만 말한다.** 조건을 여기 적으면 넘기기 전에 계산부터 한다.
     # 상품이 둘이라 쌓는다 — 한 줄로 붙이면 둘 다 작아 보인다
     for i, t in enumerate((EV.PROMO_GET_A, EV.PROMO_GET_B)):
-        paint(img, tmask(t, KRB, min(118, fit(t, KRB, W - M * 2, 0.0)), 0.0),
+        P(img, tmask(t, KRB, min(118, fit(t, KRB, W - M * 2, 0.0)), 0.0),
               W / 2, 322 + i * 104, color=PAPER, anchor='c')
-    paint(img, tmask('둘 다 드립니다', KRB, 46, 0.0), W / 2, 522, color=BLUE, anchor='c')
+    P(img, tmask('둘 다 드립니다', KRB, 46, 0.0), W / 2, 522, color=GOLD, anchor='c')
     PP.bottle(img, 856, 458, cx=W / 2, halo=0.32)
-    paint(img, tmask('넘기세요  →', KRB, 34, 0.02), W / 2, FY - 96,
+    P(img, tmask('넘기세요  →', KRB, 34, 0.02), W / 2, FY - 96,
           color=GOLD, anchor='c')
     rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
-    paint_bl(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
+    PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
              color=PAPER, a=0.88)
-    paint_bl(img, tmask_bl(EV.HANDLE, BRAND, 19, 0.22), W - M, FY,
+    PB(img, tmask_bl(EV.HANDLE, BRAND, 19, 0.22), W - M, FY,
              color=PAPER, a=0.85, anchor='r')
     return img
 
 
 def page_do():
     img = field(1)
-    scrim(img, 170, 320)
-    scrim(img, 430, 950, 0.70)
-    scrim(img, 1110, H, 0.80)
-    paint(img, tmask(f'조건은 {EV.PROMO_N_KO}입니다', KRB, 64, 0.02), W / 2, 214,
+    scrim(img, 160, 330, 0.56)
+    scrim(img, 430, 950, 0.40)
+    scrim(img, 1110, H, 0.74)
+    P(img, tmask(f'조건은 {EV.PROMO_N_KO}입니다', KRB, 64, 0.02), W / 2, 214,
           color=PAPER, anchor='c')
-    paint(img, tmask(f'{EV.PROMO_N_KO} 다 해야 인정됩니다', KR, 27, 0.02), W / 2, 288,
-          color=BLUE, a=0.95, anchor='c')
+    P(img, tmask(f'{EV.PROMO_N_KO} 다 해야 인정됩니다', KRB, 27, 0.02), W / 2, 288,
+          color=PAPER, a=0.94, anchor='c')
     y, step = (430, 178) if len(EV.PROMO_DO) > 2 else (470, 238)
     for i, d in enumerate(EV.PROMO_DO):
         box(img, M, y - 6, M + 8, y + 96, GOLD, 0.85)
-        paint_bl(img, tmask_bl(f'{i + 1}', BRAND, 32, 0.02), M + 38, y + 44,
+        PB(img, tmask_bl(f'{i + 1}', BRAND, 32, 0.02), M + 38, y + 44,
                  color=GOLD, a=0.95)
-        paint_bl(img, tmask_bl(d, KRB, 58, 0.02), M + 96, y + 48, color=PAPER)
+        PB(img, tmask_bl(d, KRB, 58, 0.02), M + 96, y + 48, color=PAPER)
         rule(img, y + 122, M, W - M, PAPER, 0.11, 1)
         y += step
     # 조건을 다 보여 준 자리에서 바로 첫 동작을 시킨다. 셋 다 하라고 하면
     # 크게 느껴지지만 "댓글부터" 는 3초짜리다 — 하나만 하면 나머지도 한다
-    paint(img, tmask('지금 댓글부터 다세요', KRB, 40, 0.02), W / 2, FY - 100,
+    P(img, tmask('지금 댓글부터 다세요', KRB, 40, 0.02), W / 2, FY - 100,
           color=GOLD, anchor='c')
     foot(img, 1)
     return img
@@ -169,31 +200,31 @@ def page_do():
 
 def page_count():
     img = field(2)
-    scrim(img, 150, 680)
-    scrim(img, 720, 1010, 0.70)
-    scrim(img, 1110, H, 0.80)
-    paint(img, tmask('몇 팀 드리나요', KRB, 52, 0.02), W / 2, 196, color=PAPER, anchor='c')
-    paint(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 210, 0.0), W / 2, 384,
+    scrim(img, 150, 680, 0.52)
+    scrim(img, 720, 1010, 0.64)
+    scrim(img, 1110, H, 0.74)
+    P(img, tmask('몇 팀 드리나요', KRB, 52, 0.02), W / 2, 196, color=PAPER, anchor='c')
+    P(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 210, 0.0), W / 2, 384,
           color=GOLD, anchor='c')
-    paint(img, tmask(f'추첨  ·  팀당 {EV.PROMO_PER}명 입장 무료  ·  샴페인 1병', KR, 24, 0.02),
+    P(img, tmask(f'추첨  ·  팀당 {EV.PROMO_PER}명 입장 무료  ·  샴페인 1병', KR, 24, 0.02),
           W / 2, 512, color=PAPER, a=0.94, anchor='c')
     # 추첨이니 '지금' 할 이유는 마감일뿐이다 — 제일 크게 보이는 자리에 둔다
-    paint(img, tmask(f'{EV.PROMO_DUE} 마감', KRB, 40, 0.02), W / 2, 578,
-          color=BLUE, anchor='c')
-    paint(img, tmask(f'당첨자는 {EV.PROMO_ANNOUNCE} DM 으로 알려드립니다', KR, 22, 0.02),
+    P(img, tmask(f'{EV.PROMO_DUE} 마감', KRB, 40, 0.02), W / 2, 578,
+          color=PAPER, anchor='c')
+    P(img, tmask(f'당첨자는 {EV.PROMO_ANNOUNCE} DM 으로 알려드립니다', KR, 22, 0.02),
           W / 2, 630, color=PAPER, a=0.88, anchor='c')
     rule(img, 688, M, W - M, PAPER, 0.14, 1)
     y = 762
     for k, v in (('DATE', EV.DATE_EN), ('OPEN', EV.TIME_EN), ('VENUE', EV.VENUE),
                  ('AFTER', EV.AFTER)):
-        paint_bl(img, tmask_bl(k, BRAND, 16, 0.24), M, y, color=BLUE, a=0.95)
-        paint_bl(img, tmask_bl(v, BRAND if v.isascii() else KR, 22,
+        PB(img, tmask_bl(k, BRAND, 16, 0.24), M, y, color=GOLD, a=0.92)
+        PB(img, tmask_bl(v, BRAND if v.isascii() else KR, 22,
                                0.14 if v.isascii() else 0.01), M + 140, y,
                  color=PAPER, a=0.98)
         y += 50
-    paint_bl(img, tmask_bl(EV.ADDR, KR, 17, 0.01), M + 140, y - 12, color=DIM, a=0.85)
+    PB(img, tmask_bl(EV.ADDR, KR, 17, 0.01), M + 140, y - 12, color=DIM, a=0.85)
     # 마감일은 판마다 되풀이한다. 한 장만 본 사람도 날짜는 봐야 한다
-    paint(img, tmask(EV.PROMO_PUSH, KRB, 36, 0.02), W / 2, FY - 100,
+    P(img, tmask(EV.PROMO_PUSH, KRB, 36, 0.02), W / 2, FY - 100,
           color=GOLD, anchor='c')
     foot(img, 2)
     return img
@@ -203,29 +234,29 @@ def page_cta():
     """마지막 장 — **시키는 말만 남긴다.** 여기까지 넘긴 사람에게 정보를 더 주면
     다시 재기 시작한다. 남길 건 무엇을 보내면 끝나는지 한 줄이다."""
     img = field(3)
-    scrim(img, 290, 1030)
-    scrim(img, 1110, H, 0.80)
+    scrim(img, 290, 1030, 0.56)
+    scrim(img, 1110, H, 0.74)
     lg = logo(52)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 150, color=PAPER, a=0.88)
-    paint(img, tmask('조건 다 하셨으면', KR, 30, 0.02), W / 2, 330,
+    P(img, tmask('조건 다 하셨으면', KR, 30, 0.02), W / 2, 330,
           color=PAPER, a=0.92, anchor='c')
     cta = EV.PROMO_CTA
-    paint(img, tmask(cta, KRB, min(126, fit(cta, KRB, W - M * 2, 0.0)), 0.0),
+    P(img, tmask(cta, KRB, min(126, fit(cta, KRB, W - M * 2, 0.0)), 0.0),
           W / 2, 440, color=GOLD, anchor='c')
-    paint(img, tmask(EV.PROMO_CTA_SUB, KRB, 46, 0.02), W / 2, 546,
+    P(img, tmask(EV.PROMO_CTA_SUB, KRB, 46, 0.02), W / 2, 546,
           color=PAPER, anchor='c')
     box(img, M, 640, W - M, 646, PAPER, 0.16)
-    paint(img, tmask(EV.HANDLE, BRAND,
+    P(img, tmask(EV.HANDLE, BRAND,
                      min(46, fit(EV.HANDLE, BRAND, W - M * 2, 0.16)), 0.16),
           W / 2, 736, color=PAPER, anchor='c')
-    paint(img, tmask('프로필 → 메시지', KR, 24, 0.02), W / 2, 800,
-          color=BLUE, a=0.95, anchor='c')
-    paint(img, tmask(EV.PROMO_PUSH, KRB, 34, 0.02), W / 2, 908,
+    P(img, tmask('프로필 → 메시지', KRB, 25, 0.02), W / 2, 800,
+          color=PAPER, a=0.94, anchor='c')
+    P(img, tmask(EV.PROMO_PUSH, KRB, 34, 0.02), W / 2, 908,
           color=GOLD, a=0.96, anchor='c')
-    paint(img, tmask(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
+    P(img, tmask(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
                      min(26, fit(f'{EV.NAME}   {EV.DATE_EN}', BRAND, W - M * 2, 0.14)),
                      0.14), W / 2, 1000, color=PAPER, a=0.88, anchor='c')
-    paint(img, tmask(EV.RULES, KR, 14, 0.01), W / 2, FY - 92, color=DIM, a=0.72,
+    P(img, tmask(EV.RULES, KR, 14, 0.01), W / 2, FY - 92, color=DIM, a=0.72,
           anchor='c')
     foot(img, 3)
     return img
