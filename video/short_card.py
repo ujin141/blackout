@@ -25,6 +25,7 @@ python short_card.py           행사 소개판
 python short_card.py sale      판매 상태판 (1차 마감 · 테이블만 · 2차 일정)
 """
 import os
+import re
 import subprocess
 import numpy as np
 import cv2
@@ -63,27 +64,39 @@ CORAL = np.float32([0.980, 0.360, 0.300])
 # 한 벌로 두면 "1차 마감" 을 넣는 순간 소개용으로 못 쓴다.
 #   기본   행사가 뭔지. 처음 보는 사람용
 #   sale   지금 무엇을 파는지. event.py 에서 자동으로 나온다
-INTRO = [(DEEP,  '여기 서울이에요'),
-         (AQUA,  '양재 루프탑 풀파티'),
-         (INK,   '8월 29일 토요일'),
-         (CORAL, '디제이 일곱 명'),
-         (DEEP,  '9시 반부터 솔로파티'),
-         (AQUA,  '혼자 온 사람들끼리'),
-         # '2차' 는 술자리 말이라 판 톤과 안 맞는다. **끝이 아니라 이어진다**는
-         # 게 이 줄이 할 말이다
+# **정보를 나열하면 안 움직인다.** 사람을 움직이는 건 막힌 지점이다 —
+# 이 행사의 상품은 "혼자 가도 되는 것" 이고, 그게 못 가던 이유이기도 하다.
+# 그래서 순서가 막힌 지점 → 답 → 어떻게 → 언제·어디다.
+INTRO = [(DEEP,  '혼자 가고 싶었죠'),
+         (INK,   '그래서 만들었습니다'),
+         (AQUA,  '9시 반부터 한 시간 반'),
+         (CORAL, '혼자 온 사람들끼리'),
+         (DEEP,  '양재 루프탑 풀파티'),
+         (AQUA,  '8월 29일 토요일'),
          (INK,   '밤은 신사 ACE에서')]
 
 
 def sale_cards():
     """판매용 카드. **event.py 만 고치면 문구가 따라온다** —
-    영상에 숫자를 손으로 박아 두면 다음 차수에 통째로 다시 만들어야 한다."""
-    c = [(DEEP, '여기 서울이에요')]
+    영상에 숫자를 손으로 박아 두면 다음 차수에 통째로 다시 만들어야 한다.
+
+    자극은 없는 말을 지어내는 게 아니라 **아는 사실을 센 순서로 놓는 것**이다.
+    먼저 찼다(사회적 증거) → 남은 게 이것뿐(희소) → 언제까지(마감).
+    성비·마지막 기회·가격은 안 쓴다. 확인이 안 됐거나 사실이 아니다."""
+    c = [(DEEP, '친구 없어도 됩니다')]
     if EV.LAST_FULL:
-        c.append((INK, f'{EV.LAST_FULL[0]} 마감됐습니다'))
-    c.append((AQUA, f'{EV.DONE} / {EV.CAP}명 예약'))
-    c.append((CORAL, EV.SALE_NOTE))
+        c.append((INK, f'{EV.LAST_FULL[0]} {EV.LAST_FULL[1]}명 마감'))
+    if EV.SALE == 'table':
+        c.append((CORAL, '남은 건 테이블뿐'))
+    else:
+        c.append((CORAL, f'{EV.OPEN_LEFT}자리 남았습니다'))
     if EV.NEXT_OPEN:
-        c.append((DEEP, EV.NEXT_OPEN.replace('  ', ' ')))
+        # **마감일이 아니라 여는 날이다.** 지금 못 사는 사람한테 필요한 건
+        # 언제 살 수 있느냐이지 언제 닫느냐가 아니다
+        m = re.search(r'(\d+/\d+)', EV.NEXT_OPEN)
+        c.append((AQUA, f'{EV.OPEN_WAVE[0]}는 {m.group(1)}부터' if m and EV.OPEN_WAVE
+                        else EV.NEXT_OPEN))
+    c.append((DEEP, '혼자 온 사람들끼리'))
     c.append((AQUA, '8월 29일 토요일'))
     c.append((INK, '양재 루프탑'))
     return c
