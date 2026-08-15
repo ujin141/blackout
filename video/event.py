@@ -274,15 +274,25 @@ PARTNERS_STR  = ' · '.join(PARTNER_NAMES)
 # 혜택을 같이 적는다. 이름만 늘어놓으면 "그래서 뭐" 로 끝나는데,
 # **밴드가 행사 당일 하루짜리가 아니라 다른 데서도 통하는 물건이 된다** 는
 # 게 이 목록의 요점이다.
-#   (영문 표기, 한글 표기, 동네, 혜택)
-ALLIES = [('Z SPOT LOUNGE',  '지스팟 라운지', '강남',      '밴드 착용 시 할인'),
-          ('CLUB ACE',       '클럽 에이스',   '강남',      '테이블 3팀 샴페인 증정'),
-          ('ANOTHER LOUNGE', '어나더 라운지', '양재 루프탑', '행사장'),
-          ('',               '뜬금포차',      '구의',      '방문 시 서비스')]
+# 판은 영문으로 간다. 한글은 이름 밑 작은 줄에만 남긴다 — 어느 가게인지는
+# 알아야 하니까.
+#   (영문 표기, 한글 · 동네, 혜택 영문, 혜택 한글)
+ALLIES = [('Z SPOT LOUNGE',    '지스팟 라운지 · 강남',
+           'DISCOUNT',              '밴드 착용 시 할인'),
+          ('CLUB ACE',         '클럽 에이스 · 강남',
+           '3 TABLES · CHAMPAGNE',  '테이블 3팀 샴페인 증정'),
+          ('ANOTHER LOUNGE',   '어나더 라운지 · 양재 루프탑',
+           'MAIN VENUE',            '행사장'),
+          ('DDEUNGEUM POCHA',  '뜬금포차 · 구의',
+           'ON THE HOUSE',          '방문 시 서비스')]
 # **언제 되는지를 안 적으면 아무 날에나 되는 줄 안다.** 그러면 다음 주에
 # 밴드 차고 온 손님을 협업사가 돌려보내야 하고, 그 항의가 우리한테 온다.
-BAND_WHEN = '8/29 그날, 2차로 갈 때'
-BAND_PERK = '행사 입장 밴드를 그대로 차고 가시면 됩니다'
+# 영문 판이라도 이 조건만은 한글을 같이 적는다 — 오해가 나면 돈이 든다.
+BAND_HEAD = 'ONE BAND'
+BAND_HEAD2 = 'FOUR DOORS'
+BAND_WHEN = 'AUG 29  ·  AFTER PARTY ONLY'
+BAND_WHEN_KO = '8/29 그날 2차로 갈 때만'
+BAND_PERK = 'KEEP YOUR ENTRY BAND ON'
 
 
 def partner_paths():

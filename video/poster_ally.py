@@ -50,43 +50,41 @@ def build(W, H, story):
 
     lg = logo(int(66 * V))
     paint(img, lg, cx - lg.shape[1] / 2, 176 * V, color=PAPER, a=0.95)
-    paint(img, tmask('BAND BENEFITS', BRAND, int(16 * V), 0.50), cx, 262 * V,
-          color=DIM, anchor='c')
     # **제목이 이름 목록이 아니라 혜택이어야 한다.** 이름만 늘어놓으면
-    # "그래서 뭐" 로 끝난다 — 밴드가 그날 하루짜리가 아니라는 게 요점이다
-    paint(img, tmask('밴드 차고 가면', KRB, int(60 * V), 0.0), cx, 330 * V,
-          color=PAPER, anchor='c')
+    # "그래서 뭐" 로 끝난다 — 밴드가 그날 하루짜리가 아니라는 게 요점이다.
+    # 두 줄로 쌓아 세운다. 한 줄로 붙이면 글자가 반으로 준다
+    for i, t in enumerate((EV.BAND_HEAD, EV.BAND_HEAD2)):
+        paint(img, tmask(t, BRAND, min(int(78 * V), fit(t, BRAND, W * 0.84, 0.06)), 0.06),
+              cx, (272 + i * 82) * V, color=PAPER, anchor='c')
     # **언제 되는지가 바로 밑에 붙어야 한다** — 안 적으면 아무 날에나
     # 되는 줄 알고, 그 항의는 협업사가 아니라 우리한테 온다
-    paint(img, tmask(EV.BAND_WHEN, KRB, int(26 * V), 0.02), cx, 386 * V,
-          color=DIM, a=1.0, anchor='c')
+    paint(img, tmask(EV.BAND_WHEN, BRAND, int(19 * V), 0.34), cx, 424 * V,
+          color=PAPER, a=0.90, anchor='c')
+    paint(img, tmask(EV.BAND_WHEN_KO, KR, int(18 * V), 0.02), cx, 460 * V,
+          color=DIM, a=0.95, anchor='c')
 
     # ── 이름 넷. 쌓아야 넷 다 읽힌다 ──────────────────────
     n = len(EV.ALLIES)
-    top = H * (0.262 if story else 0.250)
-    step = H * (0.128 if story else 0.142)
-    for i, (en, ko, dong, perk) in enumerate(EV.ALLIES):
+    top = H * (0.285 if story else 0.268)
+    step = H * (0.126 if story else 0.140)
+    for i, (en, sub, perk, perk_ko) in enumerate(EV.ALLIES):
         y = top + step * (i + 1)
-        rule(img, y - step * 0.50, W * 0.20, W * 0.80, PAPER, 0.13, max(1, int(V)))
-        # 영문 이름이 있으면 그걸 크게, 없으면 한글을 크게
-        if en:
-            paint(img, tmask(en, BRAND, min(int(46 * V), fit(en, BRAND, W * 0.80, 0.14)),
-                             0.14), cx, y - 24 * V, color=PAPER, anchor='c')
-            sub = f'{ko}   {dong}'
-        else:
-            paint(img, tmask(ko, KRB, min(int(48 * V), fit(ko, KRB, W * 0.80, 0.06)),
-                             0.06), cx, y - 24 * V, color=PAPER, anchor='c')
-            sub = dong
-        paint(img, tmask(sub, KR, int(18 * V), 0.02), cx, y + 12 * V,
-              color=DIM, a=0.92, anchor='c')
-        # **혜택이 제일 중요한 줄이다** — 이름보다 작아도 색이 밝으면 먼저 읽힌다
-        paint(img, tmask(perk, KRB, min(int(28 * V), fit(perk, KRB, W * 0.80, 0.02)),
-                         0.02), cx, y + 50 * V, color=PAPER, anchor='c')
+        rule(img, y - step * 0.50, W * 0.16, W * 0.84, PAPER, 0.13, max(1, int(V)))
+        paint(img, tmask(en, BRAND, min(int(42 * V), fit(en, BRAND, W * 0.84, 0.14)),
+                         0.14), cx, y - 30 * V, color=PAPER, anchor='c')
+        paint(img, tmask(sub, KR, int(16 * V), 0.02), cx, y + 4 * V,
+              color=DIM, a=0.88, anchor='c')
+        # **혜택이 제일 중요한 줄이다.** 영문을 크게, 한글은 확인용으로 작게
+        paint(img, tmask(perk, BRAND, min(int(26 * V), fit(perk, BRAND, W * 0.84, 0.16)),
+                         0.16), cx, y + 40 * V, color=PAPER, anchor='c')
+        paint(img, tmask(perk_ko, KR, int(15 * V), 0.02), cx, y + 68 * V,
+              color=DIM, a=0.82, anchor='c')
 
-    y = top + step * (n + 0.58)
-    rule(img, y, W * 0.20, W * 0.80, PAPER, 0.20, max(1, int(V)))
-    paint(img, tmask(EV.BAND_PERK, KRB, int(28 * V), 0.02), cx, y + 52 * V,
-          color=PAPER, anchor='c')
+    y = top + step * (n + 0.56)
+    rule(img, y, W * 0.16, W * 0.84, PAPER, 0.20, max(1, int(V)))
+    paint(img, tmask(EV.BAND_PERK, BRAND,
+                     min(int(24 * V), fit(EV.BAND_PERK, BRAND, W * 0.84, 0.26)), 0.26),
+          cx, y + 48 * V, color=PAPER, anchor='c')
 
     fy = H - (150 * V if story else 118 * V)
     paint(img, tmask(EV.HANDLE, BRAND,
