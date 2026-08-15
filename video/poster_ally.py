@@ -60,25 +60,26 @@ def build(W, H, story):
     # 되는 줄 알고, 그 항의는 협업사가 아니라 우리한테 온다
     paint(img, tmask(EV.BAND_WHEN, BRAND, int(19 * V), 0.34), cx, 424 * V,
           color=PAPER, a=0.90, anchor='c')
-    paint(img, tmask(EV.BAND_WHEN_KO, KR, int(18 * V), 0.02), cx, 460 * V,
-          color=DIM, a=0.95, anchor='c')
+    paint(img, tmask(EV.BAND_WHEN_KO, KR, int(20 * V), 0.02), cx, 462 * V,
+          color=PAPER, a=0.72, anchor='c')
 
     # ── 이름 넷. 쌓아야 넷 다 읽힌다 ──────────────────────
     n = len(EV.ALLIES)
-    top = H * (0.285 if story else 0.268)
-    step = H * (0.126 if story else 0.140)
+    top = H * (0.272 if story else 0.258)
+    step = H * (0.122 if story else 0.136)
     for i, (en, sub, perk, perk_ko) in enumerate(EV.ALLIES):
         y = top + step * (i + 1)
         rule(img, y - step * 0.50, W * 0.16, W * 0.84, PAPER, 0.13, max(1, int(V)))
-        paint(img, tmask(en, BRAND, min(int(42 * V), fit(en, BRAND, W * 0.84, 0.14)),
-                         0.14), cx, y - 30 * V, color=PAPER, anchor='c')
-        paint(img, tmask(sub, KR, int(16 * V), 0.02), cx, y + 4 * V,
-              color=DIM, a=0.88, anchor='c')
-        # **혜택이 제일 중요한 줄이다.** 영문을 크게, 한글은 확인용으로 작게
-        paint(img, tmask(perk, BRAND, min(int(26 * V), fit(perk, BRAND, W * 0.84, 0.16)),
-                         0.16), cx, y + 40 * V, color=PAPER, anchor='c')
-        paint(img, tmask(perk_ko, KR, int(15 * V), 0.02), cx, y + 68 * V,
-              color=DIM, a=0.82, anchor='c')
+        paint(img, tmask(en, BRAND, min(int(44 * V), fit(en, BRAND, W * 0.84, 0.14)),
+                         0.14), cx, y - 34 * V, color=PAPER, anchor='c')
+        # **혜택이 제일 중요한 줄이다.** 영문을 크게 쓴다
+        paint(img, tmask(perk, BRAND, min(int(27 * V), fit(perk, BRAND, W * 0.84, 0.16)),
+                         0.16), cx, y + 12 * V, color=PAPER, a=0.96, anchor='c')
+        # **한글을 두 줄로 두면 한 칸에 넉 줄이 되어 다 뭉갠다.**
+        # 가게와 혜택을 한 줄로 합치고 크기를 올려 읽히게 한다
+        ko = f'{sub}  —  {perk_ko}'
+        paint(img, tmask(ko, KR, min(int(19 * V), fit(ko, KR, W * 0.86, 0.02)), 0.02),
+              cx, y + 50 * V, color=PAPER, a=0.68, anchor='c')
 
     y = top + step * (n + 0.56)
     rule(img, y, W * 0.16, W * 0.84, PAPER, 0.20, max(1, int(V)))
@@ -87,6 +88,11 @@ def build(W, H, story):
           cx, y + 48 * V, color=PAPER, anchor='c')
 
     fy = H - (150 * V if story else 118 * V)
+    # **목록이 늘면 마무리 줄이 발치로 밀려 겹친다.** 눈으로는 뒤늦게 보인다 —
+    # 자리를 재서 안 겹치는지 확인한다. 곳을 더 넣으면 여기서 먼저 걸린다
+    assert y + 48 * V < fy - 44 * V, (
+        f'마무리 줄({y + 48 * V:.0f})이 발치({fy:.0f})와 겹칩니다 — '
+        f'ALLIES 가 {n} 개입니다. step 을 줄이세요')
     paint(img, tmask(EV.HANDLE, BRAND,
                      min(int(22 * V), fit(EV.HANDLE, BRAND, W * 0.80, 0.24)), 0.24),
           cx, fy, color=PAPER, a=0.88, anchor='c')
