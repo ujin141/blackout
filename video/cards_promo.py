@@ -50,9 +50,13 @@ CROWD = 'crowd.jpg'
 def _base():
     """배경 한 장을 한 번만 만들어 네 장이 같이 쓴다.
 
-    **얼굴을 알아볼 수 없을 만큼 흐리고 어둡게 깐다.** 손님 얼굴이 든
-    원본이라 그대로 쓰면 초상권 문제고, 애초에 글자를 읽는 판이라 배경이
-    선명하면 글자가 안 읽힌다 — 필요한 건 "사람이 찼다" 는 인상뿐이다.
+    **사람이 보여야 뜻이 있다.** 판 전체를 어둡게 깔면 글자는 읽히지만
+    "사람이 찼다" 는 게 안 보인다 — 그럴 거면 사진을 안 쓰는 게 낫다.
+    그래서 사진은 살려 두고, 그늘은 `scrim()` 으로 **글자가 앉는 띠에만**
+    건다. 글자 사이사이로 현장이 그대로 보인다.
+
+    흐림은 얼굴이 뭉개질 만큼만(σ=4). 사람 수와 물, 튜브는 그대로 읽히고
+    누가 누구인지는 안 보인다.
 
     사진이 없으면 검정 판으로 떨어진다(판이 안 깨진다)."""
     p = os.path.join(STOCK, CROWD)
@@ -60,14 +64,19 @@ def _base():
         return None
     a = np.asarray(Image.open(p).convert('RGB')).astype(np.float32) / 255
     h, w = a.shape[:2]
-    sc = max(W / w, H / h)
+    # **사람이 있는 띠를 글자 사이 빈 자리에 맞춰 넣는다.** 그냥 꽉 채우면
+    # 아래쪽 튜브·물이 열린 자리에 오고 정작 사람은 글자 뒤로 숨는다.
+    ZOOM, TOP = 1.35, 0.13
+    sc = max(W / w, H / h) * ZOOM
     a = cv2.resize(a, (int(w * sc + 0.5), int(h * sc + 0.5)), interpolation=cv2.INTER_AREA)
-    y0 = int((a.shape[0] - H) * 0.34)                # 사람이 위쪽에 몰려 있다
+    y0 = int((a.shape[0] - H) * TOP)
     x0 = (a.shape[1] - W) // 2
     a = a[y0:y0 + H, x0:x0 + W]
-    a = cv2.GaussianBlur(a, (0, 0), 10)              # 얼굴이 사라지는 반경
-    g = a @ np.float32([0.299, 0.587, 0.114])        # 병 라벨 색으로 맞춘다
-    return (INK + (BLUE * 0.66 + PAPER * 0.13) * g[..., None] ** 1.10) * 0.74
+    a = cv2.GaussianBlur(a, (0, 0), 4)
+    # 병 라벨의 파랑 쪽으로 당기되 **명암은 살린다** — 눌러 버리면 사람이 사라진다
+    g = (a @ np.float32([0.299, 0.587, 0.114]))[..., None]
+    a = a * 0.34 + (INK + (BLUE * 0.86 + PAPER * 0.30) * g ** 0.92) * 0.66
+    return np.clip(a * 0.92, 0, 1)
 
 
 _BASE = None
@@ -83,12 +92,21 @@ def field(i):
            else np.repeat(np.repeat(INK[None, None, :], H, 0), W, 1).copy())
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     cx = W * (0.50 + 0.10 * (i - 1.5) / 1.5)
-    cy = H * (0.42 + 0.06 * i)
     img += np.exp(-(((xx - cx) / (W * 0.62)) ** 2
-                    + ((yy - cy) / (H * 0.46)) ** 2))[..., None] * BLUE * 0.22
-    # 글자가 앉는 자리만 한 겹 더 눌러 준다 — 배경이 살아 있으면 글자가 진다
-    img *= (1 - 0.40 * np.exp(-((yy - H * 0.46) / (H * 0.34)) ** 2))[..., None]
+                    + ((yy - H * 0.46) / (H * 0.50)) ** 2))[..., None] * BLUE * 0.14
     return img
+
+
+def scrim(img, y0, y1, a=0.74, soft=64):
+    """글자가 앉는 띠에만 그늘. **판 전체를 누르지 않는다** — 띠 밖으로는
+    사진이 그대로 보여야 사람이 찼다는 게 전달된다.
+
+    가장자리를 부드럽게 풀어야 띠의 경계가 안 보인다. 딱 자르면 사진 위에
+    검은 사각형을 올린 것처럼 읽힌다."""
+    yy = np.arange(img.shape[0], dtype=np.float32)[:, None, None]
+    m = (np.clip((yy - (y0 - soft)) / soft, 0, 1)
+         * np.clip(((y1 + soft) - yy) / soft, 0, 1))
+    img *= 1 - a * m
 
 
 def foot(img, page):
@@ -101,6 +119,8 @@ def foot(img, page):
 
 def cover():
     img = field(0)
+    scrim(img, 200, 560)
+    scrim(img, 1130, H, 0.80)
     lg = logo(56)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 128, color=PAPER, a=0.92)
     paint(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, 19, 0.48), W / 2, 236,
@@ -124,6 +144,9 @@ def cover():
 
 def page_do():
     img = field(1)
+    scrim(img, 170, 320)
+    scrim(img, 430, 950, 0.70)
+    scrim(img, 1110, H, 0.80)
     paint(img, tmask(f'조건은 {EV.PROMO_N_KO}입니다', KRB, 64, 0.02), W / 2, 214,
           color=PAPER, anchor='c')
     paint(img, tmask(f'{EV.PROMO_N_KO} 다 해야 인정됩니다', KR, 27, 0.02), W / 2, 288,
@@ -146,6 +169,9 @@ def page_do():
 
 def page_count():
     img = field(2)
+    scrim(img, 150, 680)
+    scrim(img, 720, 1010, 0.70)
+    scrim(img, 1110, H, 0.80)
     paint(img, tmask('몇 팀 드리나요', KRB, 52, 0.02), W / 2, 196, color=PAPER, anchor='c')
     paint(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 210, 0.0), W / 2, 384,
           color=GOLD, anchor='c')
@@ -177,6 +203,8 @@ def page_cta():
     """마지막 장 — **시키는 말만 남긴다.** 여기까지 넘긴 사람에게 정보를 더 주면
     다시 재기 시작한다. 남길 건 무엇을 보내면 끝나는지 한 줄이다."""
     img = field(3)
+    scrim(img, 290, 1030)
+    scrim(img, 1110, H, 0.80)
     lg = logo(52)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 150, color=PAPER, a=0.88)
     paint(img, tmask('조건 다 하셨으면', KR, 30, 0.02), W / 2, 330,
