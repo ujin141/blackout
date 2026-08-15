@@ -266,6 +266,16 @@ PARTNER_NAMES = ['CLUB ACE GANGNAM', 'Z SPOT LOUNGE GANGNAM',
                  'SPACE SEOUL', 'ANOTHER LOUNGE']
 PARTNERS_STR  = ' · '.join(PARTNER_NAMES)
 
+# 함께 가는 곳들. **행사 협업사(PARTNER_NAMES)와 다른 목록이다** — 저건 이번
+# 행사에 걸린 곳이고, 이건 크루가 계속 붙어 있는 곳이다.
+# **영문 이름이 없으면 억지로 만들지 않는다.** 뜬금포차를 DDEUNGEUM 으로
+# 적으면 아무도 그 가게인 줄 모른다 — 영문 칸을 비우면 한글을 크게 쓴다.
+#   (영문 표기, 한글 표기, 동네)
+ALLIES = [('Z SPOT LOUNGE',  '지스팟 라운지', '강남'),
+          ('CLUB ACE',       '클럽 에이스',   '강남'),
+          ('ANOTHER LOUNGE', '어나더 라운지', '양재 루프탑'),
+          ('',               '뜬금포차',      '구의')]
+
 
 def partner_paths():
     """실제로 있는 로고만 돌려준다."""
