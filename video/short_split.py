@@ -189,15 +189,16 @@ def render():
                   color=AQUA, a=float(k), anchor='c')
             paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 34, 0.02), W / 2, H * 0.40 + 128,
                   color=PAPER, a=float(k) * 0.96, anchor='c')
-            status_tag(img, W / 2, H * 0.40 + 172, 36, color=PAPER, accent=CORAL,
-                       a=float(k), width=W * 0.80, anchor='c')
+            # 태그는 두 줄이라 높이를 세야 한다 — 돌려주는 아래 y 에서 이어 내린다
+            yb = status_tag(img, W / 2, H * 0.40 + 186, 34, color=PAPER, accent=CORAL,
+                            a=float(k), width=W * 0.80, anchor='c')
             k2 = np.clip((b - tail - 1.2) / 0.5, 0, 1)
             if k2 > 0.004:
-                paint(img, tmask('프로필 링크에서 예약', KRB, 50, 0.02), W / 2, H * 0.40 + 236,
+                paint(img, tmask('프로필 링크에서 예약', KRB, 50, 0.02), W / 2, yb + 84,
                       color=CORAL, a=float(k2), anchor='c')
                 paint(img, tmask(EV.PARTNERS_STR, BRAND,
                                  min(20, fit(EV.PARTNERS_STR, BRAND, W * 0.88, 0.16)), 0.16),
-                      W / 2, H * 0.40 + 320, color=PAPER, a=float(k2) * 0.66, anchor='c')
+                      W / 2, yb + 168, color=PAPER, a=float(k2) * 0.66, anchor='c')
 
         p.stdin.write((np.clip(img, 0, 1) * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()

@@ -328,17 +328,20 @@ def render(mode='intro'):
                   color=AQUA, a=float(kk), anchor='c')
             paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 34, 0.02), W / 2, H * 0.40 + 128,
                   color=PAPER, a=float(kk) * 0.96, anchor='c')
-            _tag(img, W / 2, H * 0.40 + 172, 36, color=PAPER, accent=CORAL,
-                 a=float(kk), width=W * 0.80, anchor='c')
+            # **끝 판은 위에서 아래로 한 줄씩 내려간다.** 상태 태그는 두 줄짜리라
+            # 높이를 안 세면 다음 요소를 밟는다 — 실제로 CTA 와 겹쳤었다.
+            # status_tag 가 아래 y 를 돌려주니 거기서 이어 내린다.
             k2 = np.clip((b - (NBEAT - TAIL) - 1.2) / 0.5, 0, 1)
+            yb = _tag(img, W / 2, H * 0.40 + 186, 34, color=PAPER, accent=CORAL,
+                      a=float(kk), width=W * 0.80, anchor='c')
             if k2 > 0.004:
                 cta = (EV.PROMO_CTA if mode == 'promo'
                        else EV.RESERVE_NOW if mode == 'sale' else '프로필 링크에서 예약')
-                paint(img, tmask(cta, KRB, 52, 0.02), W / 2, H * 0.40 + 240,
+                paint(img, tmask(cta, KRB, 52, 0.02), W / 2, yb + 86,
                       color=CORAL, a=float(k2), anchor='c')
                 paint(img, tmask(EV.PARTNERS_STR, BRAND,
                                  min(20, fit(EV.PARTNERS_STR, BRAND, W * 0.88, 0.16)), 0.16),
-                      W / 2, H * 0.40 + 324, color=PAPER, a=float(k2) * 0.66, anchor='c')
+                      W / 2, yb + 170, color=PAPER, a=float(k2) * 0.66, anchor='c')
 
         p.stdin.write((np.clip(img, 0, 1) * 255).astype(np.uint8).tobytes())
     p.stdin.close(); p.wait()
