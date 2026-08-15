@@ -28,7 +28,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from poster_kit import (BRAND, STOCK, tmask, tmask_bl, fit, paint, paint_bl, rule, box,
-                        logo, grain, status_block, status_chips)
+                        logo, grain, status_block, status_tag)
 from fonts import KR, KRB
 from poster_promo import INK, BLUE, GOLD, PAPER, DIM
 import poster_promo as PP
@@ -179,11 +179,11 @@ def cover():
               W / 2, 322 + i * 104, color=PAPER, anchor='c')
     P(img, tmask('둘 다 드립니다', KRB, 46, 0.0), W / 2, 522, color=GOLD, anchor='c')
     PP.bottle(img, 856, 458, cx=W / 2, halo=0.32)
-    # **표지에 상태를 안 넣으면 아무도 급하지 않다.** 배지형은 좁은 자리용이라
-    # 표지처럼 글자가 큰 판에도 한 줄로 들어간다
-    status_chips(img, W / 2, FY - 152, 24, color=PAPER, accent=GOLD, width=W - M * 2)
-    P(img, tmask('넘기세요  →', KRB, 34, 0.02), W / 2, FY - 78,
-          color=GOLD, anchor='c')
+    # **표지에 상태를 안 넣으면 아무도 급하지 않다.** 왼쪽 여백선에 붙여서
+    # 발치 줄과 같은 격자에 앉힌다
+    status_tag(img, M, FY - 196, 34, color=PAPER, accent=GOLD, width=W - M * 2)
+    P(img, tmask('넘기세요  →', KRB, 32, 0.02), W - M, FY - 96,
+      color=GOLD, anchor='r')
     rule(img, FY - 40, M, W - M, PAPER, 0.14, 1)
     PB(img, tmask_bl(f'{EV.DATE_EN}   {EV.VENUE}', KR, 20, 0.01), M, FY,
              color=PAPER, a=0.88)
@@ -243,10 +243,12 @@ def page_count():
         y += 50
     PB(img, tmask_bl(EV.ADDR, KR, 17, 0.01), M + 140, y - 12, color=DIM, a=0.85)
     # 마감일은 판마다 되풀이한다. 한 장만 본 사람도 날짜는 봐야 한다
+    status_tag(img, M, FY - 200, 32, color=PAPER, accent=GOLD, width=W * 0.52)
     P(img, tmask(EV.PROMO_PUSH, KRB,
-                 min(32, fit(EV.PROMO_PUSH, KRB, W - M * 2, 0.02)), 0.02),
-      W / 2, FY - 170, color=GOLD, anchor='c')
-    status_chips(img, W / 2, FY - 96, 23, color=PAPER, accent=GOLD, width=W - M * 2)
+                 min(24, fit(EV.PROMO_PUSH, KRB, W * 0.40, 0.02)), 0.02),
+      W - M, FY - 150, color=GOLD, anchor='r')
+    P(img, tmask('추첨으로 뽑습니다', KR, 20, 0.02), W - M, FY - 112,
+      color=PAPER, a=0.86, anchor='r')
     foot(img, 2)
     return img
 
@@ -342,8 +344,8 @@ def page_cta():
                      0.14), W / 2, 916, color=PAPER, a=0.90, anchor='c')
         P(img, tmask(f'{EV.VENUE}  ·  {EV.ADDR}', KR, 20, 0.01), W / 2, 950,
           color=PAPER, a=0.82, anchor='c')
-        status_block(img, W / 2, 1040, 30, 42, color=PAPER, accent=GOLD,
-                     width=W - M * 2)
+        status_tag(img, W / 2, 1006, 34, color=PAPER, accent=GOLD,
+                   width=W - M * 2, anchor='c')
     P(img, tmask(EV.RULES, KR, 13, 0.01), W / 2, FY - 66, color=DIM, a=0.72,
       anchor='c')
     foot(img, 3)

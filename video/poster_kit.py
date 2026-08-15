@@ -393,59 +393,65 @@ def status_block(dst, cx, y, size=30, gap=44, color=WHITE, accent=None,
     return y + (len(_EV.STATUS_LINES) - 1) * gap
 
 
-def status_chips(dst, cx, y, size=22, color=WHITE, accent=None, a=1.0, width=None,
-                 font=None, pad=18, gap=16, bar=0.0):
-    """지금 상태 한 줄 — `1차 사전예약 SOLD OUT · 2차 OPEN · 80명 한정`.
+def status_tag(dst, x, y, size=30, color=WHITE, accent=None, a=1.0, width=None,
+               font=None, bar=0.0, anchor='l'):
+    """지금 상태 — **왼쪽에 세로 막대를 세운 두 줄.** 방송 자막(로어서드) 문법이다.
 
-    **채운 배지를 얹지 않는다.** 앞선 판은 가운데를 네모로 채웠는데, 그게
-    판 위에 스티커를 붙인 것처럼 보였다 — 배지는 그 자체로 "광고 딱지" 라
-    아무리 색을 맞춰도 판의 일부로 안 읽힌다.
+    가운데 정렬 한 줄로 두 번 만들어 봤는데 둘 다 판 위에 떠 보였다.
+    이유는 크기나 색이 아니라 **어느 블록에도 안 붙어 있어서** 다 —
+    가운데에 홀로 뜬 줄은 판의 격자를 안 따르니 나중에 붙인 것으로 읽힌다.
 
-    대신 판이 이미 쓰는 것들로만 만든다. 얇은 실선, 가운데점, 자간 넓힌
-    작은 글자. 강조는 **가운데 항목의 색과 그 아래 짧은 밑줄** 하나뿐이다.
-    작아 보이지만 어차피 이 줄은 훑는 눈에 0.3 초 걸리는 물건이고, 그 0.3 초
-    안에 남아야 하는 건 'OPEN' 한 단어다.
+    그래서 여백선(margin)에 붙인다. 판의 다른 글자들이 이미 그 선에서
+    시작하니 이 줄도 같은 식구가 된다. 세로 막대는 "여기부터 한 덩어리" 를
+    말하는 표시고, 판이 이미 쓰는 것(info 표의 색 막대)과 같은 물건이다.
 
-    `width` 를 주면 그 폭에 맞춰 줄인다. `bar` 는 사진 위에 얹을 때 —
-    네모 띠가 아니라 위아래로 풀린 그늘이라 경계가 안 보인다."""
+        ▌ 1차 사전예약 SOLD OUT      ← 끝난 일. 작고 조용하게
+        ▌ 2차 OPEN · 80명 한정       ← 지금 일. 크고 색이 있다
+
+    끝난 일을 위에 두는 순서가 중요하다. 눈은 위에서 아래로 읽으니
+    "끝났다 → 그래서 지금 이것뿐" 이 저절로 만들어진다.
+
+    `anchor='c'` 면 x 를 가운데로 보고 덩어리째 가운데 정렬한다(포스터용).
+    `bar` 는 사진 위에 얹을 때 뒤로 까는 그늘."""
     import event as _EV
-    from fonts import KRB as _KRB
+    from fonts import KRB as _KRB, KR as _KR
     f = font or _KRB
     accent = color if accent is None else accent
-    chips = _EV.STATUS_CHIPS
+    past, now, cap = _EV.STATUS_CHIPS
 
-    def measure(sz):
-        # **구분점 좌우의 공백을 글자로 넣으면 안 된다.** tmask 는 빈 자리를
-        # 잘라내서 마스크가 점 하나로 줄고, 항목들이 붙어 버린다 —
-        # 간격은 픽셀로 잡는다
-        ms = [tmask(t, f, sz, 0.10) for t in chips]
-        sm = tmask('·', f, sz, 0.0)
-        pitch = sm.shape[1] + int(sz * 1.5) * 2
-        return ms, sm, pitch, sum(m.shape[1] for m in ms) + (len(ms) - 1) * pitch
+    s1, s2 = int(size * 0.62), int(size)
+    line2 = f'{now}  ·  {cap}'
+    if width:                                   # 폭에서 역산 — 눈대중이면 잘린다
+        s2 = int(min(s2, fit(line2, f, width - size * 0.9, 0.02)))
+        s1 = int(min(s1, fit(past, _KR, width - size * 0.9, 0.06), s2 * 0.70))
+    m1 = tmask(past, _KR, max(9, s1), 0.06)
+    m2 = tmask(line2, f, max(11, s2), 0.02)
 
-    ms, sm, pitch, total = measure(int(size))
-    if width and total > width:            # 폭에서 역산 — 눈대중이면 잘린다
-        size = max(9, int(size * width / total * 0.98))
-        ms, sm, pitch, total = measure(int(size))
+    gap = int(s2 * 0.52)                        # 두 줄 사이
+    bw = max(2, int(s2 * 0.10))                 # 세로 막대 두께
+    pad = int(s2 * 0.62)                        # 막대와 글자 사이
+    tw = bw + pad + max(m1.shape[1], m2.shape[1])
+    th = m1.shape[0] + gap + m2.shape[0]
+    x0 = x if anchor == 'l' else (x - tw / 2 if anchor == 'c' else x - tw)
 
-    h = max(m.shape[0] for m in ms)
     if bar:
         yy = np.arange(dst.shape[0], dtype=np.float32)[:, None, None]
-        soft = h * 2.6
-        g = np.exp(-((yy - y + h * 0.3) / soft) ** 2)
-        dst *= 1 - bar * g
+        soft = th * 1.15
+        dst *= 1 - bar * np.exp(-((yy - (y + th / 2)) / soft) ** 2)
 
-    x = cx - total / 2
-    for i, m in enumerate(ms):
-        mid = (i == 1)
-        paint(dst, m, x, y, color=accent if mid else color,
-              a=a if mid else a * 0.80)
-        if mid:
-            # 밑줄 한 줄. 네모로 감싸는 것보다 조용하고, 눈은 여기서 멈춘다
-            rule(dst, y + h * 0.86, x, x + m.shape[1], accent, a * 0.85,
-                 max(1, int(size / 11)))
-        x += m.shape[1]
-        if i < len(ms) - 1:
-            paint(dst, sm, x + (pitch - sm.shape[1]) / 2, y, color=color, a=a * 0.36)
-            x += pitch
-    return y + h
+    box(dst, x0, y, x0 + bw, y + th, accent, a * 0.92)
+    tx = x0 + bw + pad
+    paint(dst, m1, tx, y, color=color, a=a * 0.74, valign='t')
+    paint(dst, m2, tx, y + m1.shape[0] + gap, color=accent, a=a, valign='t')
+    return y + th
+
+
+def status_chips(dst, cx, y, size=22, color=WHITE, accent=None, a=1.0, width=None,
+                 font=None, pad=18, gap=16, bar=0.0):
+    """옛 이름 — 가운데 정렬로 부르던 자리를 그대로 받는다.
+
+    `status_tag` 로 넘긴다. y 는 줄의 가운데였는데 태그는 위쪽 기준이라
+    높이만큼 올려 준다."""
+    th = size * 2.1
+    return status_tag(dst, cx, y - th * 0.62, size, color, accent, a, width,
+                      font, bar, anchor='c')

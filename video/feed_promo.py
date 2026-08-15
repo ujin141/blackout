@@ -16,7 +16,7 @@ python feed_promo.py  →  out/feed_event/promo_{1,2,3}.png · promo_1_cover.png
 import os
 import numpy as np
 from PIL import Image
-from poster_kit import (BRAND, status_chips, status_block, HEROES, tmask, tmask_bl, fit, paint, paint_bl,
+from poster_kit import (BRAND, status_tag, HEROES, tmask, tmask_bl, fit, paint, paint_bl,
                         rule, box, duotone, grain)
 from fest_kit import vignette
 from fonts import KR, KRB
@@ -112,8 +112,8 @@ def build():
           x0 + TW / 2, 1010, color=BLUE, anchor='c')
 
     # **상태는 마지막 칸에 한 번.** 세 칸에 다 넣으면 줄이 잔소리가 된다
-    status_chips(img, x0 + TW / 2, 1064, 22, color=PAPER, accent=GOLD,
-                 width=TW - SEAM * 2, bar=0.40)
+    status_tag(img, x0 + SEAM, 1024, 30, color=PAPER, accent=GOLD,
+               width=TW - SEAM * 2, bar=0.34)
 
     # ── 발치 — 칸마다 한 줄 ───────────────────────────────
     FY = 1130

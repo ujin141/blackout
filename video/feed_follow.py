@@ -19,7 +19,7 @@ python feed_follow.py  →  out/feed_event/follow_{1,2,3}.png · follow_1_cover.
 import os
 import numpy as np
 from PIL import Image
-from poster_kit import (BRAND, status_chips, status_block, tmask, tmask_bl, fit, paint, paint_bl, rule, box,
+from poster_kit import (BRAND, status_tag, tmask, tmask_bl, fit, paint, paint_bl, rule, box,
                         logo, grain)
 from fest_kit import vignette
 from fonts import KR, KRB
@@ -102,8 +102,8 @@ def build():
              color=DIM, a=0.88)
     # **정원과 남은 차수를 여기서 말한다.** 혜택만 보고 온 사람에게 자리가
     # 무한하지 않다는 걸 한 번은 알려야 예약으로 넘어간다
-    status_block(img, x0 + TW / 2, 746, 30, 44, color=PAPER, accent=GOLD,
-                 width=TW - SEAM * 2)
+    status_tag(img, x0 + SEAM, 726, 36, color=PAPER, accent=GOLD,
+               width=TW - SEAM * 2)
     paint(img, tmask('예약은 프로필 링크에서', KRB, 46, 0.02), x0 + TW / 2, 930,
           color=GOLD, anchor='c')
     paint(img, tmask('찍으면 바로 예약 폼이 열립니다', KR, 22, 0.02),
