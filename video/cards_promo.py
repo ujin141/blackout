@@ -243,8 +243,15 @@ def page_count():
                  color=PAPER, a=0.98)
         y += 50
     PB(img, tmask_bl(EV.ADDR, KR, 17, 0.01), M + 140, y - 12, color=DIM, a=0.85)
+    # **자리가 준다는 말보다 값이 오른다는 말이 세다.**
+    # 라벨 자리 폰트(BRAND)는 영문 전용이라 한글을 넣으면 빈 네모가 된다
+    PB(img, tmask_bl('ENTRY', BRAND, 16, 0.24), M, y + 40, color=BLUE, a=0.95)
+    PB(img, tmask_bl(f'{EV.OPEN_WAVE[0]}  {EV.price_str()}', KR, 20, 0.01),
+       M + 140, y + 40, color=PAPER, a=0.96)
+    PB(img, tmask_bl(EV.price_up(), KR, 18, 0.01), M + 140, y + 70,
+       color=GOLD, a=0.92)
     # 마감일은 판마다 되풀이한다. 한 장만 본 사람도 날짜는 봐야 한다
-    status_tag(img, M, FY - 200, 32, color=PAPER, accent=GOLD, width=W * 0.52)
+    status_tag(img, M, FY - 186, 30, color=PAPER, accent=GOLD, width=W * 0.52)
     P(img, tmask(EV.PROMO_PUSH, KRB,
                  min(24, fit(EV.PROMO_PUSH, KRB, W * 0.40, 0.02)), 0.02),
       W - M, FY - 150, color=GOLD, anchor='r')

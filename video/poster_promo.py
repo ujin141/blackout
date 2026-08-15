@@ -148,7 +148,10 @@ def build(W, H, story):
     paint(img, tmask(EV.PROMO_CTA_SUB, KRB, int(30 * V), 0.02), cx, y,
           color=BLUE, anchor='c')
 
-    status_tag(img, cx, H - 168 * V, int(30 * V), color=PAPER, accent=GOLD,
+    paint(img, tmask(f'{EV.OPEN_WAVE[0]} 입장  {EV.price_str()}   ·   {EV.price_up()}',
+                     KRB, int(20 * V), 0.02), cx, H - 212 * V, color=PAPER, a=0.94,
+          anchor='c')
+    status_tag(img, cx, H - 172 * V, int(29 * V), color=PAPER, accent=GOLD,
                width=W * 0.86, anchor='c')
     paint(img, tmask(EV.RULES, KR, int(15 * V), 0.02), cx, H - 62 * V,
           color=DIM, a=0.78, anchor='c')

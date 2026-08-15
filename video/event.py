@@ -57,13 +57,12 @@ ENTRY_EN = '사전예매 + Welcome Drink'
 # **마감은 주 단위로 넘어간다.** 정원이 차서 닫히는 게 아니라 날짜로 닫힌다 —
 # 그래서 "몇 자리 남음" 과 "언제까지" 를 같이 말해야 움직인다.
 #   (이름, 정원, 지금까지 모인 수, 마감일)
-# **'이제 2차 예약만 남았습니다' 가 참이 되려면 3차가 없어야 한다.** 앞서
-# 2차·3차로 나눴다가 여기로 합쳤다 — 두 말이 같이 나가면 어느 쪽도 안 믿긴다.
-# 3차를 다시 열면 ('3차', n, 0, '날짜') 를 붙이고, STATUS_LINES 가 알아서
-# '지금은 2차 예약을 받습니다' 로 바뀐다.
+# 사전예약을 세 차수로 나눠 받는다. **차수가 오를수록 입장료가 오른다** —
+# 그게 지금 예약할 이유가 된다. 값은 PRICE 에 있다.
 #   (이름, 정원, 지금까지 모인 수, 마감일)
 WAVES = [('1차', 20, 20, '8/17(월)'),
-         ('2차', 60, 0,  '8/24(월)')]
+         ('2차', 30, 0,  '8/24(월)'),
+         ('3차', 30, 0,  '8/28(금)')]
 CAP = sum(c for _, c, _, _ in WAVES)                 # 80
 DONE = sum(n for _, _, n, _ in WAVES)                # 20
 LEFT = CAP - DONE
@@ -144,6 +143,34 @@ PROMO_DUE = '8/24(월) 자정'
 PROMO_ANNOUNCE = '8/25(화)'
 PROMO_NOTE = f'추첨 {PROMO_TEAMS}팀 · 팀당 {PROMO_PER}명'
 PROMO_BOTTLE = 'champagne.png'    # assets/img/stock/ 안. 누끼 뜬 병
+
+# ── 입장료 ───────────────────────────────────────────────
+# **차수가 오를수록 오른다.** 이게 '지금 예약할 이유' 다 — 자리가 준다는
+# 말보다 값이 오른다는 말이 훨씬 세다.
+# 지인 게스트는 남녀 같은 값이고, 일반은 차수·성별로 갈린다.
+PRICE_GUEST = 30000
+PRICE = {'2차': {'여': 49000, '남': 59000},
+         '3차': {'여': 59000, '남': 69000}}
+
+
+def price_str(w=None):
+    """'여 49,000 · 남 59,000' — 판에 그대로 쓸 한 줄."""
+    w = w or (OPEN_WAVE[0] if OPEN_WAVE else '2차')
+    p = PRICE.get(w)
+    return f"여 {p['여']:,} · 남 {p['남']:,}" if p else ''
+
+
+def price_up():
+    """다음 차수에서 얼마 오르는지. **이게 지금 사야 할 이유다.**"""
+    if not OPEN_WAVE:
+        return ''
+    ws = [w[0] for w in WAVES]
+    i = ws.index(OPEN_WAVE[0])
+    nxt = ws[i + 1] if i + 1 < len(ws) else None
+    if not nxt or nxt not in PRICE or OPEN_WAVE[0] not in PRICE:
+        return ''
+    d = PRICE[nxt]['여'] - PRICE[OPEN_WAVE[0]]['여']
+    return f'{nxt}부터 {d:,}원 오릅니다'
 
 # 사전예약 폼. **주소가 바뀌면 QR 도 다시 뽑아야 한다** — `python qr.py`.
 # 판에 인쇄된 QR 은 되돌릴 수 없으니 폼을 새로 파지 말고 이 폼을 고쳐 쓴다.

@@ -106,8 +106,11 @@ def build():
                width=TW - SEAM * 2)
     paint(img, tmask('예약은 프로필 링크에서', KRB, 46, 0.02), x0 + TW / 2, 930,
           color=GOLD, anchor='c')
-    paint(img, tmask('찍으면 바로 예약 폼이 열립니다', KR, 22, 0.02),
-          x0 + TW / 2, 978, color=PAPER, a=0.88, anchor='c')
+    # **자리가 준다는 말보다 값이 오른다는 말이 세다**
+    paint(img, tmask(f'{EV.OPEN_WAVE[0]}  {EV.price_str()}', KRB, 26, 0.02),
+          x0 + TW / 2, 978, color=PAPER, anchor='c')
+    paint(img, tmask(EV.price_up(), KR, 22, 0.02), x0 + TW / 2, 1020,
+          color=BLUE, a=0.96, anchor='c')
 
     # ── 발치 — 칸마다 한 줄 ───────────────────────────────
     FY = 1130
