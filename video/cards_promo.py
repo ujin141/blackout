@@ -110,6 +110,12 @@ SHADOW = np.float32([0.004, 0.008, 0.016])
 # **0 으로 껐다.** 대신 글자가 앉는 띠의 그늘을 올려서 대비를 만든다.
 SHADOW_R = 0
 
+# **예약 폼 QR 은 꺼 둔다.** 이 판은 이벤트 응모를 받는 판이고, 예약 폼은
+# 참가가 정해진 사람만 쓰는 것이다 — 아직 응모도 안 한 사람에게 예약을
+# 들이밀면 무엇을 하라는 판인지 흐려진다.
+# 참가 확정자용 판을 따로 만들 때 True 로 켜면 받침까지 그대로 나온다.
+SHOW_QR = False
+
 
 def _blur(m, r):
     """마스크를 부풀려 흐린다. **배열 크기는 그대로 유지된다** — tmask_bl 의
@@ -294,12 +300,12 @@ def page_cta():
     """마지막 장 — **시키는 말만 남긴다.** 여기까지 넘긴 사람에게 정보를 더 주면
     다시 재기 시작한다.
 
-    행동이 둘이라 둘 다 놓는다. 이벤트 응모는 DM 이고 자리 예약은 폼이다 —
-    **응모만 적어 두면 당첨 안 될 사람은 그냥 나간다.** 떨어져도 갈 수 있는
-    길을 같은 장에 둬야 한다."""
+    **이 판이 받는 건 응모 하나다.** 예약 폼까지 같이 놓아 봤는데, 아직
+    응모도 안 한 사람에게 예약을 들이밀면 무엇을 하라는 판인지 흐려진다 —
+    예약 폼은 참가가 정해진 사람만 쓰는 것이라 판을 따로 가는 게 맞다."""
     img = field(3)
-    scrim(img, 250, 640, 0.74)
-    scrim(img, 960, H, 0.82)
+    scrim(img, 250, 660, 0.74)
+    scrim(img, 700, H, 0.78)
     lg = logo(46)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 150, color=PAPER, a=0.88)
     P(img, tmask('조건 다 하셨으면', KR, 28, 0.02), W / 2, 306,
@@ -312,16 +318,24 @@ def page_cta():
     P(img, tmask(EV.HANDLE, BRAND, min(36, fit(EV.HANDLE, BRAND, W - M * 2, 0.16)), 0.16),
       W / 2, 542, color=PAPER, a=0.94, anchor='c')
 
-    # ── 예약은 다른 길이다 ────────────────────────────────
-    q = qr_patch(244)
+    P(img, tmask('프로필 → 메시지', KRB, 26, 0.02), W / 2, 616,
+      color=PAPER, a=0.92, anchor='c')
+
+    q = qr_patch(244) if SHOW_QR else None
     if q is not None:
-        plate(img, q, W / 2, 776)
-        P(img, tmask('자리 예약은 여기서', KRB, 34, 0.02), W / 2, 984,
+        plate(img, q, W / 2, 800)
+        P(img, tmask('자리 예약은 여기서', KRB, 34, 0.02), W / 2, 1000,
           color=PAPER, anchor='c')
-        P(img, tmask('카메라로 찍으면 예약 폼이 열립니다', KR, 21, 0.02), W / 2, 1026,
-          color=PAPER, a=0.86, anchor='c')
-    P(img, tmask(EV.PROMO_PUSH, KRB, 30, 0.02), W / 2, 1100,
-      color=GOLD, a=0.96, anchor='c')
+    else:
+        P(img, tmask(EV.PROMO_PUSH, KRB, 40, 0.02), W / 2, 760,
+          color=GOLD, anchor='c')
+        P(img, tmask(f'{EV.PROMO_NOTE}  ·  {EV.PROMO_GET}', KR, 24, 0.02),
+          W / 2, 812, color=PAPER, a=0.90, anchor='c')
+        P(img, tmask(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
+                     min(28, fit(f'{EV.NAME}   {EV.DATE_EN}', BRAND, W - M * 2, 0.14)),
+                     0.14), W / 2, 916, color=PAPER, a=0.90, anchor='c')
+        P(img, tmask(f'{EV.VENUE}  ·  {EV.ADDR}', KR, 20, 0.01), W / 2, 962,
+          color=PAPER, a=0.82, anchor='c')
     P(img, tmask(EV.RULES, KR, 13, 0.01), W / 2, FY - 66, color=DIM, a=0.72,
       anchor='c')
     foot(img, 3)
