@@ -91,7 +91,7 @@ def build():
           color=PAPER, anchor='c')
     paint(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 190, 0.0), x0 + TW / 2, 400,
           color=GOLD, anchor='c')
-    paint(img, tmask(f'선착순 · 팀당 {EV.PROMO_PER}명 입장 무료 · 샴페인 1병', KR, 26, 0.02),
+    paint(img, tmask(f'추첨 · 팀당 {EV.PROMO_PER}명 입장 무료 · 샴페인 1병', KR, 26, 0.02),
           x0 + TW / 2, 530, color=PAPER, a=0.94, anchor='c')
     rule(img, 600, x0 + SEAM, x0 + TW - SEAM, PAPER, 0.14, 1)
     y = 672
@@ -107,8 +107,8 @@ def build():
           color=GOLD, anchor='c')
     paint(img, tmask(EV.PROMO_CTA_SUB, KRB, 32, 0.02), x0 + TW / 2, 966,
           color=PAPER, anchor='c')
-    paint(img, tmask(EV.PROMO_PUSH, KR, 24, 0.02), x0 + TW / 2, 1020,
-          color=BLUE, a=0.95, anchor='c')
+    paint(img, tmask(EV.PROMO_PUSH, KRB, 26, 0.02), x0 + TW / 2, 1020,
+          color=BLUE, anchor='c')
 
     # ── 발치 — 칸마다 한 줄 ───────────────────────────────
     FY = 1130

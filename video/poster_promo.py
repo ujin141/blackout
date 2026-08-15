@@ -131,13 +131,16 @@ def build(W, H, story):
     y += 22 * V
     paint(img, tmask(EV.PROMO_NOTE, KRB, int(38 * V), 0.02), cx, y,
           color=GOLD, anchor='c')
-    y += 56 * V
+    y += 46 * V
+    paint(img, tmask(EV.PROMO_PUSH, KR, int(23 * V), 0.02), cx, y,
+          color=PAPER, a=0.90, anchor='c')
+    y += 48 * V
     paint(img, tmask(f'{EV.DATE_EN}   {EV.VENUE}', KR,
                      min(int(26 * V), fit(f'{EV.DATE_EN}   {EV.VENUE}', KR, W * 0.86, 0.02)),
                      0.02), cx, y, color=PAPER, a=0.92, anchor='c')
     # **판의 마지막 줄은 시키는 말이다.** '인증은 DM 으로' 는 제도를 설명한
     # 문장이라 아무도 안 움직인다 — 동사를 앞에 놓고 보낼 것까지 적는다.
-    y += 66 * V
+    y += 58 * V
     paint(img, tmask(EV.PROMO_CTA, KRB, int(52 * V), 0.02), cx, y,
           color=GOLD, anchor='c')
     y += 54 * V

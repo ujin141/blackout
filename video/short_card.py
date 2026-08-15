@@ -126,9 +126,9 @@ def promo_cards():
          (INK,   f'{EV.PROMO_GET_B}도')]
     for d in EV.PROMO_DO:
         c.append((AQUA if len(c) % 2 else DEEP, d))
-    c.append((AQUA, f'선착순 {EV.PROMO_TEAMS}팀'))
+    c.append((AQUA, f'추첨 {EV.PROMO_TEAMS}팀'))
     c.append((CORAL, EV.PROMO_CTA))
-    c.append((INK, '8/29 양재 루프탑'))
+    c.append((INK, f'{EV.PROMO_DUE} 마감'))
     while len(c) < 7:                    # 칸 수는 판이 정한다
         c.insert(-1, (DEEP, EV.PROMO_PUSH))
     return c[:7]

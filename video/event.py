@@ -111,15 +111,20 @@ PROMO_N_KO = {1: '하나', 2: '둘', 3: '셋', 4: '넷'}[len(PROMO_DO)]
 PROMO_GET_A = '입장 무료'
 PROMO_GET_B = '샴페인 한 병'
 PROMO_GET = f'{PROMO_GET_A} + {PROMO_GET_B}'
-PROMO_NOTE = f'선착순 {PROMO_TEAMS}팀 · 팀당 {PROMO_PER}명'
+# **추첨은 선착순이 주던 압박을 없앤다.** 먼저 보낼 이유가 사라지니
+# 그 자리를 마감일이 대신해야 한다 — 날짜가 없으면 미룰 이유만 남는다.
+# ⚠ 아래 두 날짜는 2차 마감(8/24)에 맞춰 잡은 것. 정해지면 여기만 고친다.
+PROMO_DUE = '8/24(월) 자정'
+PROMO_ANNOUNCE = '8/25(화)'
+PROMO_NOTE = f'추첨 {PROMO_TEAMS}팀 · 팀당 {PROMO_PER}명'
 PROMO_BOTTLE = 'champagne.png'    # assets/img/stock/ 안. 누끼 뜬 병
 # **CTA 는 설명이 아니라 지시다.** '인증은 DM 으로' 는 제도를 설명한 문장이라
 # 아무도 안 움직인다 — 동사를 앞에 놓고, 보낼 것까지 적어야 손이 간다.
 # 문턱을 낮추는 건 문구가 아니라 '무엇을 보내면 끝인지' 를 못 박는 한 줄이다.
-PROMO_CTA = '지금 DM 주세요'
+PROMO_CTA = '지금 응모하세요'
 # 댓글 태그는 우리가 직접 본다 — 보내라고 할 건 스토리 캡처 한 장뿐이다
 PROMO_CTA_SUB = '스토리 캡처 한 장이면 끝'
-PROMO_PUSH = f'먼저 보낸 {PROMO_TEAMS}팀이 가져갑니다'
+PROMO_PUSH = f'{PROMO_DUE} 마감  ·  {PROMO_ANNOUNCE} 발표'
 PROMO_DO_STR = ' · '.join(PROMO_DO)
 
 # 성비. **밖으로 내보낼지는 따로 정한다** — 예전에 성비 문구를 한 번 뺐다.
