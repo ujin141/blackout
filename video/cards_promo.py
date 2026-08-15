@@ -255,6 +255,41 @@ def qr_patch(px):
     return a.astype(np.float32) / 255
 
 
+def _round(w, h, r):
+    """모서리 둥근 사각 마스크."""
+    m = np.zeros((h, w), np.uint8)
+    cv2.rectangle(m, (r, 0), (w - r, h), 255, -1)
+    cv2.rectangle(m, (0, r), (w, h - r), 255, -1)
+    for cx, cy in ((r, r), (w - r, r), (r, h - r), (w - r, h - r)):
+        cv2.circle(m, (cx, cy), r, 255, -1)
+    return m
+
+
+def plate(img, q, cx, cy, pad=30, rad=26, ring=3):
+    """QR 받침. **흰 사각형을 그냥 얹으면 사진 위에 뜬다** — 모서리를 둥글리고
+    금색 실선을 둘러야 판의 일부로 앉는다.
+
+    받침 폭은 QR 여백(quiet zone) 몫이기도 하다. 여백을 먹으면 안 읽힌다."""
+    qh, qw = q.shape[:2]
+    ph, pw = qh + pad * 2, qw + pad * 2
+    m = _round(pw, ph, rad).astype(np.float32) / 255
+    inner = _round(pw - ring * 2 - 10, ph - ring * 2 - 10, max(2, rad - 8))
+    edge = m.copy()
+    edge[5 + ring:5 + ring + inner.shape[0], 5 + ring:5 + ring + inner.shape[1]] -=         inner.astype(np.float32) / 255
+    edge = np.clip(edge, 0, 1)
+
+    y0, x0 = int(cy - ph / 2), int(cx - pw / 2)
+    sub = img[y0:y0 + ph, x0:x0 + pw]
+    # 받침 뒤로 옅은 그늘 — 종이 한 장이 얹힌 것처럼 보인다
+    sh = cv2.GaussianBlur(m, (0, 0), 14)[..., None]
+    sub *= 1 - 0.45 * sh
+    sub *= 1 - m[..., None]
+    sub += m[..., None] * PAPER
+    sub *= 1 - edge[..., None]
+    sub += edge[..., None] * GOLD
+    img[y0 + pad:y0 + pad + qh, x0 + pad:x0 + pad + qw] = q
+
+
 def page_cta():
     """마지막 장 — **시키는 말만 남긴다.** 여기까지 넘긴 사람에게 정보를 더 주면
     다시 재기 시작한다.
@@ -278,17 +313,12 @@ def page_cta():
       W / 2, 542, color=PAPER, a=0.94, anchor='c')
 
     # ── 예약은 다른 길이다 ────────────────────────────────
-    q = qr_patch(268)
+    q = qr_patch(244)
     if q is not None:
-        pad = 22
-        x0 = int(W / 2 - q.shape[1] / 2)
-        y0 = 640
-        box(img, x0 - pad, y0 - pad, x0 + q.shape[1] + pad, y0 + q.shape[0] + pad,
-            PAPER, 0.97)                       # 받침 — 여백(quiet zone) 몫이다
-        img[y0:y0 + q.shape[0], x0:x0 + q.shape[1]] = q
-        P(img, tmask('자리 예약은 여기서', KRB, 34, 0.02), W / 2, 990,
+        plate(img, q, W / 2, 776)
+        P(img, tmask('자리 예약은 여기서', KRB, 34, 0.02), W / 2, 984,
           color=PAPER, anchor='c')
-        P(img, tmask('카메라로 찍으면 예약 폼이 열립니다', KR, 21, 0.02), W / 2, 1032,
+        P(img, tmask('카메라로 찍으면 예약 폼이 열립니다', KR, 21, 0.02), W / 2, 1026,
           color=PAPER, a=0.86, anchor='c')
     P(img, tmask(EV.PROMO_PUSH, KRB, 30, 0.02), W / 2, 1100,
       color=GOLD, a=0.96, anchor='c')
