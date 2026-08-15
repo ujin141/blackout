@@ -291,7 +291,9 @@ ALLIES = [('Z SPOT LOUNGE',    '지스팟 라운지 · 강남',
 BAND_HEAD = 'ONE BAND'
 BAND_HEAD2 = 'FOUR DOORS'
 BAND_WHEN = 'AUG 29  ·  AFTER PARTY ONLY'
-BAND_WHEN_KO = '8/29 그날 2차로 갈 때만'
+# **설명하지 말고 제목처럼 짧게.** '그날 2차로 갈 때만' 은 조건을 풀어 쓴
+# 문장이라 읽는 데 시간이 걸린다 — 네 글자로 끝내면 눈에 박힌다.
+BAND_WHEN_KO = '8.29 애프터파티 한정'
 BAND_PERK = 'KEEP YOUR ENTRY BAND ON'
 
 

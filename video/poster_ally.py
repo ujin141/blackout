@@ -60,8 +60,8 @@ def build(W, H, story):
     # 되는 줄 알고, 그 항의는 협업사가 아니라 우리한테 온다
     paint(img, tmask(EV.BAND_WHEN, BRAND, int(19 * V), 0.34), cx, 424 * V,
           color=PAPER, a=0.90, anchor='c')
-    paint(img, tmask(EV.BAND_WHEN_KO, KR, int(20 * V), 0.02), cx, 462 * V,
-          color=PAPER, a=0.72, anchor='c')
+    paint(img, tmask(EV.BAND_WHEN_KO, KRB, int(24 * V), 0.04), cx, 466 * V,
+          color=PAPER, a=0.80, anchor='c')
 
     # ── 이름 넷. 쌓아야 넷 다 읽힌다 ──────────────────────
     n = len(EV.ALLIES)
