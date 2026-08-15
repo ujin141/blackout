@@ -247,7 +247,8 @@ def render(mode='intro'):
                   color=PAPER, a=float(kk) * 0.96, anchor='c')
             k2 = np.clip((b - (NBEAT - TAIL) - 1.2) / 0.5, 0, 1)
             if k2 > 0.004:
-                paint(img, tmask('프로필 링크에서 예약', KRB, 52, 0.02), W / 2, H * 0.40 + 240,
+                cta = EV.RESERVE_NOW if mode == 'sale' else '프로필 링크에서 예약'
+                paint(img, tmask(cta, KRB, 52, 0.02), W / 2, H * 0.40 + 240,
                       color=CORAL, a=float(k2), anchor='c')
                 paint(img, tmask(EV.PARTNERS_STR, BRAND,
                                  min(20, fit(EV.PARTNERS_STR, BRAND, W * 0.88, 0.16)), 0.16),

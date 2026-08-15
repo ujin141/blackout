@@ -173,7 +173,9 @@ def build(W, H, story=False):
              color=DIM, a=0.92)
     paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 78 * V,
              color=AQUA, a=0.95)
-    paint(img, tmask('예약 · 프로필 링크', KR, int(30 * V), 0.02), M, fy + 130 * V,
+    # **파는 것에 따라 가는 곳이 다르다.** 테이블만 파는데 프로필 링크로 보내면
+    # 폼에 테이블 항목이 없어서 들어간 사람이 그냥 나간다
+    paint(img, tmask(EV.RESERVE_NOW, KR, int(30 * V), 0.02), M, fy + 130 * V,
           color=CORAL)
     paint(img, tmask(EV.HANDLE, BRAND, int(17 * V), 0.24), W - M, fy + 130 * V,
           color=PAPER, a=0.88, anchor='r')

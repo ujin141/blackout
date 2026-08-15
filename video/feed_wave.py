@@ -142,9 +142,9 @@ def build():
         y += 44
     paint_bl(img, tmask_bl(EV.ADDR, KR, 17, 0.01), x0 + SEAM + 140, y - 8,
              color=DIM, a=0.85)
-    paint(img, tmask('예약 · 프로필 링크', KRB, 40, 0.02), x0 + TW / 2, 880,
+    paint(img, tmask(EV.RESERVE_NOW, KRB, 40, 0.02), x0 + TW / 2, 880,
           color=CORAL, anchor='c')
-    paint(img, tmask('사전예매만 받습니다', KR, 24, 0.02), x0 + TW / 2, 936,
+    paint(img, tmask(EV.RESERVE_SUB, KR, 24, 0.02), x0 + TW / 2, 936,
           color=PAPER, a=0.88, anchor='c')
 
     # ── 발치 — 칸마다 한 줄 ───────────────────────────────

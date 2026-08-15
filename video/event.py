@@ -79,6 +79,15 @@ SALE = 'table'
 SALE_NOTE = {'table': '현재 테이블만 예약 가능',
              'all': '개인 · 테이블 예약 가능',
              'closed': '예약 마감'}[SALE]
+# **파는 것에 따라 가는 곳이 다르다.** 개인 자리는 구글폼, 테이블은 DM 이다 —
+# 테이블만 파는데 "프로필 링크" 로 보내면 폼에 테이블 항목이 없어서 그냥 나간다.
+RESERVE_NOW = {'table': '테이블 문의 · DM',
+               'all': '예약 · 프로필 링크',
+               'closed': '예약 마감'}[SALE]
+RESERVE_SUB = {'table': '테이블은 DM으로 받습니다',
+               'all': '사전예매만 받습니다',
+               'closed': ''}[SALE]
+
 # 다음 차수가 열리는 날. 이번 차수 마감일과 같은 날이다
 NEXT_OPEN = ('2차 신청  8/17(월)부터' if SALE != 'closed' else '')
 
