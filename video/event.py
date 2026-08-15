@@ -122,6 +122,11 @@ PROMO_BOTTLE = 'champagne.png'    # assets/img/stock/ 안. 누끼 뜬 병
 # 사전예약 폼. **주소가 바뀌면 QR 도 다시 뽑아야 한다** — `python qr.py`.
 # 판에 인쇄된 QR 은 되돌릴 수 없으니 폼을 새로 파지 말고 이 폼을 고쳐 쓴다.
 FORM_URL = 'https://forms.gle/sue3a9jZNCi8U8dC7'
+FORM_GUEST_URL = 'https://forms.gle/cBT2wTiQmSwPUhza8'   # 게스트 전용. 직원이 돌린다
+
+# QR 로 뽑을 주소들. 여기 한 줄 늘리면 qr.py 가 알아서 세 벌씩 뽑는다
+QR_LINKS = [('reserve', '사전예약', FORM_URL),
+            ('guest', '게스트 등록', FORM_GUEST_URL)]
 # **CTA 는 설명이 아니라 지시다.** '인증은 DM 으로' 는 제도를 설명한 문장이라
 # 아무도 안 움직인다 — 동사를 앞에 놓고, 보낼 것까지 적어야 손이 간다.
 # 문턱을 낮추는 건 문구가 아니라 '무엇을 보내면 끝인지' 를 못 박는 한 줄이다.

@@ -1,8 +1,13 @@
 """사전예약 폼 QR — 인쇄용 · 화면용 · 판에 얹는 조각.
 
-    qr_print.png   2000px 흑백. 포스터 인쇄·배너·전단
-    qr_light.png   1200px 밝은 판에 그대로
-    qr_plate.png   1200px 어두운 판에 얹는 조각. 밝은 받침 위에 검은 코드
+주소마다 세 벌씩 나온다. 목록은 `event.QR_LINKS` 한 곳이다.
+
+    {키}_print.png   2000px 흑백. 포스터 인쇄·배너·전단
+    {키}_light.png   1200px 밝은 판에 그대로
+    {키}_plate.png   1200px 어두운 판에 얹는 조각. 밝은 받침 위에 검은 코드
+
+    reserve  사전예약 폼 (손님용)
+    guest    게스트 등록 폼 (직원이 돌린다 — `guest.py` 가 판으로 만들어 준다)
 
 **오류 정정은 H(30%)로 뽑는다.** 가운데에 로고를 얹을 거라 그만큼을
 잃는다 — M(15%)으로 뽑고 로고를 올리면 조명이 어두운 클럽에서 안 읽힌다.
@@ -18,7 +23,7 @@
 읽히다 말다 한다.
 
 python qr.py            → out/qr/
-python qr.py "URL"      → 다른 주소로
+python qr.py "URL"      → 목록에 없는 주소를 한 번만
 """
 import os
 import sys
@@ -59,26 +64,25 @@ def build(url, px, dark, light, badge=True):
 
 
 if __name__ == '__main__':
-    url = sys.argv[1] if len(sys.argv) > 1 else EV.FORM_URL
-    assert url, 'event.py 의 FORM_URL 이 비어 있습니다'
+    links = ([('adhoc', '직접 넣은 주소', sys.argv[1])] if len(sys.argv) > 1
+             else EV.QR_LINKS)
     K, W = [0.02, 0.02, 0.03], [1.0, 1.0, 1.0]
     PLATE = [0.965, 0.975, 0.985]           # 어두운 판 위에서 눈이 안 부신 흰색
-    made = []
-    for name, px, d, l in (('qr_print', 2000, K, W),
-                           ('qr_light', 1200, K, W),
-                           ('qr_plate', 1200, K, PLATE)):
-        p = os.path.join(OUT, f'{name}.png')
-        im = build(url, px, d, l)
-        im.save(p, optimize=True)
-        made.append((name, p, im))
-
-    # **뽑았다고 읽히는 게 아니다.** 작게 인쇄된 상황까지 흉내 내서 재 본다
     det = cv2.QRCodeDetector()
-    for name, p, im in made:
-        a = cv2.resize(np.asarray(im.convert('RGB')), (400, 400),
-                       interpolation=cv2.INTER_AREA)
-        got, *_ = det.detectAndDecode(cv2.cvtColor(a, cv2.COLOR_RGB2BGR))
-        assert got == url, f'{name} 이 안 읽힙니다'
-        print(f'{p}  {im.size[0]}x{im.size[1]}  ✓ 읽힘')
-    print(f'\n{url}')
+    for key, label, url in links:
+        assert url, f'{key} 의 주소가 비어 있습니다'
+        print(f'-- {label}  {url}')
+        for suf, px, d, l in (('print', 2000, K, W),
+                              ('light', 1200, K, W),
+                              ('plate', 1200, K, PLATE)):
+            q = os.path.join(OUT, f'{key}_{suf}.png')
+            im = build(url, px, d, l)
+            im.save(q, optimize=True)
+            # **뽑았다고 읽히는 게 아니다.** 작게 인쇄된 상황까지 흉내 내서 잰다
+            a = cv2.resize(np.asarray(im.convert('RGB')), (400, 400),
+                           interpolation=cv2.INTER_AREA)
+            got, *_ = det.detectAndDecode(cv2.cvtColor(a, cv2.COLOR_RGB2BGR))
+            assert got == url, f'{key}_{suf} 이 안 읽힙니다'
+            print(f'   {q}  {im.size[0]}x{im.size[1]}  OK')
+    print()
     print('인쇄는 최소 2cm 각. 그보다 작으면 30cm 거리에서 안 읽힙니다.')

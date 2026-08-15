@@ -106,8 +106,9 @@ def field(i):
 SHADOW = np.float32([0.004, 0.008, 0.016])
 # **번지면 때가 낀 것처럼 보인다.** 넓게 깔면 글자 뒤에 얼룩이 생기고
 # 그게 눈에 먼저 띈다 — 글자에 딱 붙는 테두리 두께로만 준다.
-# 0 으로 두면 그림자가 사라진다. 그러면 밝은 사진 위 작은 글자는 못 읽는다.
-SHADOW_R = 3
+# 얇게 줘도 글자 가장자리를 갉아먹어서 오히려 안 읽힌다는 말을 들었다 —
+# **0 으로 껐다.** 대신 글자가 앉는 띠의 그늘을 올려서 대비를 만든다.
+SHADOW_R = 0
 
 
 def _blur(m, r):
@@ -159,8 +160,8 @@ def foot(img, page):
 
 def cover():
     img = field(0)
-    scrim(img, 190, 570, 0.56)
-    scrim(img, 1130, H, 0.74)
+    scrim(img, 190, 570, 0.72)
+    scrim(img, 1130, H, 0.82)
     lg = logo(56)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 128, color=PAPER, a=0.92)
     P(img, tmask('FREE ENTRY  +  BOTTLE', BRAND, 19, 0.48), W / 2, 236,
@@ -184,9 +185,9 @@ def cover():
 
 def page_do():
     img = field(1)
-    scrim(img, 160, 330, 0.56)
-    scrim(img, 430, 950, 0.40)
-    scrim(img, 1110, H, 0.74)
+    scrim(img, 160, 330, 0.72)
+    scrim(img, 430, 950, 0.60)
+    scrim(img, 1110, H, 0.82)
     P(img, tmask(f'조건은 {EV.PROMO_N_KO}입니다', KRB, 64, 0.02), W / 2, 214,
           color=PAPER, anchor='c')
     P(img, tmask(f'{EV.PROMO_N_KO} 다 해야 인정됩니다', KRB, 27, 0.02), W / 2, 288,
@@ -209,9 +210,9 @@ def page_do():
 
 def page_count():
     img = field(2)
-    scrim(img, 150, 680, 0.52)
-    scrim(img, 720, 1010, 0.64)
-    scrim(img, 1110, H, 0.74)
+    scrim(img, 150, 680, 0.70)
+    scrim(img, 720, 1010, 0.78)
+    scrim(img, 1110, H, 0.82)
     P(img, tmask('몇 팀 드리나요', KRB, 52, 0.02), W / 2, 196, color=PAPER, anchor='c')
     P(img, tmask(f'{EV.PROMO_TEAMS}팀', KRB, 210, 0.0), W / 2, 384,
           color=GOLD, anchor='c')
@@ -262,8 +263,8 @@ def page_cta():
     **응모만 적어 두면 당첨 안 될 사람은 그냥 나간다.** 떨어져도 갈 수 있는
     길을 같은 장에 둬야 한다."""
     img = field(3)
-    scrim(img, 250, 640, 0.60)
-    scrim(img, 960, H, 0.74)
+    scrim(img, 250, 640, 0.74)
+    scrim(img, 960, H, 0.82)
     lg = logo(46)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 150, color=PAPER, a=0.88)
     P(img, tmask('조건 다 하셨으면', KR, 28, 0.02), W / 2, 306,
