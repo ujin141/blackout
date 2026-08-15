@@ -31,7 +31,8 @@ OUT = os.path.join(HERE, 'out')
 
 # 화면에 보이길 원하는 순서 — 위가 최신
 ROWS = [
-    ('feed_event', 'promo',    '참여 이벤트 — 샴페인'),
+    ('feed_event', 'follow',   '팔로우 혜택 — 웰컴드링크 1+1'),
+    ('feed_event', 'promo',    '참여 이벤트 — 샴페인 추첨'),
     ('feed_event', 'wave',     '모집 현황 — 차수'),
     ('feed_event', 'event',    '행사 포스터'),
     ('feed_event', 'shortrow', '바이럴 영상 줄'),

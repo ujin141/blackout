@@ -48,7 +48,7 @@ FY = H - 92                               # 발치 한 줄
 CROWD = 'crowd.jpg'
 
 
-def _base():
+def _base(W=W, H=H):
     """배경 한 장을 한 번만 만들어 네 장이 같이 쓴다.
 
     **사람이 보여야 뜻이 있다.** 판 전체를 어둡게 깔면 글자는 읽히지만
@@ -85,16 +85,16 @@ def _base():
     return np.clip(a * 0.94, 0, 1)
 
 
-_BASE = None
+_BASE = {}
 
 
-def field(i):
+def field(i, W=W, H=H):
     """장마다 빛의 자리만 조금씩 옮긴다. 완전히 같으면 안 넘긴 줄 알고,
     완전히 다르면 다른 게시물로 보인다 — 그 사이를 잡는다."""
-    global _BASE
-    if _BASE is None:
-        _BASE = _base()
-    img = (_BASE.copy() if _BASE is not None
+    if (W, H) not in _BASE:
+        _BASE[(W, H)] = _base(W, H)
+    b = _BASE[(W, H)]
+    img = (b.copy() if b is not None
            else np.repeat(np.repeat(INK[None, None, :], H, 0), W, 1).copy())
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     cx = W * (0.50 + 0.10 * (i - 1.5) / 1.5)
