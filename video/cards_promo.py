@@ -33,6 +33,7 @@ from fonts import KR, KRB
 from poster_promo import INK, BLUE, GOLD, PAPER, DIM
 import poster_promo as PP
 import event as EV
+import qr
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out', 'cards_promo')
@@ -103,28 +104,36 @@ def field(i):
 
 
 SHADOW = np.float32([0.004, 0.008, 0.016])
+# **번지면 때가 낀 것처럼 보인다.** 넓게 깔면 글자 뒤에 얼룩이 생기고
+# 그게 눈에 먼저 띈다 — 글자에 딱 붙는 테두리 두께로만 준다.
+# 0 으로 두면 그림자가 사라진다. 그러면 밝은 사진 위 작은 글자는 못 읽는다.
+SHADOW_R = 3
 
 
 def _blur(m, r):
     """마스크를 부풀려 흐린다. **배열 크기는 그대로 유지된다** — tmask_bl 의
     베이스라인 값이 그 배열 기준이라 크기가 바뀌면 줄이 어긋난다."""
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r * 2 + 1, r * 2 + 1))
-    return cv2.GaussianBlur(cv2.dilate(m, k), (0, 0), r * 0.95)
+    return cv2.GaussianBlur(cv2.dilate(m, k), (0, 0), max(0.8, r * 0.55))
 
 
-def P(img, m, x, y, r=11, sa=0.92, **kw):
+def P(img, m, x, y, r=None, sa=0.96, **kw):
     """그림자 + 글자. **판을 누르는 대신 글자를 세운다** — 그늘을 넓게 깔면
     사진이 죽고, 글자 뒤에만 그림자를 붙이면 사진을 살린 채로 읽힌다.
     이 판의 글자는 전부 이걸로 그린다."""
+    r = SHADOW_R if r is None else r
     pos = {k: v for k, v in kw.items() if k in ('anchor', 'valign')}
-    paint(img, _blur(m, r), x, y, color=SHADOW, a=sa, **pos)
+    if r:
+        paint(img, _blur(m, r), x, y, color=SHADOW, a=sa, **pos)
     paint(img, m, x, y, **kw)
 
 
-def PB(img, pair, x, y, r=8, sa=0.90, **kw):
+def PB(img, pair, x, y, r=None, sa=0.94, **kw):
+    r = SHADOW_R if r is None else r
     m, base = pair
     pos = {k: v for k, v in kw.items() if k == 'anchor'}
-    paint_bl(img, (_blur(m, r), base), x, y, color=SHADOW, a=sa, **pos)
+    if r:
+        paint_bl(img, (_blur(m, r), base), x, y, color=SHADOW, a=sa, **pos)
     paint_bl(img, pair, x, y, **kw)
 
 
@@ -230,34 +239,60 @@ def page_count():
     return img
 
 
+_QR = None
+
+
+def qr_patch(px):
+    """QR 조각. **색을 뒤집지 않는다** — 검정 판에 맞춰 흰 코드로 뽑으면
+    인식기가 못 읽는다(`qr.py` 참고). 밝은 받침을 깔고 보통 QR 을 얹는다."""
+    global _QR
+    if not EV.FORM_URL:
+        return None
+    if _QR is None:
+        _QR = qr.build(EV.FORM_URL, 900, [0.02, 0.02, 0.03], [0.97, 0.98, 0.99])
+    a = np.asarray(_QR.convert('RGB').resize((px, px), Image.NEAREST))
+    return a.astype(np.float32) / 255
+
+
 def page_cta():
     """마지막 장 — **시키는 말만 남긴다.** 여기까지 넘긴 사람에게 정보를 더 주면
-    다시 재기 시작한다. 남길 건 무엇을 보내면 끝나는지 한 줄이다."""
+    다시 재기 시작한다.
+
+    행동이 둘이라 둘 다 놓는다. 이벤트 응모는 DM 이고 자리 예약은 폼이다 —
+    **응모만 적어 두면 당첨 안 될 사람은 그냥 나간다.** 떨어져도 갈 수 있는
+    길을 같은 장에 둬야 한다."""
     img = field(3)
-    scrim(img, 290, 1030, 0.56)
-    scrim(img, 1110, H, 0.74)
-    lg = logo(52)
+    scrim(img, 250, 640, 0.60)
+    scrim(img, 960, H, 0.74)
+    lg = logo(46)
     paint(img, lg, W / 2 - lg.shape[1] / 2, 150, color=PAPER, a=0.88)
-    P(img, tmask('조건 다 하셨으면', KR, 30, 0.02), W / 2, 330,
-          color=PAPER, a=0.92, anchor='c')
+    P(img, tmask('조건 다 하셨으면', KR, 28, 0.02), W / 2, 306,
+      color=PAPER, a=0.92, anchor='c')
     cta = EV.PROMO_CTA
-    P(img, tmask(cta, KRB, min(126, fit(cta, KRB, W - M * 2, 0.0)), 0.0),
-          W / 2, 440, color=GOLD, anchor='c')
-    P(img, tmask(EV.PROMO_CTA_SUB, KRB, 46, 0.02), W / 2, 546,
+    P(img, tmask(cta, KRB, min(104, fit(cta, KRB, W - M * 2, 0.0)), 0.0),
+      W / 2, 396, color=GOLD, anchor='c')
+    P(img, tmask(EV.PROMO_CTA_SUB, KRB, 38, 0.02), W / 2, 478,
+      color=PAPER, anchor='c')
+    P(img, tmask(EV.HANDLE, BRAND, min(36, fit(EV.HANDLE, BRAND, W - M * 2, 0.16)), 0.16),
+      W / 2, 542, color=PAPER, a=0.94, anchor='c')
+
+    # ── 예약은 다른 길이다 ────────────────────────────────
+    q = qr_patch(268)
+    if q is not None:
+        pad = 22
+        x0 = int(W / 2 - q.shape[1] / 2)
+        y0 = 640
+        box(img, x0 - pad, y0 - pad, x0 + q.shape[1] + pad, y0 + q.shape[0] + pad,
+            PAPER, 0.97)                       # 받침 — 여백(quiet zone) 몫이다
+        img[y0:y0 + q.shape[0], x0:x0 + q.shape[1]] = q
+        P(img, tmask('자리 예약은 여기서', KRB, 34, 0.02), W / 2, 990,
           color=PAPER, anchor='c')
-    box(img, M, 640, W - M, 646, PAPER, 0.16)
-    P(img, tmask(EV.HANDLE, BRAND,
-                     min(46, fit(EV.HANDLE, BRAND, W - M * 2, 0.16)), 0.16),
-          W / 2, 736, color=PAPER, anchor='c')
-    P(img, tmask('프로필 → 메시지', KRB, 25, 0.02), W / 2, 800,
-          color=PAPER, a=0.94, anchor='c')
-    P(img, tmask(EV.PROMO_PUSH, KRB, 34, 0.02), W / 2, 908,
-          color=GOLD, a=0.96, anchor='c')
-    P(img, tmask(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
-                     min(26, fit(f'{EV.NAME}   {EV.DATE_EN}', BRAND, W - M * 2, 0.14)),
-                     0.14), W / 2, 1000, color=PAPER, a=0.88, anchor='c')
-    P(img, tmask(EV.RULES, KR, 14, 0.01), W / 2, FY - 92, color=DIM, a=0.72,
-          anchor='c')
+        P(img, tmask('카메라로 찍으면 예약 폼이 열립니다', KR, 21, 0.02), W / 2, 1032,
+          color=PAPER, a=0.86, anchor='c')
+    P(img, tmask(EV.PROMO_PUSH, KRB, 30, 0.02), W / 2, 1100,
+      color=GOLD, a=0.96, anchor='c')
+    P(img, tmask(EV.RULES, KR, 13, 0.01), W / 2, FY - 66, color=DIM, a=0.72,
+      anchor='c')
     foot(img, 3)
     return img
 
