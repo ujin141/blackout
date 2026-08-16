@@ -58,7 +58,12 @@ PAPER = np.float32([0.96, 0.96, 0.95])
 # 오해가 나면 돈이 든다.
 HEAD = 'ON US'
 GIVE = 'WELCOME DRINK 1+1'
-COND = '팔로우 화면 확인 후 · 1인 1회'
+# 조건 한 줄로는 가운데가 비고, 현장에서 물어보는 것도 못 덮는다.
+# **세 줄로 나누면 여백이 채워지면서 다툴 거리가 같이 준다.**
+TERMS = [('WHO',   '팔로우 화면을 보여주신 분'),
+         ('WHEN',  '행사 당일 · 영업 종료 전까지'),
+         ('LIMIT', '1인 1회 · 뜯긴 쿠폰만 유효'),
+         ('NOTE',  '현장 교환만 · 현금 교환 불가')]
 STUB_WORD = 'DRINK'
 
 _QR = None
@@ -87,38 +92,68 @@ def perf(img, x):
         y += d + gap
 
 
-def front():
-    img = np.repeat(np.repeat(PAPER[None, None, :], H, 0), W, 1).copy()
+def stub(img):
+    """뜯는 쪽. **검은 띠 하나로 두면 로고만 뜬 빈 판이 된다.**
 
+    안쪽에 실선 테두리를 하나 넣고, 아래에 번호 자리를 둔다 — 인쇄소
+    넘버링을 쓰든 손으로 적든, 자리가 있어야 회수한 쿠폰을 셀 수 있다."""
     box(img, 0, 0, STUB, H, INK)
-    lg = logo(int(U * 3.4))
-    paint(img, lg, STUB / 2 - lg.shape[1] / 2, H * 0.24, color=PAPER, a=0.95)
-    st = np.rot90(tmask(STUB_WORD, BRAND, int(U * 1.5), 0.30))
-    paint(img, st, STUB / 2 - st.shape[1] / 2, H * 0.60, color=PAPER, a=0.85)
+    m = U * 1.1
+    for x0, y0, x1, y1 in ((m, m, STUB - m, m + HAIR),                 # 위
+                           (m, H - m - HAIR, STUB - m, H - m),         # 아래
+                           (m, m, m + HAIR, H - m),                    # 왼
+                           (STUB - m - HAIR, m, STUB - m, H - m)):     # 오른
+        box(img, x0, y0, x1, y1, PAPER, 0.22)
+
+    lg = logo(int(U * 3.2))
+    paint(img, lg, STUB / 2 - lg.shape[1] / 2, H * 0.22, color=PAPER, a=0.95)
+    st = np.rot90(tmask(STUB_WORD, BRAND, int(U * 1.45), 0.34))
+    paint(img, st, STUB / 2 - st.shape[1] / 2, H * 0.55, color=PAPER, a=0.85)
+
+    # 번호 자리 — 회수한 쿠폰을 세려면 자리가 있어야 한다
+    nw = STUB - U * 5
+    box(img, U * 2.5, H - U * 3.6, U * 2.5 + nw, H - U * 3.6 + HAIR, PAPER, 0.30)
+    paint_bl(img, tmask_bl('NO.', BRAND, int(U * 0.62), 0.24), U * 2.5, H - U * 2.2,
+             color=PAPER, a=0.42)
     perf(img, STUB)
 
-    x, right = STUB + U * 2.4, W - U * 2.4
-    # 덩어리를 세로 가운데로 모은다. 위에 붙이면 아래가 휑하게 비고,
-    # 쿠폰은 손바닥만 해서 그 빈자리가 그대로 보인다
-    paint_bl(img, tmask_bl(HEAD, BRAND, int(U * 1.15), 0.34), x, H * 0.26,
-             color=INK, a=0.55)
-    # 영문이라 브랜드 서체로. 자간을 조금 줘야 한 낱말로 안 뭉친다
-    gs = min(int(U * 2.9), fit(GIVE, BRAND, right - x, 0.06))
-    paint_bl(img, tmask_bl(GIVE, BRAND, gs, 0.06), x, H * 0.50, color=INK)
-    rule(img, H * 0.60, x, right, INK, 0.22, HAIR)
-    paint_bl(img, tmask_bl(COND, KR, int(U * 1.0), 0.01), x, H * 0.71,
-             color=INK, a=0.62)
 
-    fy = H - U * 3.2
+def front():
+    img = np.repeat(np.repeat(PAPER[None, None, :], H, 0), W, 1).copy()
+    stub(img)
+
+    x, right = STUB + U * 2.6, W - U * 2.6
+
+    # ── 머리 ──────────────────────────────────────────────
+    paint_bl(img, tmask_bl(HEAD, BRAND, int(U * 1.0), 0.40), x, U * 3.6,
+             color=INK, a=0.50)
+    gs = min(int(U * 2.5), fit(GIVE, BRAND, right - x, 0.05))
+    paint_bl(img, tmask_bl(GIVE, BRAND, gs, 0.05), x, U * 7.2, color=INK)
+    rule(img, U * 9.4, x, right, INK, 0.28, HAIR)
+
+    # ── 조건 세 줄. **여백은 늘려서 메우는 게 아니라 정보로 채운다** ──
+    ly = U * 12.4
+    lx = x + U * 4.6                                   # 라벨 칸
+    for i, (k, v) in enumerate(TERMS):
+        if i:                                          # 줄 사이 아주 옅은 괘선
+            rule(img, ly - U * 1.9, x, right, INK, 0.07, HAIR)
+        paint_bl(img, tmask_bl(k, BRAND, int(U * 0.66), 0.22), x, ly,
+                 color=INK, a=0.38)
+        paint_bl(img, tmask_bl(v, KR, int(U * 0.92), 0.01), lx, ly, color=INK, a=0.72)
+        ly += U * 3.2
+
+    # ── 발치 ──────────────────────────────────────────────
+    fy = H - U * 2.6
+    rule(img, fy - U * 2.0, x, right, INK, 0.14, HAIR)
     # **행사 이름과 날짜를 안 적는다.** 적는 순간 그날에만 쓰는 물건이 된다 —
     # 남는 쿠폰이 다음 행사로 넘어가야 인쇄가 안 아깝다
-    paint_bl(img, tmask_bl('BLACKOUT CREW', BRAND, int(U * 0.85), 0.22),
+    paint_bl(img, tmask_bl('BLACKOUT CREW', BRAND, int(U * 0.82), 0.24),
              x, fy, color=INK, a=0.55)
     # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
-    bw = int(U * 5.2)
-    rule(img, fy, right - bw, right, INK, 0.35, HAIR)
-    paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 0.72), 0.24), right - bw, fy + U * 1.5,
-             color=INK, a=0.40)
+    bw = int(U * 5.0)
+    box(img, right - bw, fy - U * 1.4, right, fy - U * 1.4 + HAIR, INK, 0.35)
+    paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 0.62), 0.24), right - bw, fy,
+             color=INK, a=0.38)
 
     grain(img, 0.004, 11)
     return np.clip(img, 0, 1)
