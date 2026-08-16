@@ -1,25 +1,31 @@
-"""쿠폰 인쇄 원고 — 90 × 50 mm.
+"""웰컴드링크 쿠폰 — 90 × 50 mm 앞뒤.
 
-    coupon_drink.png    웰컴드링크 1+1   — 팔로우 확인하고 입구에서 준다
-    coupon_bottle.png   샴페인 1병       — 추첨 당첨 팀에게
-    coupon_next.png     다음 행사 할인    — 그날 밤을 다음 행사로 잇는다
-    coupon_sheet_a4.png A4 한 장에 10칸  — 인쇄소에 이거 하나만 넘기면 된다
+    coupon_front.png       앞면. 무엇과 바꿔 주는지
+    coupon_back.png        뒷면. 그날 밤이 여기서 안 끝난다는 것
+    coupon_sheet_front.png A4 10칸 — 앞면
+    coupon_sheet_back.png  A4 10칸 — 뒷면. **좌우가 뒤집혀 있다**
 
 **밴드와 역할이 다릅니다.** 밴드는 차고 다니는 신분증이고, 쿠폰은 **한 번 쓰고
 회수하는 물건**입니다. 그래서 쿠폰에는 밴드에 없는 게 들어갑니다 — 무엇과
-바꿔 주는지, 언제까지인지, 누가 확인했는지.
+바꿔 주는지, 조건이 무엇인지, 누가 확인했는지.
 
 **왼쪽에 뜯는 쪽(스텁)을 둡니다.** 바텐더가 반을 뜯어 통에 넣으면 그날
 몇 장이 나갔는지 세어집니다. 안 뜯고 도장만 찍으면 재사용이 됩니다.
 
-**한 장에 한 가지만.** 드링크와 샴페인을 한 장에 묶으면 하나만 쓰고
-나머지를 우기는 일이 생깁니다.
+**뒷면은 광고 자리가 아니라 다음 행동입니다.** 드링크를 받은 사람은 이미
+안에 있으니 행사 정보를 또 적을 이유가 없습니다. 대신 **그날 밤 끝나고
+어디로 가는지**(밴드 혜택)와 **다음에 어디서 소식을 보는지**(계정)를 둡니다.
 
 ⚠ 흑백입니다. 컬러 예외는 모객용 판에만 줍니다 — 쿠폰은 현장에서 쓰는
-물건이라 크루 톤을 따릅니다. 종이도 싸게 갑니다.
+물건이라 크루 톤을 따르고, 종이도 싸게 갑니다.
+
+**양면 인쇄에서 뒷면은 좌우를 뒤집습니다.**
+긴 쪽을 축으로 뒤집어 찍으면(장변 제본) 종이가 좌우로 돌아갑니다 — 뒷면을
+앞면과 같은 순서로 앉히면 1번 앞면 뒤에 2번 뒷면이 찍힙니다. 열 칸이 전부
+어긋나는데 인쇄가 나온 뒤에야 보입니다.
 
 인쇄
-    · A4 시트를 그대로 넘기세요. 10칸 = 2열 × 5행, 재단선 포함입니다.
+    · 두 시트를 같이 넘기고 **장변 제본(long-edge)** 양면으로 요청하세요.
     · 스텁 경계는 **미싱(퍼포레이션)** 을 요청하세요. 없으면 가위로 잘라도 됩니다.
     · 일련번호가 필요하면 인쇄소 넘버링으로. 여기서 그리면 전부 같은 번호입니다.
 
@@ -30,6 +36,7 @@ import numpy as np
 from PIL import Image
 from poster_kit import BRAND, tmask, tmask_bl, fit, paint, paint_bl, rule, box, logo, grain
 from fonts import KR, KRB
+import qr
 import event as EV
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'coupon')
@@ -43,12 +50,26 @@ HAIR = 3                               # 최소 획 0.25mm
 INK = np.float32([0.05, 0.05, 0.06])
 PAPER = np.float32([0.96, 0.96, 0.95])
 
-# (파일명, 영문 머리, 무엇을 주는지, 조건 한 줄, 스텁 글자)
-KINDS = [
-    ('drink',  'WELCOME DRINK', EV.FOLLOW_GET, '팔로우 화면 확인 후 · 1인 1회', 'DRINK'),
-    ('bottle', 'FREE BOTTLE',   '샴페인 1병',  f'추첨 당첨 팀 · 팀당 1병 · 팀당 {EV.PROMO_PER}명', 'BOTTLE'),
-    ('next',   'NEXT PARTY',    '다음 행사 할인', '다음 BLACKOUT 행사에서 · 1인 1회', 'NEXT'),
-]
+HEAD = 'WELCOME DRINK'
+GIVE = EV.FOLLOW_GET                   # '웰컴드링크 1+1'
+COND = '팔로우 화면 확인 후 · 1인 1회'
+STUB_WORD = 'DRINK'
+
+_QR = None
+
+
+def code(px):
+    """인스타 계정 QR. **예약 폼이 아니다** — 이 쿠폰을 든 사람은 이미
+    안에 있고, 다음에 필요한 건 예약이 아니라 계정이다."""
+    global _QR
+    if _QR is None:
+        # **로고를 안 얹으니 정정을 'm' 으로 낮춘다.** 'h' 로 뽑으면 모듈이
+        # 늘어나고, 11mm 짜리 QR 에서는 모듈 하나가 0.22mm 가 되어 안 읽힌다.
+        _QR = qr.build(f'https://instagram.com/{EV.HANDLE.lstrip("@").lower()}',
+                       900, [0.05, 0.05, 0.06], [0.96, 0.96, 0.95],
+                       badge=False, error='m')
+    return np.asarray(_QR.convert('RGB').resize((px, px), Image.NEAREST)
+                      ).astype(np.float32) / 255
 
 
 def perf(img, x):
@@ -60,40 +81,31 @@ def perf(img, x):
         y += d + gap
 
 
-def build(head, give, cond, stub):
+def front():
     img = np.repeat(np.repeat(PAPER[None, None, :], H, 0), W, 1).copy()
 
-    # ── 뜯는 쪽 ───────────────────────────────────────────
     box(img, 0, 0, STUB, H, INK)
     lg = logo(int(U * 3.4))
     paint(img, lg, STUB / 2 - lg.shape[1] / 2, H * 0.24, color=PAPER, a=0.95)
-    # 세로로 세운 글자. 가로로 두면 스텁이 좁아 두 줄이 된다
-    st = tmask(stub, BRAND, int(U * 1.5), 0.30)
-    st = np.rot90(st)
+    st = np.rot90(tmask(STUB_WORD, BRAND, int(U * 1.5), 0.30))
     paint(img, st, STUB / 2 - st.shape[1] / 2, H * 0.60, color=PAPER, a=0.85)
     perf(img, STUB)
 
-    # ── 본판 ──────────────────────────────────────────────
-    x = STUB + U * 2.4
-    right = W - U * 2.4
-    # **덩어리를 세로 가운데로 모은다.** 위에 붙여 두면 아래가 휑하게 비고,
-    # 쿠폰은 손바닥만 해서 그 빈자리가 그대로 보인다.
-    # 주는 것이 이 판의 전부라 제일 크게 쓴다 — 조건은 그 밑에 조용히.
-    paint_bl(img, tmask_bl(head, BRAND, int(U * 1.15), 0.34), x, H * 0.26,
+    x, right = STUB + U * 2.4, W - U * 2.4
+    # 덩어리를 세로 가운데로 모은다. 위에 붙이면 아래가 휑하게 비고,
+    # 쿠폰은 손바닥만 해서 그 빈자리가 그대로 보인다
+    paint_bl(img, tmask_bl(HEAD, BRAND, int(U * 1.15), 0.34), x, H * 0.26,
              color=INK, a=0.55)
-
-    gs = min(int(U * 4.3), fit(give, KRB, right - x, 0.0))
-    paint_bl(img, tmask_bl(give, KRB, gs, 0.0), x, H * 0.50, color=INK)
-
+    gs = min(int(U * 4.3), fit(GIVE, KRB, right - x, 0.0))
+    paint_bl(img, tmask_bl(GIVE, KRB, gs, 0.0), x, H * 0.50, color=INK)
     rule(img, H * 0.60, x, right, INK, 0.22, HAIR)
-    paint_bl(img, tmask_bl(cond, KR, int(U * 1.0), 0.01), x, H * 0.71,
+    paint_bl(img, tmask_bl(COND, KR, int(U * 1.0), 0.01), x, H * 0.71,
              color=INK, a=0.62)
 
-    # ── 발치 — 언제·어디서, 그리고 확인란 ─────────────────
     fy = H - U * 3.2
-    paint_bl(img, tmask_bl(f'{EV.NAME}   {EV.DATE_EN}', BRAND,
-                           int(U * 0.85), 0.18), x, fy, color=INK, a=0.55)
-    # **누가 확인했는지 적을 자리.** 없으면 바텐더가 밴드에 볼펜으로 긋는다
+    paint_bl(img, tmask_bl(f'{EV.NAME}   {EV.DATE_EN}', BRAND, int(U * 0.85), 0.18),
+             x, fy, color=INK, a=0.55)
+    # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
     bw = int(U * 5.2)
     rule(img, fy, right - bw, right, INK, 0.35, HAIR)
     paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 0.72), 0.24), right - bw, fy + U * 1.5,
@@ -103,9 +115,68 @@ def build(head, give, cond, stub):
     return np.clip(img, 0, 1)
 
 
-def sheet(tiles):
-    """A4 300dpi 에 10칸. **재단선을 칸 밖에 둔다** — 안쪽에 그으면 잘린
-    쿠폰마다 선이 남는다."""
+def back():
+    """뒷면 — **다음 행동만 적는다.**
+
+    받은 사람은 이미 안에 있다. 행사 정보를 또 적을 이유가 없다.
+    남길 건 둘 — 나가서 어디로 가는지, 다음 소식을 어디서 보는지."""
+    img = np.repeat(np.repeat(INK[None, None, :], H, 0), W, 1).copy()
+
+    # 왼쪽 — 밴드 혜택. 이 쿠폰이 밴드와 한 세트라는 걸 여기서 잇는다
+    x = U * 2.6
+    paint_bl(img, tmask_bl(f'{EV.BAND_HEAD}  ·  {EV.BAND_HEAD2}', BRAND,
+                           int(U * 1.1), 0.28), x, U * 4.0, color=PAPER, a=0.60)
+    paint_bl(img, tmask_bl(EV.BAND_WHEN_KO, KRB, int(U * 1.7), 0.02), x, U * 7.2,
+             color=PAPER)
+    # **혜택 칸을 고정 좌표로 박으면 긴 이름이 파고든다.**
+    # 실제로 'DDEUNGEUM POCHA' 가 혜택 글자를 밟았다 — 제일 긴 이름을 재서
+    # 그 뒤에 칸을 연다.
+    rows = [(en, ko) for en, _, _, ko in EV.ALLIES if ko != '행사장']
+    ns = int(U * 1.0)
+    px = x + max(tmask_bl(en, BRAND, ns, 0.14)[0].shape[1] for en, _ in rows) + U * 1.8
+    y = U * 12.2
+    for en, perk_ko in rows:
+        rule(img, y - U * 1.5, x, px - U * 0.6, PAPER, 0.10, HAIR)
+        paint_bl(img, tmask_bl(en, BRAND, ns, 0.14), x, y, color=PAPER, a=0.92)
+        paint_bl(img, tmask_bl(perk_ko, KR, int(U * 0.94), 0.01), px, y,
+                 color=PAPER, a=0.66)
+        y += U * 3.5
+
+    # **아래 절반이 비어 있었다.** 채우려고 넣는 문구가 아니라 없으면
+    # 현장에서 다투는 문구다 — 뜯지 않은 쿠폰은 계속 돌아다닌다.
+    rule(img, H - U * 4.4, x, px + U * 9, PAPER, 0.16, HAIR)
+    paint_bl(img, tmask_bl('뜯긴 쿠폰만 유효 · 재발행 없음 · 현금 교환 불가', KR,
+                           int(U * 0.82), 0.01), x, H - U * 2.4, color=PAPER, a=0.45)
+
+    # ── 오른쪽 — 계정과 QR. 세로선으로 두 덩어리를 가른다 ──
+    # 17mm. 모듈 0.46mm 라 어두운 실내에서도 잡힌다 — 더 줄이면 안 읽힌다
+    qs = int(U * 11.4)
+    qx = int(W - U * 2.2 - qs)
+    qy = int((H - (qs + U * 4.4)) / 2)                # 오른쪽 칸에서 세로 가운데
+    box(img, qx - U * 1.9, U * 2.0, qx - U * 1.9 + HAIR, H - U * 2.0, PAPER, 0.18)
+    # QR 받침. **여백(quiet zone)이 있어야 읽힌다**
+    box(img, qx - U * 0.55, qy - U * 0.55, qx + qs + U * 0.55, qy + qs + U * 0.55,
+        PAPER, 0.96)
+    img[qy:qy + qs, qx:qx + qs] = code(qs)
+    # QR 바로 밑에 붙인다. 발치에 떼어 두면 QR 과 따로 논다
+    paint_bl(img, tmask_bl('FOLLOW', BRAND, int(U * 0.76), 0.26), qx, qy + qs + U * 2.0,
+             color=PAPER, a=0.55)
+    hs = min(int(U * 0.76), fit(EV.HANDLE, BRAND, qs + U * 0.8, 0.06))
+    paint_bl(img, tmask_bl(EV.HANDLE, BRAND, hs, 0.06), qx, qy + qs + U * 3.7,
+             color=PAPER, a=0.92)
+
+    grain(img, 0.004, 13)
+    return np.clip(img, 0, 1)
+
+
+def sheet(tile, mirror=False):
+    """A4 300dpi 에 10칸.
+
+    `mirror` 는 뒷면용. **장변 제본으로 뒤집어 찍으면 종이가 좌우로 돌아간다** —
+    뒷면을 같은 순서로 앉히면 1번 앞면 뒤에 2번 뒷면이 찍힌다.
+    열 순서를 뒤집어야 짝이 맞는다.
+
+    재단 표시는 칸 바깥에만 둔다 — 안쪽에 그으면 잘린 쿠폰마다 선이 남는다."""
     A4W, A4H = 2480, 3508
     cols, rows = 2, 5
     mx = (A4W - cols * W) // (cols + 1)
@@ -113,10 +184,11 @@ def sheet(tiles):
     s = np.ones((A4H, A4W, 3), np.float32)
     for i in range(cols * rows):
         c, r = i % cols, i // cols
-        x = mx + c * (W + mx)
-        y = my + r * (H + my)
-        s[y:y + H, x:x + W] = tiles[i % len(tiles)]
-        for xx in (x, x + W):                       # 재단 표시 — 칸 바깥에만
+        if mirror:
+            c = cols - 1 - c
+        x, y = mx + c * (W + mx), my + r * (H + my)
+        s[y:y + H, x:x + W] = tile
+        for xx in (x, x + W):
             box(s, xx - HAIR / 2, y - 26, xx + HAIR / 2, y - 8, INK, 0.5)
             box(s, xx - HAIR / 2, y + H + 8, xx + HAIR / 2, y + H + 26, INK, 0.5)
         for yy in (y, y + H):
@@ -125,16 +197,30 @@ def sheet(tiles):
     return s
 
 
+def save(a, name, note=''):
+    p = os.path.join(OUT, f'{name}.png')
+    Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
+    print(f'{p}  {a.shape[1]}×{a.shape[0]}px{note}')
+
+
 if __name__ == '__main__':
-    made = []
-    for key, head, give, cond, stub in KINDS:
-        a = build(head, give, cond, stub)
-        p = os.path.join(OUT, f'coupon_{key}.png')
-        Image.fromarray((a * 255).astype(np.uint8)).save(p, optimize=True)
-        made.append(a)
-        print(f'{p}  {W}×{H}px = 90×50mm@300dpi')
-    # 시트는 드링크 쿠폰으로 채운다 — 제일 많이 쓴다
-    p = os.path.join(OUT, 'coupon_sheet_a4.png')
-    Image.fromarray((np.clip(sheet([made[0]]), 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
-    print(f'{p}  A4 300dpi · 10칸 (웰컴드링크)')
-    print('\n스텁 경계는 미싱(퍼포레이션)으로 요청하세요. 반을 뜯어 모으면 그날 몇 장이 나갔는지 세어집니다.')
+    f, b = front(), back()
+    save(f, 'coupon_front', '  = 90×50mm@300dpi')
+    save(b, 'coupon_back', '  = 90×50mm@300dpi')
+    save(sheet(f), 'coupon_sheet_front', '  A4 · 10칸')
+    save(sheet(b, mirror=True), 'coupon_sheet_back', '  A4 · 10칸 · 좌우 뒤집힘')
+
+    # **뽑았다고 읽히는 게 아니다** — 뒷면 QR 을 재 본다.
+    # 카드를 통째로 줄여서 재면 안 된다(QR 도 같이 줄어 실제보다 가혹하다) —
+    # **조각만 잘라 인쇄 크기(17mm)를 폰 카메라 해상도로 흉내 낸다.**
+    import cv2
+    qs = int(U * 11.4)
+    qx, qy = int(W - U * 2.2 - qs), int((H - (qs + U * 4.4)) / 2)
+    pad = int(U * 0.6)
+    crop = np.asarray(Image.fromarray((b * 255).astype(np.uint8)))[
+        qy - pad:qy + qs + pad, qx - pad:qx + qs + pad]
+    t = cv2.resize(crop, (150, 150), interpolation=cv2.INTER_AREA)   # 17mm ≈ 150px
+    got, *_ = cv2.QRCodeDetector().detectAndDecode(cv2.cvtColor(t, cv2.COLOR_RGB2BGR))
+    assert got, 'QR 이 안 읽힙니다 — qs 를 키우세요'
+    print('\n뒷면 QR:', got)
+    print('양면은 장변 제본(long-edge)으로 요청하세요. 뒷면 시트는 이미 좌우를 뒤집어 뒀습니다.')

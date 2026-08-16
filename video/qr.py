@@ -39,9 +39,13 @@ OUT = os.path.join(HERE, 'out', 'qr')
 os.makedirs(OUT, exist_ok=True)
 
 
-def build(url, px, dark, light, badge=True):
-    """QR 한 장. `dark` 가 코드 색, `light` 가 바탕 색."""
-    q = segno.make(url, error='h')
+def build(url, px, dark, light, badge=True, error='h'):
+    """QR 한 장. `dark` 가 코드 색, `light` 가 바탕 색.
+
+    `error` 는 오류 정정. 가운데 로고를 얹을 때만 'h' 가 필요하고, 로고가
+    없으면 'm' 으로 낮춰 **모듈 수를 줄인다** — 작게 인쇄할수록 모듈이
+    커야 읽힌다."""
+    q = segno.make(url, error=error)
     n = q.symbol_size(border=4)[0]
     scale = max(1, px // n)
     buf = np.array(list(q.matrix_iter(border=4)), dtype=np.uint8)
