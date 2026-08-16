@@ -74,6 +74,12 @@ OPEN_WAVE = next((w for w in WAVES if w[2] < w[1]), None)
 LAST_FULL = next((w for w in reversed(WAVES) if w[2] >= w[1]), None)
 OPEN_LEFT = (OPEN_WAVE[1] - OPEN_WAVE[2]) if OPEN_WAVE else 0
 
+# **"20명은 이미 갔습니다" 라고 쓰지 마세요.** 아직 안 열린 행사인데
+# '갔다' 는 이미 다녀왔다는 말이라 문장이 안 맞습니다 — 자리가 찼다는 뜻이어야
+# 합니다. 영상·커버·캡션이 다 이 한 줄을 가져다 씁니다.
+SOLD_LINE = '1차 사전예약 풀만석'
+LEFT_LINE = f'{OPEN_LEFT}자리 남았습니다'
+
 # ── 지금 상태를 말하는 세 줄 ─────────────────────────────
 # **이제부터 모든 판에 이게 들어간다.** 혜택만 보고 온 사람에게 자리가
 # 무한하지 않다는 걸 한 번은 말해야 예약으로 넘어간다.

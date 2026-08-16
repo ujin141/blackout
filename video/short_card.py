@@ -164,7 +164,7 @@ def ad_cards():
     c = [(CORAL, '혼자 와도 되는 풀파티'),
          (DEEP,  '9시 반부터 솔로파티'),
          (INK,   '아는 사람 없어도 됩니다'),
-         (AQUA,  f'{EV.CAP}명 중 {EV.DONE}명은 갔습니다')]
+         (AQUA,  f'{EV.CAP}자리 중 {EV.DONE}자리가 찼습니다')]
     if AD_PRICE and EV.price_str():
         c.append((DEEP, EV.price_str()))
     if AD_PRICE and EV.price_up():
@@ -174,7 +174,7 @@ def ad_cards():
     c.append((CORAL, '프로필 링크에서 예약'))
     # 칸이 모자라면 앞의 증거를 한 번 더 — 뒤를 지우면 CTA 가 날아간다
     while len(c) < 7:
-        c.insert(-1, (AQUA, f'{EV.OPEN_LEFT}자리 남았습니다'))
+        c.insert(-1, (AQUA, EV.LEFT_LINE))
     return c[:7]
 
 
@@ -187,13 +187,13 @@ def sale_cards():
     성비·마지막 기회·가격은 안 쓴다. 확인이 안 됐거나 사실이 아니다."""
     # 판매판의 첫 장은 **사회적 증거**다. 남은 걸 먼저 말하면 안 팔린 것으로 읽히고,
     # 이미 간 사람을 먼저 말하면 안 가면 손해로 읽힌다.
-    c = [(DEEP, f'{EV.DONE}명은 이미 갔습니다')]
+    c = [(DEEP, EV.SOLD_LINE)]
     if EV.LAST_FULL:
         c.append((INK, f'{EV.LAST_FULL[0]} {EV.LAST_FULL[1]}명 마감'))
     if EV.SALE == 'table':
         c.append((CORAL, '남은 건 테이블뿐'))
     else:
-        c.append((CORAL, f'{EV.OPEN_LEFT}자리 남았습니다'))
+        c.append((CORAL, EV.LEFT_LINE))
     if EV.NEXT_OPEN:
         # **마감일이 아니라 여는 날이다.** 지금 못 사는 사람한테 필요한 건
         # 언제 살 수 있느냐이지 언제 닫느냐가 아니다

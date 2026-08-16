@@ -82,12 +82,15 @@ VARIANTS = {
     # scene_story 는 영상 자체가 분위기라 훅이 없다. 커버까지 한글 훅을 달면
     # ad 커버와 격자에서 같은 말을 두 번 하게 된다 — 여기는 이름을 크게 세운다
     # **먼저 찼다는 말이 먼저다.** '60자리 남았습니다' 를 크게 쓰면 안 팔린
-    # 판으로 읽히고, '20명은 이미 갔습니다' 는 안 가면 손해로 읽힌다.
+    # 판으로 읽히고, '20자리는 이미 찼습니다' 는 안 가면 손해로 읽힌다.
+    # **'갔습니다' 라고 쓰지 않는다** — 아직 안 열린 행사라 문장이 안 맞는다.
     # 남은 자리는 아랫줄에서 말한다 — 순서가 뜻을 바꾼다
-    'sale':  dict(src=('live', 'crowd', 2.0, 0.50), soft=4.2, press=0.44,
-                  head=f'{EV.DONE}명은 이미 갔습니다',
+    # **상태줄을 끈다(tag=False).** 훅이 '1차 사전예약 풀만석' 인데 아래
+    # 상태줄도 '1차 사전예약 SOLD OUT' 이라, 한 판에서 같은 말을 두 번 하게 된다
+    'sale':  dict(src=('live', 'crowd', 2.0, 0.50), soft=4.2, press=0.44, tag=False,
+                  head=EV.SOLD_LINE,
                   lines=('8.29 SAT  ·  양재 루프탑',
-                         f'{EV.OPEN_LEFT}자리 남았습니다  ·  {EV.price_str()}')),
+                         f'{EV.LEFT_LINE}  ·  {EV.price_str()}')),
     'scene': dict(src=('scene', 180), head=None,
                   lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
 }
@@ -164,7 +167,8 @@ def build(name='ad'):
           W / 2, TOP + 1030, color=PAPER, a=0.76, anchor='c')
 
     # 상태는 왼쪽 여백선에. 가운데에 홀로 뜨면 나중에 얹은 것으로 읽힌다
-    _tag(img, W * 0.085, TOP + 1140, 38, color=PAPER, accent=CORAL, width=W * 0.80)
+    if v.get('tag', True):
+        _tag(img, W * 0.085, TOP + 1140, 38, color=PAPER, accent=CORAL, width=W * 0.80)
     paint(img, tmask(EV.HANDLE, BRAND, 22, 0.22), W / 2, TOP + 1276,
           color=PAPER, a=0.70, anchor='c')
 
