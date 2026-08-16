@@ -1,6 +1,7 @@
 """릴스 커버(썸네일) — 1080×1920.
 
-    out/short/cover_ad.png
+    python short_cover.py          →  out/short/cover_ad.png
+    python short_cover.py scene    →  out/short/cover_scene.png
 
 **커버는 두 군데에서 다르게 보인다.**
 
@@ -16,7 +17,11 @@
 
 얼굴이 정면으로 잡히는 순간은 안 쓴다(`short_card.AD_SHOTS` 와 같은 이유).
 
-python short_cover.py
+**격자에서 두 칸이 같은 말을 하면 한 칸을 버리는 것이다.** 그래서 판마다
+주인공을 다르게 둔다.
+
+    ad     한글 훅이 제일 크다. 파는 판
+    scene  행사 이름이 제일 크다. 브랜드 판 — 영상 자체가 분위기라 훅이 없다
 """
 import os
 import numpy as np
@@ -41,30 +46,54 @@ PAPER = np.float32([0.99, 1.00, 1.00])
 CORAL = np.float32([1.00, 0.44, 0.40])
 AQUA = np.float32([0.34, 0.94, 1.00])
 
-# (클립, 초, 가로 위치)
 # **커버는 프로필에 계속 남는 판이다.** 영상은 지나가지만 이건 안 지나간다 —
 # 손님 얼굴이 알아볼 만하게 잡힌 컷은 쓰지 않는다.
-# `crowd 1.4` 로 뒀다가 앞쪽 얼굴이 또렷해서 바꿨다. 이 컷은 사람이
-# 원경에 있고 앞은 튜브와 조명이라, **사람이 많다는 건 남고 얼굴은 안 남는다.**
-SHOT = ('floor', 2.8, 0.46)
-HEAD = '혼자 와도 되는 풀파티'            # **영상 첫 장과 같은 문장이어야 한다**
+# ad 는 `crowd 1.4` 로 뒀다가 앞쪽 얼굴이 또렷해서 바꿨다. 지금 컷은 사람이
+# 원경에 있고 앞은 튜브와 조명이라 **사람이 많다는 건 남고 얼굴은 안 남는다.**
+#
+#   src   ('live', 클립, 초, 가로위치)   현장 클립에서 한 장
+#         ('scene', 프레임번호)          scene_motion 이 그리는 판을 **자막 없이**
+#
+# **mp4 에서 프레임을 뽑지 않는다.** 영상에는 자막이 이미 구워져 있어서
+# 커버 글자와 겹친다 — 실제로 'AFTER SUNSET' 위에 '9시 반부터 솔로파티' 가
+# 겹쳐 나왔다. 그림을 그리는 코드를 직접 불러 자막 얹기 전 상태를 받는다.
+#   head  한글 훅. None 이면 행사 이름을 주인공으로 세운다
+VARIANTS = {
+    'ad':    dict(src=('live', 'floor', 2.8, 0.46), head='혼자 와도 되는 풀파티'),
+    # scene_story 는 영상 자체가 분위기라 훅이 없다. 커버까지 한글 훅을 달면
+    # ad 커버와 격자에서 같은 말을 두 번 하게 된다 — 여기는 이름을 크게 세운다
+    'scene': dict(src=('scene', 180), head=None),
+}
 
 
-def frame():
-    key, at, ox = SHOT
-    c = load(key)
+def frame(src):
+    if src[0] == 'live':
+        _, key, at, ox = src
+        c = load(key)
+        z = 1.02
+    elif src[0] == 'scene':
+        import scene_motion as SM
+        return np.clip(cv2.resize(SM.push(SM.scene(src[1]), src[1] / SM.FPS),
+                                  (W, H), interpolation=cv2.INTER_CUBIC), 0, 1)
+    else:
+        raise SystemExit(f'모르는 src: {src}')
     fps = c.get(cv2.CAP_PROP_FPS) or 30.0
     c.set(cv2.CAP_PROP_POS_FRAMES, int(at * fps))
     ok, fr = c.read()
     c.release()
     if not ok:
-        raise SystemExit(f'{key} {at}s 를 못 읽었습니다')
-    return grade(crop916(cv2.cvtColor(fr, cv2.COLOR_BGR2RGB), ox, 1.02)
-                 .astype(np.float32) / 255)
+        raise SystemExit(f'{src} 를 못 읽었습니다')
+    fr = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB)
+    if fr.shape[1] / fr.shape[0] < W / H + 0.02:      # 이미 세로면 그대로 쓴다
+        return np.clip(cv2.resize(fr, (W, H), interpolation=cv2.INTER_AREA)
+                       .astype(np.float32) / 255, 0, 1)
+    return grade(crop916(fr, ox, z).astype(np.float32) / 255)
 
 
-def build():
-    img = frame()
+def build(name='ad'):
+    v = VARIANTS[name]
+    HEAD = v['head']
+    img = frame(v['src'])
     yy = np.arange(H, dtype=np.float32)[:, None, None]
 
     # **잘리는 위아래를 어둡게 눌러 둔다.** 격자에서 잘린 자리가 그대로 밝으면
@@ -78,15 +107,22 @@ def build():
     img *= 1 - 0.42 * np.exp(-((yy - (TOP + 180)) / 130.0) ** 2)
 
     lg = logo(58)
-    paint(img, lg, W / 2 - lg.shape[1] / 2, TOP + 96, color=PAPER, a=0.94)
-    paint(img, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, W * 0.62, 0.14), 0.14),
-          W / 2, TOP + 176, color=PAPER, a=0.92, anchor='c')
-    paint(img, tmask(EV.FORMAT, BRAND, 22, 0.34), W / 2, TOP + 222,
-          color=AQUA, a=0.88, anchor='c')
-
-    # ── 훅. 커버에서 제일 큰 것 ──────────────────────────
-    fs = min(104, fit(HEAD, KRB, W * 0.86, 0.02))
-    paint(img, tmask(HEAD, KRB, fs, 0.02), W / 2, TOP + 830, color=PAPER, anchor='c')
+    if HEAD:
+        paint(img, lg, W / 2 - lg.shape[1] / 2, TOP + 96, color=PAPER, a=0.94)
+        paint(img, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, W * 0.62, 0.14), 0.14),
+              W / 2, TOP + 176, color=PAPER, a=0.92, anchor='c')
+        paint(img, tmask(EV.FORMAT, BRAND, 22, 0.34), W / 2, TOP + 222,
+              color=AQUA, a=0.88, anchor='c')
+        # ── 훅. 커버에서 제일 큰 것 ──────────────────────
+        fs = min(104, fit(HEAD, KRB, W * 0.86, 0.02))
+        paint(img, tmask(HEAD, KRB, fs, 0.02), W / 2, TOP + 830, color=PAPER, anchor='c')
+    else:
+        # 이름이 주인공. 위는 로고만 두고 아래를 이름에 내준다
+        paint(img, lg, W / 2 - lg.shape[1] / 2, TOP + 110, color=PAPER, a=0.94)
+        paint(img, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, W * 0.88, 0.10), 0.10),
+              W / 2, TOP + 782, color=PAPER, anchor='c')
+        paint(img, tmask(EV.FORMAT, BRAND, 26, 0.36), W / 2, TOP + 848,
+              color=AQUA, a=0.94, anchor='c')
 
     rule(img, TOP + 918, W * 0.14, W * 0.86, PAPER, 0.26, 2)
     paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 40, 0.02), W / 2, TOP + 976,
@@ -105,7 +141,8 @@ def build():
 
 
 if __name__ == '__main__':
-    img = build()
-    p = os.path.join(OUT, 'cover_ad.png')
-    Image.fromarray((img * 255).astype(np.uint8)).save(p, optimize=True)
-    print(f'{p}  {W}x{H}   격자에 보이는 구간 {TOP}~{TOP + TH}px')
+    import sys
+    for name in (sys.argv[1:] or ['ad']):
+        p = os.path.join(OUT, f'cover_{name}.png')
+        Image.fromarray((build(name) * 255).astype(np.uint8)).save(p, optimize=True)
+        print(f'{p}  {W}x{H}   격자에 보이는 구간 {TOP}~{TOP + TH}px')
