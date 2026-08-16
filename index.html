@@ -342,6 +342,18 @@
   </div>
 </footer>
 
+<!-- ── event bar ────────────────────────────────────────────
+     팝업을 닫으면 끝나 버리는 걸 막는 띠. 팝업이 닫힌 뒤에 올라옵니다. -->
+<div class="evtbar" id="evtbar" hidden>
+  <a class="evtbar__in" href="#" data-evt-link>
+    <span class="evtbar__t">AFTER SUNSET</span>
+    <span class="evtbar__d">8.29 SAT · 양재 루프탑</span>
+    <span class="evtbar__dday" data-evt-dday hidden></span>
+    <span class="evtbar__go" data-i18n="evt.book">예약하기</span>
+  </a>
+  <button class="evtbar__x" type="button" data-close-evtbar aria-label="Close">✕</button>
+</div>
+
 <!-- ── event popup ──────────────────────────────────────────
      행사가 끝나면 main.js 의 EVENT.on 을 false 로 두면 안 뜹니다.
      정보는 여기 한 곳에만 적혀 있습니다 — 포스터와 어긋나지 않게 확인하세요. -->
@@ -358,7 +370,11 @@
     </a>
 
     <div class="evt__body">
-      <p class="evt__kicker" data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</p>
+      <p class="evt__kicker">
+        <span data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</span>
+        <!-- 남은 날. **'며칠 남았다' 가 날짜보다 훨씬 급하게 읽힌다** -->
+        <b class="evt__dday" data-evt-dday hidden></b>
+      </p>
       <h2 id="evtTitle" class="evt__title">AFTER SUNSET</h2>
 
       <ul class="evt__meta">
@@ -367,16 +383,29 @@
         <li data-i18n="evt.venue">어나더 루프탑 라운지 · 양재</li>
       </ul>
 
+      <!-- 남은 자리. 숫자만 적으면 안 와닿아서 막대를 같이 둔다 -->
+      <div class="evt__bar" role="img" aria-label="80명 중 20명 예약 완료">
+        <span style="--fill:25%"></span>
+      </div>
       <p class="evt__status">
         <span class="evt__off" data-i18n="evt.sold">1차 사전예약 마감</span>
         <b data-i18n="evt.open">2차 예약중</b>
-        <span data-i18n="evt.cap">80명 한정</span>
+        <span data-evt-left>80명 중 20명</span>
       </p>
 
       <p class="evt__price">
         <span data-i18n="evt.price">2차 입장 · 여 49,000 · 남 59,000</span>
         <em data-i18n="evt.priceUp">3차부터 10,000원 오릅니다</em>
       </p>
+
+      <ul class="evt__extra">
+        <li><b data-i18n="evt.lineupK">LINE-UP</b>
+            <span>TS · LYNN · V · CHIPS · HEIDY · DEMIC · AROS</span></li>
+        <li><b data-i18n="evt.soloK">SOLO</b>
+            <span data-i18n="evt.solo">21:30부터 90분 — 혼자 와도 됩니다</span></li>
+        <li><b data-i18n="evt.afterK">AFTER</b>
+            <span data-i18n="evt.after">강남 ACE 힙합존 · 밴드 차고 가면 혜택</span></li>
+      </ul>
 
       <div class="evt__cta">
         <a class="btn btn--solid" href="#" data-evt-link data-i18n="evt.book">예약하기</a>

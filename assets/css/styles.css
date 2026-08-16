@@ -1410,10 +1410,17 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
    포스터를 왼쪽에 두고 정보를 오른쪽에 세운다. 좁은 화면에서는
    포스터가 위로 올라간다 — 세로로 쌓으면 포스터가 화면을 다 먹어서
    높이를 제한한다. */
-.modal--evt .modal__panel { max-width: 44rem; padding: 0; overflow: hidden; }
-/* **세로 칸에는 세로 포스터를 넣는다.** 4:5 판을 이 칸에 cover 로 넣으면
-   좌우가 잘려 제목이 날아간다 — 9:16 판은 칸 비율과 거의 같아 안 잘린다. */
-.evt { display: grid; grid-template-columns: 0.82fr 1.18fr; }
+/* **base 는 width 로 잡혀 있어서 max-width 만 주면 안 넓어진다.**
+   그 바람에 포스터 칸이 198px 로 좁아져 가로의 76% 가 잘렸다. */
+.modal--evt .modal__panel { width: min(58rem, 100%); padding: 0; overflow: hidden; }
+/* **세로 칸에는 세로 포스터를 넣는다.** 4:5 판을 cover 로 넣으면 좌우가
+   잘려 제목이 날아간다. 9:16 판을 쓰되 칸 비율을 사진에 맞춰야 —
+   칸이 사진보다 홀쭉하면 결국 옆이 잘린다. */
+/* **그리드 칸은 기본이 min-width:auto 라 긴 줄이 칸을 밀어낸다.**
+   라인업 한 줄 때문에 판이 화면 밖으로 22px 삐져나갔다 — minmax(0,…) 로 막는다. */
+.evt { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+       align-items: stretch; }
+.evt__art, .evt__body { min-width: 0; }
 .evt__art { display: block; background: var(--black); }
 .evt__art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%;
                 display: block; }
@@ -1442,7 +1449,8 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .evt__price em { display: block; font-style: normal; color: var(--white);
                  margin-top: 0.28rem; }
 
-.evt__cta { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+/* 곁들이 정보와 붙어 있었다 — 버튼은 숨 쉴 자리가 있어야 눌린다 */
+.evt__cta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
 .evt__cta .btn { flex: 1 1 auto; text-align: center; }
 
 .evt__mute { display: block; margin-top: 1.1rem; padding: 0;
@@ -1451,12 +1459,79 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
              text-decoration: underline; text-underline-offset: 3px; }
 .evt__mute:hover { color: var(--w-90); }
 
+
+
+/* 팝업 안 — 남은 날 · 정원 막대 · 곁들이 정보 */
+.evt__kicker { display: flex; align-items: center; gap: 0.6rem; }
+.evt__dday { font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.1em;
+             color: var(--black); background: var(--white); border-radius: 999px;
+             padding: 0.16rem 0.5rem; font-weight: 700; }
+
+/* **숫자만 적으면 안 와닿는다.** 막대가 붙어야 '얼마 안 남았다' 가 보인다 */
+.evt__bar { height: 3px; background: var(--line); margin: 0 0 0.7rem; overflow: hidden; }
+.evt__bar span { display: block; height: 100%; width: var(--fill, 0%);
+                 background: var(--white); transition: width 0.9s cubic-bezier(.2,.7,.2,1); }
+
+.evt__extra { list-style: none; margin: 1.2rem 0 0; padding: 0.9rem 0 0;
+              border-top: 1px solid var(--line-soft); display: grid; gap: 0.42rem; }
+.evt__extra li { display: grid; grid-template-columns: 5.4rem 1fr; gap: 0.7rem;
+                 font-size: var(--t-2); color: var(--w-60); line-height: 1.5; }
+/* LINE-UP 이 두 줄로 꺾여서 줄 높이가 들쭉날쭉했다 — 안 꺾이게 못 박는다 */
+.evt__extra b { font-family: var(--brand); font-size: var(--t-1);
+                letter-spacing: 0.14em; color: var(--w-45); font-weight: 400;
+                white-space: nowrap; }
+.evt__extra li > span { min-width: 0; overflow-wrap: anywhere; }
+
+/* ── 상시 띠 ─────────────────────────────────────────────────
+   팝업은 한 번 닫으면 끝이다. 그 뒤에도 갈 길이 남아 있어야 한다. */
+.evtbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+          display: flex; align-items: stretch;
+          background: rgba(8, 8, 9, 0.94); backdrop-filter: blur(10px);
+          border-top: 1px solid var(--line);
+          transform: translateY(100%); transition: transform 0.42s cubic-bezier(.2,.7,.2,1); }
+.evtbar.is-on { transform: none; }
+.evtbar[hidden] { display: none; }
+.evtbar__in { flex: 1; display: flex; align-items: center; gap: 0.9rem;
+              padding: 0.72rem clamp(0.9rem, 3vw, 1.6rem); text-decoration: none; min-width: 0; }
+.evtbar__t { font-family: var(--brand); font-size: var(--t-2); letter-spacing: 0.1em;
+             color: var(--white); white-space: nowrap; }
+.evtbar__d { font-size: var(--t-2); color: var(--w-60); white-space: nowrap;
+             overflow: hidden; text-overflow: ellipsis; }
+.evtbar__dday { font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.1em;
+                color: var(--black); background: var(--white); border-radius: 999px;
+                padding: 0.14rem 0.46rem; font-weight: 700; white-space: nowrap; }
+.evtbar__go { margin-left: auto; font-size: var(--t-2); color: var(--white);
+              white-space: nowrap; text-decoration: underline; text-underline-offset: 4px; }
+.evtbar__x { flex: 0 0 auto; width: 2.8rem; background: none; border: 0;
+             border-left: 1px solid var(--line-soft); color: var(--w-45); cursor: pointer; }
+.evtbar__x:hover { color: var(--white); }
+
+@media (max-width: 34rem) {
+  /* 좁으면 장소를 접는다 — 이름과 날짜와 갈 길만 남긴다 */
+  .evtbar__d { display: none; }
+}
+
+
+/* **좁은 화면 규칙은 파일 맨 뒤에 둔다.** 앞에 두면 뒤에 붙는 데스크톱
+   규칙이 같은 특이도로 덮어 버린다 — 실제로 라인업 줄이 안 접혔다. */
 @media (max-width: 44rem) {
-  .evt { grid-template-columns: 1fr; }
+  .evt { grid-template-columns: minmax(0, 1fr); }
   /* **포스터를 세로로 다 보여주면 정보가 화면 밖으로 밀린다.**
      34vh 로 뒀더니 '오늘 하루 안 보기' 가 화면 아래로 밀렸다 —
      위쪽만 잘라 보여주고 나머지 높이는 글자에 준다 */
-  .evt__art { max-height: 25vh; }
+  /* 곁들이 정보가 붙으면서 판이 길어졌다 — 포스터 띠를 더 줄여
+     '예약하기' 와 '오늘 하루 안 보기' 를 한 화면에 넣는다 */
+  /* 라벨을 쌓으면서 판이 44px 길어졌다 — 포스터 띠에서 그만큼 돌려받는다 */
+  .evt__art { max-height: 12vh; }
+  .evt__body { padding: 1.1rem 1.2rem 1.3rem; }
+  .evt__extra { margin-top: 0.8rem; padding-top: 0.7rem; gap: 0.45rem; }
+  /* **좁은 화면에서는 라벨을 위로 올린다.** 5.4rem 을 떼어 주고 남은 폭에
+     라인업 일곱 명을 넣으면, 폰트가 조금만 넓어도 판 밖으로 밀린다.
+     쌓으면 글자가 쓸 수 있는 폭이 두 배가 되어 어떤 폰트로도 안 넘친다. */
+  .evt__extra li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
+  .evt__extra b { letter-spacing: 0.2em; }
+  .evt__cta { margin-top: 1rem; }
+  .evt__mute { margin-top: 0.8rem; }
   /* 가로 띠가 되면 세로 포스터의 가운데가 잡힌다 — 하늘만 나온다.
      제목이 위에 있으니 위쪽을 보여준다 */
   .evt__art img { object-position: 50% 10%; }

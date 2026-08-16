@@ -129,6 +129,14 @@ const I18N = {
     'evt.book': '예약하기',
     'evt.more': '인스타에서 보기',
     'evt.mute': '오늘 하루 안 보기',
+    'evt.lineupK': 'LINE-UP',
+    'evt.soloK': 'SOLO',
+    'evt.afterK': 'AFTER',
+    'evt.solo': '21:30부터 90분 — 혼자 와도 됩니다',
+    'evt.after': '강남 ACE 힙합존 · 밴드 차고 가면 혜택',
+    'evt.dday': 'D-{n}',
+    'evt.today': '오늘 밤',
+    'evt.left': '{cap}명 중 {done}명',
   },
 
   en: {
@@ -254,5 +262,13 @@ const I18N = {
     'evt.book': 'Book now',
     'evt.more': 'See on Instagram',
     'evt.mute': "Don't show today",
+    'evt.lineupK': 'LINE-UP',
+    'evt.soloK': 'SOLO',
+    'evt.afterK': 'AFTER',
+    'evt.solo': '90 minutes from 21:30 — come alone, it works',
+    'evt.after': 'ACE Gangnam hip-hop room · perks with your band',
+    'evt.dday': 'D-{n}',
+    'evt.today': 'TONIGHT',
+    'evt.left': '{done} of {cap} booked',
   }
 };

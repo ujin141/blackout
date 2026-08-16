@@ -7,9 +7,12 @@
 const EVENT = {
   on: true,
   form: 'https://forms.gle/sue3a9jZNCi8U8dC7',   // 사전예약 폼
+  date: '2026-08-29',                             // 행사 당일 — D-day 를 여기서 센다
   until: '2026-08-29',                            // 이 날이 지나면 스스로 안 뜬다
   delay: 1200,                                    // 들어오자마자 덮치면 그냥 닫는다
-  muteHours: 20                                   // '오늘 하루 안 보기' 가 유지되는 시간
+  muteHours: 20,                                  // '오늘 하루 안 보기' 가 유지되는 시간
+  cap: 80,                                        // 정원
+  done: 20                                        // 지금까지 예약된 수 — 여기만 고치면 막대가 따라온다
 };
 
 const CONFIG = {
@@ -61,6 +64,9 @@ function applyLang(next, { rebuild = true } = {}) {
   });
 
   if (rebuild) splitLines();
+  /* 언어가 바뀌었다고 알린다. data-i18n 으로 안 되는 것(스크립트가 만든
+     D-day·남은 자리)이 이 신호를 받아 다시 그린다 */
+  document.dispatchEvent(new CustomEvent('blackout:lang', { detail: next }));
 }
 
 (function initLang() {
@@ -930,5 +936,50 @@ const ART = {
     else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
   });
 
-  if (!muted()) setTimeout(open, reduceMotion ? 300 : EVENT.delay);
+  /* ── 남은 날 · 남은 자리 ────────────────────────────────
+     숫자는 EVENT 한 곳에서 나온다. 판마다 적으면 반드시 어긋난다. */
+  /* i18n.js 는 const 로 선언해서 window.I18N 으로는 안 잡힌다 */
+  const dict = () => (typeof I18N === 'undefined' ? {}
+    : I18N[document.documentElement.lang === 'en' ? 'en' : 'ko'] || {});
+  const paint = () => {
+    const d = dict();
+    const day = new Date(EVENT.date + 'T00:00:00+09:00');
+    const now = new Date();
+    const left = Math.ceil((day - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
+    const label = left > 0 ? (d['evt.dday'] || 'D-{n}').replace('{n}', left)
+                           : (d['evt.today'] || '오늘 밤');
+    $$('[data-evt-dday]').forEach(el => { el.textContent = label; el.hidden = false; });
+    $$('[data-evt-left]').forEach(el => {
+      el.textContent = (d['evt.left'] || '{cap}명 중 {done}명')
+        .replace('{cap}', EVENT.cap).replace('{done}', EVENT.done);
+    });
+    const bar = $('.evt__bar span');
+    if (bar) bar.style.setProperty('--fill', Math.round(EVENT.done / EVENT.cap * 100) + '%');
+  };
+  paint();
+  document.addEventListener('blackout:lang', paint);   // 언어를 바꾸면 다시 그린다
+
+  /* ── 닫아도 남는 띠 ─────────────────────────────────────
+     팝업은 한 번 닫으면 끝이다. 그 뒤에 들어오는 사람에게도 갈 길이
+     있어야 해서 아래에 얇은 띠를 남긴다. */
+  const bar = $('#evtbar');
+  const BAR_MUTE = 'blackout:evtBarMuted';
+  const showBar = () => {
+    if (!bar || localStorage.getItem(BAR_MUTE)) return;
+    bar.hidden = false;
+    setTimeout(() => bar.classList.add('is-on'), 40);
+  };
+  if (bar) {
+    $('[data-close-evtbar]', bar).addEventListener('click', () => {
+      localStorage.setItem(BAR_MUTE, '1');
+      bar.classList.remove('is-on');
+      setTimeout(() => { bar.hidden = true; }, 300);
+    });
+  }
+
+  if (!muted()) setTimeout(() => { open(); }, reduceMotion ? 300 : EVENT.delay);
+  else showBar();
+  // 팝업을 닫으면 띠가 올라온다
+  $$('[data-close-evt], [data-mute-evt]').forEach(b =>
+    b.addEventListener('click', () => setTimeout(showBar, 420)));
 })();
