@@ -202,8 +202,8 @@ def render():
             rule(img, cy + H * 0.072, W * 0.24, W * 0.76, PAPER, 0.26 * kk, 2)
             paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 38, 0.02), W / 2,
                   cy + H * 0.104, color=PAPER, a=kk * 0.96, anchor='c')
-            paint(img, tmask(EV.price_str(), KR, 32, 0.02), W / 2, cy + H * 0.146,
-                  color=PAPER, a=kk * 0.78, anchor='c')
+            paint(img, tmask(EV.price_str() or EV.PRICE_LINE, KR, 32, 0.02), W / 2,
+                  cy + H * 0.146, color=PAPER, a=kk * 0.78, anchor='c')
             k2 = float(np.clip((b - (NBEAT - TAIL) - 1.0) / 0.5, 0, 1))
             if k2 > 0.004:
                 paint(img, tmask('프로필 링크에서 예약', KRB, 52, 0.02), W / 2,

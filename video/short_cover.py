@@ -73,7 +73,7 @@ AQUA = np.float32([0.34, 0.94, 1.00])
 #          와 같은 판단이다. 0 으로 내리지 마세요
 VARIANTS = {
     'ad':    dict(src=('live', 'floor', 2.8, 0.46), head='혼자 와도 되는 풀파티',
-                  lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
+                  lines=('8.29 SAT  ·  양재 루프탑', EV.price_str() or EV.PRICE_LINE)),
     # **받는 물건을 보여 준다.** '샴페인 준다' 는 글자보다 병 한 장이 세다 —
     # 배경은 사람이 없는 네온 컷이라 병이 앞으로 나온다
     'promo': dict(src=('live', 'floor', 3.6, 0.46), head=EV.PROMO_GET, bottle=True,
@@ -90,9 +90,9 @@ VARIANTS = {
     'sale':  dict(src=('live', 'crowd', 2.0, 0.50), soft=4.2, press=0.44, tag=False,
                   head=EV.SOLD_LINE,
                   lines=('8.29 SAT  ·  양재 루프탑',
-                         f'{EV.LEFT_LINE}  ·  {EV.price_str()}')),
+                         f'{EV.LEFT_LINE}  ·  {EV.price_str() or EV.PRICE_LINE}')),
     'scene': dict(src=('scene', 180), head=None,
-                  lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
+                  lines=('8.29 SAT  ·  양재 루프탑', EV.price_str() or EV.PRICE_LINE)),
 }
 
 

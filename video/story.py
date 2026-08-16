@@ -50,7 +50,7 @@ CAPS = [(0,  4,  '혼자 와도 되는 풀파티'),
         (8,  12, '양재 루프탑'),
         (12, 17, '9시 반부터 솔로파티'),
         (17, 21, f'{EV.CAP}명 중 {EV.DONE}명은 갔습니다'),
-        (21, 26, EV.price_str())]
+        (21, 26, EV.PRICE_PUSH)]     # 값을 숨기면 여기가 '현장 판매 없습니다'
 
 
 def plan_frames(shots, beat):
@@ -139,8 +139,8 @@ def render():
             rule(img, cy + H * 0.072, W * 0.24, W * 0.76, PAPER, 0.26 * k, 2)
             paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 38, 0.02), W / 2,
                   cy + H * 0.104, color=PAPER, a=k * 0.96, anchor='c')
-            paint(img, tmask(EV.price_str(), KR, 34, 0.02), W / 2, cy + H * 0.146,
-                  color=PAPER, a=k * 0.80, anchor='c')
+            paint(img, tmask(EV.price_str() or EV.PRICE_LINE, KR, 34, 0.02), W / 2,
+                  cy + H * 0.146, color=PAPER, a=k * 0.80, anchor='c')
             # **'여기 눌러서' 의 '여기' 는 바로 아래 스티커 자리다.**
             # 프로필로 보내지 않는다 — 스토리는 링크를 바로 붙일 수 있다
             k2 = float(np.clip((b - (NBEAT - TAIL) - 1.2) / 0.5, 0, 1))

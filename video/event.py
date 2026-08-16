@@ -161,16 +161,29 @@ PRICE = {'2차': {'여': 49000, '남': 59000},
          '3차': {'여': 59000, '남': 69000}}
 
 
+# **값을 판에 적을지.** 사전예약제라 원래 안 적기로 했던 것을 광고용으로
+# 잠깐 열었다가 다시 닫았습니다. **여기 한 줄만 바꾸면 판·영상·커버가 다
+# 따라옵니다** — 판마다 지우러 다니지 마세요.
+#
+# 값을 숨기면 "지금 사야 할 이유" 가 하나 빕니다. 그 자리는 값 인상이 아니라
+# **현장 판매를 안 한다는 사실**이 채웁니다. 그게 사전예약제의 진짜 무기입니다.
+SHOW_PRICE = False
+PRICE_LINE = '사전예약만 받습니다'
+PRICE_PUSH = '현장 판매 없습니다'
+
+
 def price_str(w=None):
     """'여 49,000 · 남 59,000' — 판에 그대로 쓸 한 줄."""
     w = w or (OPEN_WAVE[0] if OPEN_WAVE else '2차')
+    if not SHOW_PRICE:
+        return ''
     p = PRICE.get(w)
     return f"여 {p['여']:,} · 남 {p['남']:,}" if p else ''
 
 
 def price_up():
     """다음 차수에서 얼마 오르는지. **이게 지금 사야 할 이유다.**"""
-    if not OPEN_WAVE:
+    if not SHOW_PRICE or not OPEN_WAVE:
         return ''
     ws = [w[0] for w in WAVES]
     i = ws.index(OPEN_WAVE[0])
