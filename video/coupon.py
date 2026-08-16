@@ -93,28 +93,26 @@ def perf(img, x):
 
 
 def stub(img):
-    """뜯는 쪽. **검은 띠 하나로 두면 로고만 뜬 빈 판이 된다.**
+    """뜯는 쪽.
 
-    안쪽에 실선 테두리를 하나 넣고, 아래에 번호 자리를 둔다 — 인쇄소
-    넘버링을 쓰든 손으로 적든, 자리가 있어야 회수한 쿠폰을 셀 수 있다."""
+    테두리를 둘러 봤는데 **상자 안에 로고를 가둔 꼴**이라 어색했다 —
+    검은 면 자체가 이미 경계다. 선을 빼고 세로 낱말을 키워서 면을 쓴다.
+
+    아래 번호 자리는 남긴다. 인쇄소 넘버링을 쓰든 손으로 적든, 자리가
+    있어야 회수한 쿠폰을 셀 수 있다."""
     box(img, 0, 0, STUB, H, INK)
-    m = U * 1.1
-    for x0, y0, x1, y1 in ((m, m, STUB - m, m + HAIR),                 # 위
-                           (m, H - m - HAIR, STUB - m, H - m),         # 아래
-                           (m, m, m + HAIR, H - m),                    # 왼
-                           (STUB - m - HAIR, m, STUB - m, H - m)):     # 오른
-        box(img, x0, y0, x1, y1, PAPER, 0.22)
 
-    lg = logo(int(U * 3.2))
-    paint(img, lg, STUB / 2 - lg.shape[1] / 2, H * 0.22, color=PAPER, a=0.95)
-    st = np.rot90(tmask(STUB_WORD, BRAND, int(U * 1.45), 0.34))
-    paint(img, st, STUB / 2 - st.shape[1] / 2, H * 0.55, color=PAPER, a=0.85)
+    lg = logo(int(U * 3.0))
+    paint(img, lg, STUB / 2 - lg.shape[1] / 2, U * 3.4, color=PAPER, a=0.95)
 
-    # 번호 자리 — 회수한 쿠폰을 세려면 자리가 있어야 한다
+    # 세로 낱말. 자간을 벌려 면을 쓰게 한다 — 짧게 두면 가운데가 빈다
+    st = np.rot90(tmask(STUB_WORD, BRAND, int(U * 1.5), 0.62))
+    paint(img, st, STUB / 2 - st.shape[1] / 2, H * 0.545, color=PAPER, a=0.88)
+
     nw = STUB - U * 5
-    box(img, U * 2.5, H - U * 3.6, U * 2.5 + nw, H - U * 3.6 + HAIR, PAPER, 0.30)
-    paint_bl(img, tmask_bl('NO.', BRAND, int(U * 0.62), 0.24), U * 2.5, H - U * 2.2,
-             color=PAPER, a=0.42)
+    box(img, U * 2.5, H - U * 3.4, U * 2.5 + nw, H - U * 3.4 + HAIR, PAPER, 0.28)
+    paint_bl(img, tmask_bl('NO.', BRAND, int(U * 0.62), 0.24), U * 2.5, H - U * 2.0,
+             color=PAPER, a=0.40)
     perf(img, STUB)
 
 
