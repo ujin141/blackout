@@ -1404,3 +1404,61 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
   white-space: nowrap;
   border: 0;
 }
+
+
+/* ── event popup ─────────────────────────────────────────────
+   포스터를 왼쪽에 두고 정보를 오른쪽에 세운다. 좁은 화면에서는
+   포스터가 위로 올라간다 — 세로로 쌓으면 포스터가 화면을 다 먹어서
+   높이를 제한한다. */
+.modal--evt .modal__panel { max-width: 44rem; padding: 0; overflow: hidden; }
+/* **세로 칸에는 세로 포스터를 넣는다.** 4:5 판을 이 칸에 cover 로 넣으면
+   좌우가 잘려 제목이 날아간다 — 9:16 판은 칸 비율과 거의 같아 안 잘린다. */
+.evt { display: grid; grid-template-columns: 0.82fr 1.18fr; }
+.evt__art { display: block; background: var(--black); }
+.evt__art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%;
+                display: block; }
+.evt__body { padding: clamp(1.4rem, 3.4vw, 2.4rem); }
+
+/* 자간을 넓게 주면 두 줄로 꺾인다 — 한 줄에 앉을 만큼만 준다 */
+.evt__kicker { font-family: var(--brand); font-size: var(--t-1);
+               letter-spacing: 0.14em; color: var(--w-45); white-space: nowrap; }
+.evt__title { font-family: var(--brand); font-size: clamp(1.5rem, 4.6vw, 2.1rem);
+              letter-spacing: 0.06em; margin: 0.5rem 0 1.1rem; }
+
+.evt__meta { list-style: none; margin: 0 0 1.1rem; padding: 0;
+             border-top: 1px solid var(--line-soft); }
+.evt__meta li { font-size: var(--t-3); color: var(--w-90); padding: 0.52rem 0;
+                border-bottom: 1px solid var(--line-soft); }
+.evt__meta b { font-family: var(--brand); letter-spacing: 0.06em; }
+
+/* 지금 상태 — 끝난 것은 줄을 긋고, 열린 것만 밝게 */
+.evt__status { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem;
+               font-size: var(--t-2); margin-bottom: 0.7rem; }
+.evt__off { color: var(--w-45); text-decoration: line-through; }
+.evt__status b { color: var(--white); font-weight: 600; }
+.evt__status span:last-child { color: var(--w-60); }
+
+.evt__price { font-size: var(--t-2); color: var(--w-60); margin-bottom: 1.3rem; }
+.evt__price em { display: block; font-style: normal; color: var(--white);
+                 margin-top: 0.28rem; }
+
+.evt__cta { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.evt__cta .btn { flex: 1 1 auto; text-align: center; }
+
+.evt__mute { display: block; margin-top: 1.1rem; padding: 0;
+             background: none; border: 0; cursor: pointer;
+             font-size: var(--t-1); color: var(--w-45);
+             text-decoration: underline; text-underline-offset: 3px; }
+.evt__mute:hover { color: var(--w-90); }
+
+@media (max-width: 44rem) {
+  .evt { grid-template-columns: 1fr; }
+  /* **포스터를 세로로 다 보여주면 정보가 화면 밖으로 밀린다.**
+     34vh 로 뒀더니 '오늘 하루 안 보기' 가 화면 아래로 밀렸다 —
+     위쪽만 잘라 보여주고 나머지 높이는 글자에 준다 */
+  .evt__art { max-height: 25vh; }
+  /* 가로 띠가 되면 세로 포스터의 가운데가 잡힌다 — 하늘만 나온다.
+     제목이 위에 있으니 위쪽을 보여준다 */
+  .evt__art img { object-position: 50% 10%; }
+  .evt__cta { flex-direction: column; }
+}

@@ -115,7 +115,20 @@ const I18N = {
     'apply.submit': '지원서 보내기',
     'apply.err1': '이름, 이메일, 분야는 필수입니다.',
     'apply.err2': '이메일 주소를 다시 확인해 주세요.',
-    'apply.other': '기타'
+    'apply.other': '기타',
+
+    /* 행사 팝업 — 포스터와 같은 말을 해야 합니다. 한쪽만 고치면 어긋납니다. */
+    'evt.kicker': 'POOL PARTY × SOLO PARTY',
+    'evt.day': '토요일',
+    'evt.venue': '어나더 루프탑 라운지 · 양재',
+    'evt.sold': '1차 사전예약 마감',
+    'evt.open': '2차 예약중',
+    'evt.cap': '80명 한정',
+    'evt.price': '2차 입장 · 여 49,000 · 남 59,000',
+    'evt.priceUp': '3차부터 10,000원 오릅니다',
+    'evt.book': '예약하기',
+    'evt.more': '인스타에서 보기',
+    'evt.mute': '오늘 하루 안 보기',
   },
 
   en: {
@@ -227,6 +240,19 @@ const I18N = {
     'apply.submit': 'Send application',
     'apply.err1': 'Name, email and role are required.',
     'apply.err2': 'That email address does not look right.',
-    'apply.other': 'Other'
+    'apply.other': 'Other',
+
+    /* Event popup */
+    'evt.kicker': 'POOL PARTY × SOLO PARTY',
+    'evt.day': 'SAT',
+    'evt.venue': 'Another Rooftop Lounge · Yangjae, Seoul',
+    'evt.sold': '1st round sold out',
+    'evt.open': '2nd round open',
+    'evt.cap': 'Capacity 80',
+    'evt.price': '2nd round · W 49,000 · M 59,000',
+    'evt.priceUp': 'Goes up 10,000 for the 3rd round',
+    'evt.book': 'Book now',
+    'evt.more': 'See on Instagram',
+    'evt.mute': "Don't show today",
   }
 };

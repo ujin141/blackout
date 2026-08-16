@@ -3,6 +3,15 @@
    Edit CONFIG below to point the site at your real accounts.
    ============================================================ */
 
+/* 행사 팝업. 끝나면 on 을 false 로 두면 안 뜹니다 — 마크업을 지울 필요 없습니다. */
+const EVENT = {
+  on: true,
+  form: 'https://forms.gle/sue3a9jZNCi8U8dC7',   // 사전예약 폼
+  until: '2026-08-29',                            // 이 날이 지나면 스스로 안 뜬다
+  delay: 1200,                                    // 들어오자마자 덮치면 그냥 닫는다
+  muteHours: 20                                   // '오늘 하루 안 보기' 가 유지되는 시간
+};
+
 const CONFIG = {
   instagram: 'blackoutcrew_official',          // handle without "@"
   email: 'ujin141@naver.com',                  // 지원서·문의가 도착하는 주소
@@ -861,4 +870,65 @@ const ART = {
     const href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(CONFIG.applySubject + ' — ' + role + ' / ' + name)}&body=${encodeURIComponent(body)}`;
     window.location.href = href;
   });
+})();
+
+
+/* ── event popup ─────────────────────────────────────────── */
+(() => {
+  const modal = $('#event');
+  if (!modal || !EVENT.on) return;
+
+  /* **행사가 지나면 스스로 안 뜬다.** 사람이 끄는 걸 잊어도 지난 행사가
+     계속 뜨는 일은 없다 — 그게 제일 흔한 사고다. */
+  if (new Date(EVENT.until + 'T23:59:59+09:00') < new Date()) return;
+
+  const MUTE = 'blackout:evtMuted';
+  const muted = () => {
+    const t = Number(localStorage.getItem(MUTE) || 0);
+    return t && Date.now() - t < EVENT.muteHours * 3600e3;
+  };
+
+  $$('[data-evt-link]').forEach(a => {
+    a.href = EVENT.form; a.target = '_blank'; a.rel = 'noopener';
+  });
+
+  let last = null;
+  const open = () => {
+    last = document.activeElement;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    /* **rAF 는 백그라운드 탭에서 안 돈다.** 링크를 눌러 새 탭으로 열어 두면
+       판이 열린 채 투명하게 남는다 — 타이머로 한 번 더 받쳐 준다 */
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+    setTimeout(() => modal.classList.add('is-open'), 60);
+    const first = $('.evt__cta [data-evt-link]', modal);
+    if (first) setTimeout(() => first.focus({ preventScroll: true }), 260);
+  };
+  const close = () => {
+    modal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    setTimeout(() => { modal.hidden = true; }, 400);
+    if (last) last.focus({ preventScroll: true });
+  };
+
+  $$('[data-close-evt]').forEach(b => b.addEventListener('click', close));
+  const mute = $('[data-mute-evt]', modal);
+  if (mute) mute.addEventListener('click', () => {
+    localStorage.setItem(MUTE, String(Date.now()));
+    close();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
+  /* 탭이 판 밖으로 새지 않게 가둔다 */
+  modal.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const f = $$('button, a[href]', modal).filter(el => el.offsetParent !== null);
+    if (!f.length) return;
+    const [a, z] = [f[0], f[f.length - 1]];
+    if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+    else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+  });
+
+  if (!muted()) setTimeout(open, reduceMotion ? 300 : EVENT.delay);
 })();

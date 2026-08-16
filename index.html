@@ -342,6 +342,53 @@
   </div>
 </footer>
 
+<!-- ── event popup ──────────────────────────────────────────
+     행사가 끝나면 main.js 의 EVENT.on 을 false 로 두면 안 뜹니다.
+     정보는 여기 한 곳에만 적혀 있습니다 — 포스터와 어긋나지 않게 확인하세요. -->
+<div class="modal modal--evt" id="event" hidden>
+  <div class="modal__scrim" data-close-evt></div>
+  <div class="modal__panel evt" role="dialog" aria-modal="true" aria-labelledby="evtTitle">
+    <button class="modal__x" type="button" data-close-evt aria-label="Close">✕</button>
+
+    <a class="evt__art" href="#" data-evt-link aria-hidden="true" tabindex="-1">
+      <!-- lazy 를 쓰지 않는다. 숨은 판 안에 있어서 열릴 때까지 안 받아오고,
+           그러면 판이 뜬 뒤 한 박자 늦게 그림이 채워진다. 47KB 라 그냥 받는다 -->
+      <img src="assets/img/event/poster.webp" alt="AFTER SUNSET 포스터"
+           width="760" height="1351" decoding="async" />
+    </a>
+
+    <div class="evt__body">
+      <p class="evt__kicker" data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</p>
+      <h2 id="evtTitle" class="evt__title">AFTER SUNSET</h2>
+
+      <ul class="evt__meta">
+        <li><b>2026.08.29</b> <span data-i18n="evt.day">토요일</span></li>
+        <li>PM 19:00 — 24:00</li>
+        <li data-i18n="evt.venue">어나더 루프탑 라운지 · 양재</li>
+      </ul>
+
+      <p class="evt__status">
+        <span class="evt__off" data-i18n="evt.sold">1차 사전예약 마감</span>
+        <b data-i18n="evt.open">2차 예약중</b>
+        <span data-i18n="evt.cap">80명 한정</span>
+      </p>
+
+      <p class="evt__price">
+        <span data-i18n="evt.price">2차 입장 · 여 49,000 · 남 59,000</span>
+        <em data-i18n="evt.priceUp">3차부터 10,000원 오릅니다</em>
+      </p>
+
+      <div class="evt__cta">
+        <a class="btn btn--solid" href="#" data-evt-link data-i18n="evt.book">예약하기</a>
+        <a class="btn" href="#" data-link="instagram" target="_blank" rel="noopener"
+           data-i18n="evt.more">인스타에서 보기</a>
+      </div>
+
+      <button class="evt__mute" type="button" data-mute-evt data-i18n="evt.mute">오늘 하루 안 보기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── apply modal ──────────────────────────────────────────── -->
 <div class="modal" id="apply" hidden>
   <div class="modal__scrim" data-close-apply></div>
