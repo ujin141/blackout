@@ -1416,7 +1416,11 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
    포스터가 위로 올라간다 — 세로로 쌓으면 포스터가 화면을 다 먹어서
    높이를 제한한다. */
 /* **base 는 width 로 잡혀 있어서 max-width 만 주면 안 넓어진다.** */
-.modal--evt .modal__panel { width: min(58rem, 100%); padding: 0; overflow: hidden; }
+/* **overflow:hidden 이면 넘친 부분에 손이 닿지 않는다.** 판이 화면보다
+   길어지면 아래가 그냥 잘려서 '오늘 하루 안 보기' 를 누를 방법이 없었다 —
+   auto 로 두면 모서리는 그대로 깎이면서 넘칠 때만 스크롤이 생긴다. */
+.modal--evt .modal__panel { width: min(58rem, 100%); padding: 0; overflow: auto;
+                            overscroll-behavior: contain; }
 
 /* **포스터를 왼쪽 칸에 가두지 않는다.** 칸을 나눠 놓으면 사진과 글자가
    서로 다른 판처럼 붙어 있는 꼴이 된다 — 사진을 판 전체에 깔고 글자가
@@ -1613,6 +1617,17 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
     max-height: calc(86dvh - env(safe-area-inset-bottom, 0px));
   }
 }
+/* **--vvh 는 자바스크립트가 잰 실제 높이다.** 인앱 브라우저(인스타·카카오)는
+   vh 도 dvh 도 위아래 막대를 뺀 높이를 안 줘서, 여기서 한 번 더 받친다.
+
+   **작은 쪽을 쓴다.** 회전이나 창 크기 변화를 자바스크립트가 한 박자 놓치면
+   --vvh 가 실제보다 커지는데, 그때 그 값을 믿으면 판이 화면을 넘어 아래가
+   잘린다 — 그게 원래 증상이었다. min() 이면 둘 중 하나만 맞아도 안 넘는다. */
+.modal--evt .modal__panel {
+  max-height: min(88dvh, 88vh, calc(var(--vvh, 100vh) * 0.88));
+  max-height: calc(min(88dvh, 88vh, var(--vvh, 100vh) * 0.88)
+                   - env(safe-area-inset-bottom, 0px));
+}
 @media (max-width: 44rem) {
   /* 그래도 모자라면 판 안에서 스크롤된다 — 아래가 잘려 안 보이는 것보다 낫다 */
   .modal--evt .modal__panel { -webkit-overflow-scrolling: touch; }
@@ -1634,4 +1649,15 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 /* 화면이 낮으면(주소창 있는 폰 가로, 작은 기기) 곁들이를 통째로 뺀다 */
 @media (max-height: 620px) {
   .evt__extra { display: none; }
+}
+
+
+/* **마지막 요소가 스크롤 끝에 딱 붙으면 잘린 것처럼 보인다.**
+   판 안쪽 아래에 한 뼘을 남겨서 '오늘 하루 안 보기' 가 항상 떠 보이게 한다. */
+.modal--evt .modal__panel { padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* **여기에 .evt { min-height } 를 넣지 마세요.** 판과 .evt 가 같은 div 라서
+   min-height 가 위의 max-height 를 이깁니다 — 판이 화면을 넘고 아래가 잘립니다.
+   사진(.evt__art)은 inset:0 으로 이미 스크롤 영역 전체를 덮습니다. */
+@media (max-width: 44rem) {
+  .evt__mute { margin-bottom: 0.9rem; }
 }

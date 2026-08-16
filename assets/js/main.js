@@ -879,6 +879,29 @@ const ART = {
 })();
 
 
+/* ── 실제 화면 높이 ───────────────────────────────────────
+   **vh 도 dvh 도 못 믿는 데가 있다.** 인스타·카카오 인앱 브라우저는 위아래
+   막대를 뺀 높이를 CSS 에 안 알려 줘서, 판이 88vh 여도 실제로는 화면 밖으로
+   나간다 — 그래서 '오늘 하루 안 보기' 가 잘렸다.
+
+   visualViewport 는 지금 눈에 보이는 높이를 준다. 그걸 변수로 넣고 CSS 가
+   쓰게 한다. 없는 브라우저는 innerHeight 로 떨어진다. */
+(() => {
+  const set = () => {
+    const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    document.documentElement.style.setProperty('--vvh', h + 'px');
+  };
+  set();
+  addEventListener('resize', set);
+  addEventListener('orientationchange', () => setTimeout(set, 250));
+  if (window.visualViewport) {
+    visualViewport.addEventListener('resize', set);
+    // 주소창이 접혔다 펴질 때도 높이가 바뀐다
+    visualViewport.addEventListener('scroll', set);
+  }
+})();
+
+
 /* ── event popup ─────────────────────────────────────────── */
 (() => {
   const modal = $('#event');
