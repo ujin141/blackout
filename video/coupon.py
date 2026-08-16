@@ -12,9 +12,12 @@
 **왼쪽에 뜯는 쪽(스텁)을 둡니다.** 바텐더가 반을 뜯어 통에 넣으면 그날
 몇 장이 나갔는지 세어집니다. 안 뜯고 도장만 찍으면 재사용이 됩니다.
 
-**뒷면은 광고 자리가 아니라 다음 행동입니다.** 드링크를 받은 사람은 이미
-안에 있으니 행사 정보를 또 적을 이유가 없습니다. 대신 **그날 밤 끝나고
-어디로 가는지**(밴드 혜택)와 **다음에 어디서 소식을 보는지**(계정)를 둡니다.
+**행사 이름도 날짜도 안 들어갑니다.** 처음엔 앞면에 행사명과 날짜를, 뒷면에
+협업사 혜택을 깔았는데 그건 이 행사에서만 맞는 말입니다 — **남는 쿠폰이
+다음 행사로 넘어가야 인쇄가 안 아깝습니다.** 바뀌는 건 앞면 조건 한 줄뿐이고,
+그것도 `COND` 한 줄만 고치면 됩니다.
+
+뒷면에 남긴 것 — 로고, 이름, 계정 QR. 셋뿐입니다.
 
 ⚠ 흑백입니다. 컬러 예외는 모객용 판에만 줍니다 — 쿠폰은 현장에서 쓰는
 물건이라 크루 톤을 따르고, 종이도 싸게 갑니다.
@@ -50,8 +53,11 @@ HAIR = 3                               # 최소 획 0.25mm
 INK = np.float32([0.05, 0.05, 0.06])
 PAPER = np.float32([0.96, 0.96, 0.95])
 
-HEAD = 'WELCOME DRINK'
-GIVE = EV.FOLLOW_GET                   # '웰컴드링크 1+1'
+# **판이 통째로 영문이다.** 밴드·협업 판과 같은 톤이라야 한 크루가 만든
+# 물건으로 보인다. 조건 한 줄만 한글로 남긴다 — 현장에서 다투는 자리라
+# 오해가 나면 돈이 든다.
+HEAD = 'ON US'
+GIVE = 'WELCOME DRINK 1+1'
 COND = '팔로우 화면 확인 후 · 1인 1회'
 STUB_WORD = 'DRINK'
 
@@ -96,14 +102,17 @@ def front():
     # 쿠폰은 손바닥만 해서 그 빈자리가 그대로 보인다
     paint_bl(img, tmask_bl(HEAD, BRAND, int(U * 1.15), 0.34), x, H * 0.26,
              color=INK, a=0.55)
-    gs = min(int(U * 4.3), fit(GIVE, KRB, right - x, 0.0))
-    paint_bl(img, tmask_bl(GIVE, KRB, gs, 0.0), x, H * 0.50, color=INK)
+    # 영문이라 브랜드 서체로. 자간을 조금 줘야 한 낱말로 안 뭉친다
+    gs = min(int(U * 2.9), fit(GIVE, BRAND, right - x, 0.06))
+    paint_bl(img, tmask_bl(GIVE, BRAND, gs, 0.06), x, H * 0.50, color=INK)
     rule(img, H * 0.60, x, right, INK, 0.22, HAIR)
     paint_bl(img, tmask_bl(COND, KR, int(U * 1.0), 0.01), x, H * 0.71,
              color=INK, a=0.62)
 
     fy = H - U * 3.2
-    paint_bl(img, tmask_bl(f'{EV.NAME}   {EV.DATE_EN}', BRAND, int(U * 0.85), 0.18),
+    # **행사 이름과 날짜를 안 적는다.** 적는 순간 그날에만 쓰는 물건이 된다 —
+    # 남는 쿠폰이 다음 행사로 넘어가야 인쇄가 안 아깝다
+    paint_bl(img, tmask_bl('BLACKOUT CREW', BRAND, int(U * 0.85), 0.22),
              x, fy, color=INK, a=0.55)
     # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
     bw = int(U * 5.2)
@@ -116,54 +125,40 @@ def front():
 
 
 def back():
-    """뒷면 — **다음 행동만 적는다.**
+    """뒷면 — **크루만.**
 
-    받은 사람은 이미 안에 있다. 행사 정보를 또 적을 이유가 없다.
-    남길 건 둘 — 나가서 어디로 가는지, 다음 소식을 어디서 보는지."""
+    처음엔 협업사 혜택과 애프터파티를 깔았는데, 그건 이 행사에서만 맞는
+    말이라 다음 행사에 쓰면 거짓이 된다. **쿠폰은 한 번 쓰고 버리는
+    물건이지만 원고는 아니다** — 행사 이름도 날짜도 빼면 다음에도 그대로
+    쓰고, 바뀌는 건 앞면 조건 한 줄뿐이다.
+
+    남긴 것 — 로고, 이름, 계정 QR. 셋뿐이다."""
     img = np.repeat(np.repeat(INK[None, None, :], H, 0), W, 1).copy()
 
-    # 왼쪽 — 밴드 혜택. 이 쿠폰이 밴드와 한 세트라는 걸 여기서 잇는다
-    x = U * 2.6
-    paint_bl(img, tmask_bl(f'{EV.BAND_HEAD}  ·  {EV.BAND_HEAD2}', BRAND,
-                           int(U * 1.1), 0.28), x, U * 4.0, color=PAPER, a=0.60)
-    paint_bl(img, tmask_bl(EV.BAND_WHEN_KO, KRB, int(U * 1.7), 0.02), x, U * 7.2,
-             color=PAPER)
-    # **혜택 칸을 고정 좌표로 박으면 긴 이름이 파고든다.**
-    # 실제로 'DDEUNGEUM POCHA' 가 혜택 글자를 밟았다 — 제일 긴 이름을 재서
-    # 그 뒤에 칸을 연다.
-    rows = [(en, ko) for en, _, _, ko in EV.ALLIES if ko != '행사장']
-    ns = int(U * 1.0)
-    px = x + max(tmask_bl(en, BRAND, ns, 0.14)[0].shape[1] for en, _ in rows) + U * 1.8
-    y = U * 12.2
-    for en, perk_ko in rows:
-        rule(img, y - U * 1.5, x, px - U * 0.6, PAPER, 0.10, HAIR)
-        paint_bl(img, tmask_bl(en, BRAND, ns, 0.14), x, y, color=PAPER, a=0.92)
-        paint_bl(img, tmask_bl(perk_ko, KR, int(U * 0.94), 0.01), px, y,
-                 color=PAPER, a=0.66)
-        y += U * 3.5
+    # 왼쪽 — 로고와 이름. 세로 가운데
+    x = U * 3.2
+    lg = logo(int(U * 4.6))
+    paint(img, lg, x, H * 0.42, color=PAPER, a=0.95)
+    nx = x + lg.shape[1] + U * 2.2
+    ns = min(int(U * 2.3), fit('BLACKOUT', BRAND, W * 0.44, 0.16))
+    nm = tmask_bl('BLACKOUT', BRAND, ns, 0.16)
+    paint_bl(img, nm, nx, H * 0.42 + nm[0].shape[0] / 2, color=PAPER)
+    paint_bl(img, tmask_bl('SEOUL  ·  DJ CREW', BRAND, int(U * 0.78), 0.34),
+             nx, H * 0.42 + nm[0].shape[0] / 2 + U * 2.1, color=PAPER, a=0.45)
 
-    # **아래 절반이 비어 있었다.** 채우려고 넣는 문구가 아니라 없으면
-    # 현장에서 다투는 문구다 — 뜯지 않은 쿠폰은 계속 돌아다닌다.
-    rule(img, H - U * 4.4, x, px + U * 9, PAPER, 0.16, HAIR)
-    paint_bl(img, tmask_bl('뜯긴 쿠폰만 유효 · 재발행 없음 · 현금 교환 불가', KR,
-                           int(U * 0.82), 0.01), x, H - U * 2.4, color=PAPER, a=0.45)
-
-    # ── 오른쪽 — 계정과 QR. 세로선으로 두 덩어리를 가른다 ──
+    # 오른쪽 — 계정 QR. 세로선으로 두 덩어리를 가른다
     # 17mm. 모듈 0.46mm 라 어두운 실내에서도 잡힌다 — 더 줄이면 안 읽힌다
     qs = int(U * 11.4)
-    qx = int(W - U * 2.2 - qs)
-    qy = int((H - (qs + U * 4.4)) / 2)                # 오른쪽 칸에서 세로 가운데
-    box(img, qx - U * 1.9, U * 2.0, qx - U * 1.9 + HAIR, H - U * 2.0, PAPER, 0.18)
+    qx = int(W - U * 2.4 - qs)
+    qy = int((H - (qs + U * 3.4)) / 2)
+    box(img, qx - U * 2.0, U * 2.4, qx - U * 2.0 + HAIR, H - U * 2.4, PAPER, 0.16)
     # QR 받침. **여백(quiet zone)이 있어야 읽힌다**
     box(img, qx - U * 0.55, qy - U * 0.55, qx + qs + U * 0.55, qy + qs + U * 0.55,
         PAPER, 0.96)
     img[qy:qy + qs, qx:qx + qs] = code(qs)
-    # QR 바로 밑에 붙인다. 발치에 떼어 두면 QR 과 따로 논다
-    paint_bl(img, tmask_bl('FOLLOW', BRAND, int(U * 0.76), 0.26), qx, qy + qs + U * 2.0,
-             color=PAPER, a=0.55)
     hs = min(int(U * 0.76), fit(EV.HANDLE, BRAND, qs + U * 0.8, 0.06))
-    paint_bl(img, tmask_bl(EV.HANDLE, BRAND, hs, 0.06), qx, qy + qs + U * 3.7,
-             color=PAPER, a=0.92)
+    paint_bl(img, tmask_bl(EV.HANDLE, BRAND, hs, 0.06), qx, qy + qs + U * 2.2,
+             color=PAPER, a=0.88)
 
     grain(img, 0.004, 13)
     return np.clip(img, 0, 1)
