@@ -2,6 +2,7 @@
 
     python short_cover.py          →  out/short/cover_ad.png
     python short_cover.py scene    →  out/short/cover_scene.png
+    python short_cover.py promo    →  out/short/cover_promo.png
 
 **커버는 두 군데에서 다르게 보인다.**
 
@@ -22,6 +23,7 @@
 
     ad     한글 훅이 제일 크다. 파는 판
     scene  행사 이름이 제일 크다. 브랜드 판 — 영상 자체가 분위기라 훅이 없다
+    promo  받는 물건(샴페인)이 제일 크다. **상품을 말로만 하면 안 믿는다**
 """
 import os
 import numpy as np
@@ -58,11 +60,20 @@ AQUA = np.float32([0.34, 0.94, 1.00])
 # 커버 글자와 겹친다 — 실제로 'AFTER SUNSET' 위에 '9시 반부터 솔로파티' 가
 # 겹쳐 나왔다. 그림을 그리는 코드를 직접 불러 자막 얹기 전 상태를 받는다.
 #   head  한글 훅. None 이면 행사 이름을 주인공으로 세운다
+#   lines 훅 아래 두 줄. 판마다 무엇을 알려야 하는지가 다르다
+#   bottle 병을 얹을지. 참여 이벤트 판에만 쓴다
 VARIANTS = {
-    'ad':    dict(src=('live', 'floor', 2.8, 0.46), head='혼자 와도 되는 풀파티'),
+    'ad':    dict(src=('live', 'floor', 2.8, 0.46), head='혼자 와도 되는 풀파티',
+                  lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
+    # **받는 물건을 보여 준다.** '샴페인 준다' 는 글자보다 병 한 장이 세다 —
+    # 배경은 사람이 없는 네온 컷이라 병이 앞으로 나온다
+    'promo': dict(src=('live', 'floor', 3.6, 0.46), head=EV.PROMO_GET, bottle=True,
+                  lines=('8.29 SAT  ·  양재 루프탑',
+                         f'{EV.PROMO_NOTE}  ·  {EV.PROMO_DUE} 마감')),
     # scene_story 는 영상 자체가 분위기라 훅이 없다. 커버까지 한글 훅을 달면
     # ad 커버와 격자에서 같은 말을 두 번 하게 된다 — 여기는 이름을 크게 세운다
-    'scene': dict(src=('scene', 180), head=None),
+    'scene': dict(src=('scene', 180), head=None,
+                  lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
 }
 
 
@@ -113,6 +124,9 @@ def build(name='ad'):
               W / 2, TOP + 176, color=PAPER, a=0.92, anchor='c')
         paint(img, tmask(EV.FORMAT, BRAND, 22, 0.34), W / 2, TOP + 222,
               color=AQUA, a=0.88, anchor='c')
+        if v.get('bottle'):
+            from short_card import bottle_on
+            bottle_on(img, TOP + 520, 480)
         # ── 훅. 커버에서 제일 큰 것 ──────────────────────
         fs = min(104, fit(HEAD, KRB, W * 0.86, 0.02))
         paint(img, tmask(HEAD, KRB, fs, 0.02), W / 2, TOP + 830, color=PAPER, anchor='c')
@@ -124,11 +138,12 @@ def build(name='ad'):
         paint(img, tmask(EV.FORMAT, BRAND, 26, 0.36), W / 2, TOP + 848,
               color=AQUA, a=0.94, anchor='c')
 
+    l1, l2 = v['lines']
     rule(img, TOP + 918, W * 0.14, W * 0.86, PAPER, 0.26, 2)
-    paint(img, tmask('8.29 SAT  ·  양재 루프탑', KR, 40, 0.02), W / 2, TOP + 976,
-          color=PAPER, a=0.94, anchor='c')
-    paint(img, tmask(EV.price_str(), KR, 34, 0.02), W / 2, TOP + 1030,
-          color=PAPER, a=0.76, anchor='c')
+    paint(img, tmask(l1, KR, min(40, fit(l1, KR, W * 0.86, 0.02)), 0.02),
+          W / 2, TOP + 976, color=PAPER, a=0.94, anchor='c')
+    paint(img, tmask(l2, KR, min(34, fit(l2, KR, W * 0.86, 0.02)), 0.02),
+          W / 2, TOP + 1030, color=PAPER, a=0.76, anchor='c')
 
     # 상태는 왼쪽 여백선에. 가운데에 홀로 뜨면 나중에 얹은 것으로 읽힌다
     _tag(img, W * 0.085, TOP + 1140, 38, color=PAPER, accent=CORAL, width=W * 0.80)
