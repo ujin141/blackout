@@ -1272,6 +1272,10 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
   color: var(--w-45);
 }
 .modal__note a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+/* 사진 위에서는 ✕ 가 안 보인다 — 받침을 깐다 */
+.modal--evt .modal__x { background: rgba(0,0,0,0.5); color: var(--white);
+                        backdrop-filter: blur(6px); border-radius: 999px;
+                        width: 2.2rem; height: 2.2rem; }
 .modal__x {
   position: absolute;
   top: 1rem;
@@ -1410,29 +1414,37 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
    포스터를 왼쪽에 두고 정보를 오른쪽에 세운다. 좁은 화면에서는
    포스터가 위로 올라간다 — 세로로 쌓으면 포스터가 화면을 다 먹어서
    높이를 제한한다. */
-/* **base 는 width 로 잡혀 있어서 max-width 만 주면 안 넓어진다.**
-   그 바람에 포스터 칸이 198px 로 좁아져 가로의 76% 가 잘렸다. */
+/* **base 는 width 로 잡혀 있어서 max-width 만 주면 안 넓어진다.** */
 .modal--evt .modal__panel { width: min(58rem, 100%); padding: 0; overflow: hidden; }
-/* **세로 칸에는 세로 포스터를 넣는다.** 4:5 판을 cover 로 넣으면 좌우가
-   잘려 제목이 날아간다. 9:16 판을 쓰되 칸 비율을 사진에 맞춰야 —
-   칸이 사진보다 홀쭉하면 결국 옆이 잘린다. */
-/* **그리드 칸은 기본이 min-width:auto 라 긴 줄이 칸을 밀어낸다.**
-   라인업 한 줄 때문에 판이 화면 밖으로 22px 삐져나갔다 — minmax(0,…) 로 막는다. */
-.evt { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-       align-items: stretch; }
-.evt__art, .evt__body { min-width: 0; }
-.evt__art { display: block; background: var(--black); }
-.evt__art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%;
-                display: block; }
-.evt__body { padding: clamp(1.4rem, 3.4vw, 2.4rem); }
 
-/* 자간을 넓게 주면 두 줄로 꺾인다 — 한 줄에 앉을 만큼만 준다 */
+/* **포스터를 왼쪽 칸에 가두지 않는다.** 칸을 나눠 놓으면 사진과 글자가
+   서로 다른 판처럼 붙어 있는 꼴이 된다 — 사진을 판 전체에 깔고 글자가
+   앉는 쪽만 눌러야 한 장으로 읽힌다. */
+.evt { position: relative; display: grid;
+       grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr); }
+.evt__art { position: absolute; inset: 0; display: block; background: var(--black); }
+.evt__art img { width: 100%; height: 100%; object-fit: cover;
+                object-position: 34% 42%; display: block; }
+/* 오른쪽으로 갈수록 짙어지는 그늘. 왼쪽은 사진 그대로, 오른쪽은 글자가 읽힌다 */
+.evt__art::after {
+  content: ''; position: absolute; inset: 0;
+  /* **글자 뒤로도 사진이 비쳐야 한 장으로 읽힌다.** 완전히 덮으면 사진과
+     글자가 다시 두 판으로 갈린다 — 0.88 까지만 올린다 */
+  background: linear-gradient(90deg,
+    rgba(11,11,12,0) 0%, rgba(11,11,12,0.12) 22%,
+    rgba(11,11,12,0.74) 36%, rgba(11,11,12,0.90) 48%, rgba(11,11,12,0.92) 100%);
+}
+/* **아래 여백이 남던 자리를 글자가 나눠 쓴다.** 위에 몰아 두면 판이 반만 찬다 */
+.evt__body { position: relative; z-index: 1; grid-column: 2;
+             display: flex; flex-direction: column; justify-content: center;
+             padding: clamp(1.5rem, 3.2vw, 2.3rem); }
+
 .evt__kicker { font-family: var(--brand); font-size: var(--t-1);
                letter-spacing: 0.14em; color: var(--w-45); white-space: nowrap; }
 .evt__title { font-family: var(--brand); font-size: clamp(1.5rem, 4.6vw, 2.1rem);
               letter-spacing: 0.06em; margin: 0.5rem 0 1.1rem; }
 
-.evt__meta { list-style: none; margin: 0 0 1.1rem; padding: 0;
+.evt__meta { list-style: none; margin: 0.7rem 0 0.3rem; padding: 0;
              border-top: 1px solid var(--line-soft); }
 .evt__meta li { font-size: var(--t-3); color: var(--w-90); padding: 0.52rem 0;
                 border-bottom: 1px solid var(--line-soft); }
@@ -1445,15 +1457,16 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .evt__status b { color: var(--white); font-weight: 600; }
 .evt__status span:last-child { color: var(--w-60); }
 
-.evt__price { font-size: var(--t-2); color: var(--w-60); margin-bottom: 1.3rem; }
+.evt__price { font-size: var(--t-2); color: var(--w-60); margin-bottom: 0.2rem; }
 .evt__price em { display: block; font-style: normal; color: var(--white);
                  margin-top: 0.28rem; }
 
 /* 곁들이 정보와 붙어 있었다 — 버튼은 숨 쉴 자리가 있어야 눌린다 */
-.evt__cta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
+.evt__cta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.15rem; }
 .evt__cta .btn { flex: 1 1 auto; text-align: center; }
 
-.evt__mute { display: block; margin-top: 1.1rem; padding: 0;
+.evt__mute { display: block; align-self: flex-start; text-align: left;
+             margin-top: 0.75rem; padding: 0;
              background: none; border: 0; cursor: pointer;
              font-size: var(--t-1); color: var(--w-45);
              text-decoration: underline; text-underline-offset: 3px; }
@@ -1472,7 +1485,7 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .evt__bar span { display: block; height: 100%; width: var(--fill, 0%);
                  background: var(--white); transition: width 0.9s cubic-bezier(.2,.7,.2,1); }
 
-.evt__extra { list-style: none; margin: 1.2rem 0 0; padding: 0.9rem 0 0;
+.evt__extra { list-style: none; margin: 0.55rem 0 0; padding: 0.85rem 0 0;
               border-top: 1px solid var(--line-soft); display: grid; gap: 0.42rem; }
 .evt__extra li { display: grid; grid-template-columns: 5.4rem 1fr; gap: 0.7rem;
                  font-size: var(--t-2); color: var(--w-60); line-height: 1.5; }
@@ -1556,19 +1569,21 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 /* **좁은 화면 규칙은 파일 맨 뒤에 둔다.** 앞에 두면 뒤에 붙는 데스크톱
    규칙이 같은 특이도로 덮어 버린다 — 실제로 라인업 줄이 안 접혔다. */
 @media (max-width: 44rem) {
+  /* **한 칸이 되는데 본문이 2번 칸에 남아 있으면 판이 화면 밖으로 나간다.**
+     실제로 그렇게 삐져나갔다 — 칸도 1번으로 되돌린다. */
   .evt { grid-template-columns: minmax(0, 1fr); }
-  /* **포스터를 세로로 다 보여주면 정보가 화면 밖으로 밀린다.**
-     34vh 로 뒀더니 '오늘 하루 안 보기' 가 화면 아래로 밀렸다 —
-     위쪽만 잘라 보여주고 나머지 높이는 글자에 준다 */
-  /* 곁들이 정보가 붙으면서 판이 길어졌다 — 포스터 띠를 더 줄여
-     '예약하기' 와 '오늘 하루 안 보기' 를 한 화면에 넣는다 */
-  /* 라벨을 쌓으면서 판이 44px 길어졌다 — 포스터 띠에서 그만큼 돌려받는다 */
-  .evt__art { max-height: 12vh; }
-  .evt__body { padding: 1.1rem 1.2rem 1.3rem; }
+  .evt__body { grid-column: 1; justify-content: flex-start;
+               padding: 8.2rem 1.2rem 1.3rem; }
+  /* 가로로 벌어진 판이 아니라 세로로 쌓인 판이라 그늘도 세로로 눕힌다 —
+     위쪽은 사진 그대로, 글자가 시작되는 데서 짙어진다 */
+  .evt__art img { object-position: 50% 24%; }
+  .evt__art::after {
+    background: linear-gradient(180deg,
+      rgba(11,11,12,0) 0%, rgba(11,11,12,0.18) 12%,
+      rgba(11,11,12,0.82) 26%, rgba(11,11,12,0.93) 36%, rgba(11,11,12,0.95) 100%);
+  }
+  .evt__cta { flex-direction: column; }
   .evt__extra { margin-top: 0.8rem; padding-top: 0.7rem; gap: 0.45rem; }
-  /* **좁은 화면에서는 라벨을 위로 올린다.** 5.4rem 을 떼어 주고 남은 폭에
-     라인업 일곱 명을 넣으면, 폰트가 조금만 넓어도 판 밖으로 밀린다.
-     쌓으면 글자가 쓸 수 있는 폭이 두 배가 되어 어떤 폰트로도 안 넘친다. */
   .evt__extra li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
   .evt__extra b { letter-spacing: 0.2em; }
   .evt__cta { margin-top: 1rem; }

@@ -372,10 +372,13 @@
     <button class="modal__x" type="button" data-close-evt aria-label="Close">✕</button>
 
     <a class="evt__art" href="#" data-evt-link aria-hidden="true" tabindex="-1">
-      <!-- lazy 를 쓰지 않는다. 숨은 판 안에 있어서 열릴 때까지 안 받아오고,
-           그러면 판이 뜬 뒤 한 박자 늦게 그림이 채워진다. 47KB 라 그냥 받는다 -->
-      <img src="assets/img/event/poster.webp" alt="AFTER SUNSET 포스터"
-           width="760" height="1351" decoding="async" />
+      <!-- **포스터가 아니라 사진이다.** 포스터를 깔면 포스터에 박힌 제목과
+           팝업 제목이 겹쳐 두 번 나온다 — 글자 없는 현장 사진이라야 판의
+           글자가 유일한 글자가 된다.
+           lazy 는 안 쓴다. 숨은 판 안에 있어서 열릴 때까지 안 받아오고,
+           그러면 판이 뜬 뒤 한 박자 늦게 그림이 채워진다. 59KB 라 그냥 받는다 -->
+      <img src="assets/img/event/bg.webp" alt=""
+           width="1400" height="897" decoding="async" />
     </a>
 
     <div class="evt__body">
