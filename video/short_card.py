@@ -24,6 +24,7 @@
 python short_card.py           행사 소개판
 python short_card.py sale      판매 상태판 (1차 마감 · 테이블만 · 2차 일정)
 python short_card.py promo     참여 이벤트판 (팔로우·댓글·공유 → 무료 입장)
+python short_card.py ad        **유료 광고판** — 값과 인상 고지가 들어간다
 """
 import os
 import re
@@ -136,6 +137,47 @@ def promo_cards():
     return c[:7]
 
 
+# **유료 광고용 판에만 값을 적는다.** 오가닉 게시물은 값을 안 적어도
+# 프로필까지 오지만, 광고는 처음 보는 사람에게 나간다 — 값을 숨기면
+# "얼만데?" 에서 멈추고, 적으면 못 낼 사람이 먼저 걸러진다.
+# 클릭은 줄고 예약은 는다. 그게 광고에서 이기는 쪽이다.
+AD_PRICE = True
+
+
+def ad_cards():
+    """유료 광고용. **오가닉 판과 순서가 다르다.**
+
+    오가닉은 이미 우리를 아는 사람이 보니까 분위기부터 깔아도 된다.
+    광고는 처음 보는 사람이고 1초 뒤에 넘긴다 — 그래서 순서가
+
+        훅      혼자 와도 되는 풀파티      약속과 형식을 한 줄에
+        무엇     9시 반부터 솔로파티        그게 뭔지
+        문턱     아는 사람 없어도 됩니다     못 오던 이유를 지운다
+        증거     80명 중 20명은 갔습니다     남이 이미 샀다
+        값       여 49,000 · 남 59,000     못 낼 사람을 여기서 거른다
+        지금     3차부터 10,000원 오릅니다   내일 사면 손해다
+        행동     프로필 링크에서 예약        갈 곳을 정확히 말한다
+
+    **값과 인상 고지가 이 판의 심장이다.** 앞의 다섯은 다른 판에도 있지만,
+    카드를 꺼내게 하는 건 "지금 사면 싸다" 하나뿐이다.
+    """
+    c = [(CORAL, '혼자 와도 되는 풀파티'),
+         (DEEP,  '9시 반부터 솔로파티'),
+         (INK,   '아는 사람 없어도 됩니다'),
+         (AQUA,  f'{EV.CAP}명 중 {EV.DONE}명은 갔습니다')]
+    if AD_PRICE and EV.price_str():
+        c.append((DEEP, EV.price_str()))
+    if AD_PRICE and EV.price_up():
+        c.append((INK, EV.price_up()))
+    elif EV.NEXT_OPEN:
+        c.append((INK, EV.NEXT_OPEN))
+    c.append((CORAL, '프로필 링크에서 예약'))
+    # 칸이 모자라면 앞의 증거를 한 번 더 — 뒤를 지우면 CTA 가 날아간다
+    while len(c) < 7:
+        c.insert(-1, (AQUA, f'{EV.OPEN_LEFT}자리 남았습니다'))
+    return c[:7]
+
+
 def sale_cards():
     """판매용 카드. **event.py 만 고치면 문구가 따라온다** —
     영상에 숫자를 손으로 박아 두면 다음 차수에 통째로 다시 만들어야 한다.
@@ -167,6 +209,20 @@ def sale_cards():
 # 현장 컷 — 겹치지 않는 구간만. 0.94초씩이라 짧게 잘라도 남는다
 SHOTS = [('crowd', 3.3), ('floor', 0.4), ('side', 1.2),
          ('walk', 2.2), ('floor', 5.6), ('crowd', 6.2)]
+
+# **광고는 컷을 따로 쓴다.** 게시물은 팔로워가 보지만 광고는 모르는 사람
+# 수만 명에게 나간다 — 손님 정면 얼굴이 가운데 오는 순간(side 1.2 · walk 4.4 ·
+# crowd 6.8)을 전부 뺐다. 뒤통수·원경·조명만 남긴다.
+# 초상권은 저작권과 별개고, 광고는 캡처가 남는다.
+#
+# 그러면서도 팔아야 하니 **물이 꽉 찬 그림**을 앞에 둔다 — 광고에서 제일 세게
+# 먹히는 건 "사람이 이만큼 있다" 다.
+AD_SHOTS = [('crowd', 1.2),    # 물 안이 꽉 찼다. 훅 바로 뒤에 놓는 그림
+            ('floor', 2.8),    # 튜브·네온. 색이 제일 좋다
+            ('crowd', 3.6),
+            ('sky',   6.8),    # 원경 — 장소가 어떤 덴지
+            ('floor', 4.4),
+            ('crowd', 5.2)]
 
 
 def ink_for(col):
@@ -207,7 +263,9 @@ def crop916(fr, ox=0.5):
 
 
 def render(mode='intro'):
-    CARDS = {'sale': sale_cards, 'promo': promo_cards}.get(mode, lambda: INTRO)()
+    CARDS = {'sale': sale_cards, 'promo': promo_cards,
+             'ad': ad_cards}.get(mode, lambda: INTRO)()
+    SH = AD_SHOTS if mode == 'ad' else SHOTS
     nseg = (NBEAT - TAIL) // SEG                  # 13 칸
     # 글자 판과 현장 컷을 번갈아. 칸 0·2·4… 는 글자, 1·3·5… 는 현장
     order = []
@@ -217,9 +275,9 @@ def render(mode='intro'):
         if k % 2 == 0:
             order.append(('card', CARDS[ci % len(CARDS)])); ci += 1
         else:
-            order.append(('shot', SHOTS[si % len(SHOTS)])); si_map[k] = si; si += 1
+            order.append(('shot', SH[si % len(SH)])); si_map[k] = si; si += 1
     assert ci <= len(CARDS), f'글자 판이 모자란다 — {ci}칸 필요'
-    assert si <= len(SHOTS), f'현장 컷이 모자란다 — {si}칸 필요'
+    assert si <= len(SH), f'현장 컷이 모자란다 — {si}칸 필요'
     used = {}
     for kind, v in order:
         if kind == 'shot':
@@ -273,10 +331,16 @@ def render(mode='intro'):
         j = i - k * seglen
         kind, v = order[k]
 
+        base, accent = PAPER, CORAL
         if kind == 'card':
             col, txt = v
             img = np.repeat(np.repeat(col[None, None, :], H, 0), W, 1).copy()
             ink = ink_for(col)
+            # **서명과 상태줄도 판 색을 따라간다.** 늘 흰색으로 두면 밝은 판
+            # (AQUA)에서 흐려지고, 강조색이 판 색과 같으면(CORAL 판 위 CORAL)
+            # 줄이 통째로 사라진다 — 실제로 '2차 OPEN' 이 안 보였다.
+            base = ink
+            accent = AQUA if float(np.abs(col - CORAL).max()) < 0.02 else CORAL
             # **글자를 판 폭에 맞춰 키운다.** 숏폼에서 글자는 클수록 이긴다
             # **96 은 작다.** 판이 비어 있는데 글자를 안 키울 이유가 없다 —
             # 폭이 허락하는 데까지 키우고, 긴 줄만 fit 이 알아서 줄인다
@@ -312,8 +376,8 @@ def render(mode='intro'):
         if b < NBEAT - TAIL:
             # 왼쪽 여백선에 붙인다. 가운데에 홀로 뜨면 나중에 얹은 것으로 읽힌다
             # 서명이 위, 상태가 아래. 같은 여백선에 서서 한 덩어리로 읽힌다
-            _sign(img, W * 0.085, H * 0.648, 26, color=PAPER, a=0.86)
-            _tag(img, W * 0.085, H * 0.688, 40, color=PAPER, accent=CORAL,
+            _sign(img, W * 0.085, H * 0.648, 26, color=base, a=0.86)
+            _tag(img, W * 0.085, H * 0.688, 40, color=base, accent=accent,
                  width=W * 0.80)
 
         # 칸이 갈리는 첫 두 프레임에 흰 섬광 한 번 — 컷이 딱 끊긴 게 보인다
@@ -358,7 +422,8 @@ def render(mode='intro'):
             c.release()
 
     final = os.path.join(OUT, {'sale': 'short_sale.mp4',
-                              'promo': 'short_promo.mp4'}.get(mode, 'short_card.mp4'))
+                              'promo': 'short_promo.mp4',
+                              'ad': 'short_ad.mp4'}.get(mode, 'short_card.mp4'))
     subprocess.run(['ffmpeg', '-y', '-i', raw, '-i', wav, '-c:v', 'libx264',
                     '-preset', 'slow', '-crf', '21', '-pix_fmt', 'yuv420p',
                     '-c:a', 'aac', '-b:a', '192k', '-shortest',
