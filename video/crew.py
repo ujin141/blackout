@@ -1,6 +1,10 @@
-"""여성 크루원 모집 — 스토리 넉 장.
+"""여성 크루원 모집 — 스토리.
 
-    out/crew/crew_1.png ~ crew_4.png   1080×1920
+    python crew.py      →  out/crew/crew.png              한 장. 이게 기본
+    python crew.py 4    →  out/crew/crew_1..4.png         넉 장짜리
+
+**한 장이 기본이다.** 넉 장을 끝까지 넘겨 보는 건 이미 우리를 아는 사람이고,
+모르는 사람은 첫 장에서 넘긴다. 넉 장은 팔로워가 늘고 나서 쓰세요.
 
 문구는 맨 위 `WHO` · `ROLES` · `WHERE` · `SEND` 네 곳에 모아 뒀다.
 **판 안에 값을 다시 적지 마세요** — 한 줄 바꾸려고 네 장을 뒤지게 된다.
@@ -161,6 +165,31 @@ def p4(img):
     # STICKER 자리(0.66~0.78)는 비워 둔다 — 답장 스티커를 여기 붙인다
 
 
+def solo(img):
+    """**한 장짜리.** 넉 장을 넘겨 보게 만드는 건 이미 우리를 아는 사람이고,
+    모르는 사람은 첫 장에서 넘긴다 — 그래서 한 장 안에 넷을 다 넣는다.
+
+        무엇을    여성 크루원
+        어떤 자리  DJ · 콘텐츠
+        문턱      경력 안 봅니다
+        어디로    DM
+
+    **넷 중 하나라도 빠지면 DM 이 안 온다.** 무엇을 뽑는지만 적고 자리를
+    안 적으면 '나한테 하는 말인가' 에서 멈추고, 문턱을 안 낮추면
+    '나는 아직 아니지' 로 끝난다."""
+    paint(img, logo(int(176 * V)), X, int(H * 0.196), color=PAPER, a=0.95, valign='t')
+    eyebrow(img, 'NOW LOOKING FOR', 0.306)
+    rule(img, int(H * 0.332), X, W - X, PAPER, 0.20, max(1, int(V)))
+    ko(img, WHO, int(H * 0.402), 162)
+    ko(img, '찾습니다', int(H * 0.492), 162)
+    rule(img, int(H * 0.562), X, W - X, PAPER, 0.20, max(1, int(V)))
+    ko(img, ROLES, int(H * 0.606), 66)
+    ko(img, '경력 안 봅니다. 지금 시작해도 됩니다.', int(H * 0.660), 46, font=KR, a=0.82)
+    ko(img, WHERE, int(H * 0.702), 46, font=KR, a=0.70)
+    rule(img, int(H * 0.740), X, W - X, PAPER, 0.20, max(1, int(V)))
+    ko(img, 'DM 주세요', int(H * 0.782), 62)
+
+
 PAGES = (p1, p2, p3, p4)
 
 
@@ -174,7 +203,28 @@ def build(i):
     return np.clip(img, 0, 1)
 
 
+def build_solo():
+    img = field(1)                  # 빛은 가운데 왼쪽 — 로고와 헤드라인 쪽이 밝다
+    solo(img)
+    y = int(H * 0.108)
+    paint(img, tmask('BLACKOUT', BRAND, int(25 * V), 0.30), X, y, color=PAPER, a=0.88)
+    rule(img, y + int(34 * V), X, W - X, PAPER, 0.16, max(1, int(V)))
+    foot(img)
+    grain(img, 0.007, 29)
+    return np.clip(img, 0, 1)
+
+
+def _write(img, name):
+    p = os.path.join(OUT, f'{name}.png')
+    Image.fromarray((img * 255).astype(np.uint8)).save(p, optimize=True)
+    print(p)
+
+
 if __name__ == '__main__':
+    import sys
+    if '4' not in sys.argv[1:]:
+        _write(build_solo(), 'crew')
+        raise SystemExit
     for i in range(N):
         p = os.path.join(OUT, f'crew_{i + 1}.png')
         Image.fromarray((build(i) * 255).astype(np.uint8)).save(p, optimize=True)
