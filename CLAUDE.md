@@ -83,6 +83,10 @@ python poster_ad.py                           # 같은 행사 판매용 포스�
 python poster_loud.py                         # 직설 버전 — 컬러 일러스트
 python poster_photo.py                        # F안 실사 물 사진 — 밤 버전 (CC0)
 python band.py                                # 입장 밴드 인쇄 원고 4종 (GUEST · VIP · VVIP · STAFF)
+python coupon.py                              # 쿠폰 3종 + A4 10칸 시트 (90×50mm)
+python poster_ally.py                         # 협업 혜택 판 — ONE BAND / FOUR DOORS
+python qr.py                                  # 예약·게스트 폼 QR (읽히는지 재고 뽑음)
+python guest.py                               # 게스트 등록 판 — 폰 · A4 · 명함
 python audio_intro.py && python intro.py      # 행사 인트로 23초 · 120BPM. 가로(행사장)·세로(인스타)
                                               #   한 방 17.0초 · 21~22.5초 시보음 카운트인 · **23.0초가 노래 첫 박**
 python audio_intro2.py && python intro2.py    # 인트로 B안 — 밝은 풀파티(물속→수면). 격자는 A안과 같음
