@@ -222,11 +222,10 @@ def draw_unit(u, bg, fg, word, n):
     name = tmask_bl(EV.NAME, BRAND, ns, track(ns))
     paint_bl(u, name, x, BL1, color=fg)
 
-    # ── 아랫줄 · 협업 브랜드. 제일 작게 ────────────────────
-    # 넣어야 하는 정보지만 이름보다 커지면 밴드가 협찬 스티커가 된다.
-    pw = UNIT - U * 5 - x
-    ps = min(step(0), fit(EV.PARTNERS_STR, BRAND, pw, track(step(0))))
-    paint_bl(u, tmask_bl(EV.PARTNERS_STR, BRAND, ps, track(ps)), x, BL2, color=fg, a=0.55)
+    # 아랫줄에 협업 브랜드를 깔았었다. **뺐다** — 손목에 감기는 물건이라
+    # 실제로 읽히는 건 등급과 행사 이름뿐이고, 나머지는 밴드를 협찬
+    # 스티커로 보이게 만들 뿐이었다. 되살리려면 EV.PARTNERS_STR 을
+    # BL2 줄에 아주 작게 얹으면 된다.
 
 
 def build(word, n, bg, fg):
