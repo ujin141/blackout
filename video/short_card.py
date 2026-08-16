@@ -187,9 +187,9 @@ def sale_cards():
     성비·마지막 기회·가격은 안 쓴다. 확인이 안 됐거나 사실이 아니다."""
     # 판매판의 첫 장은 **사회적 증거**다. 남은 걸 먼저 말하면 안 팔린 것으로 읽히고,
     # 이미 간 사람을 먼저 말하면 안 가면 손해로 읽힌다.
+    # **같은 말을 두 번 하지 않는다.** SOLD_LINE 이 이미 '1차 사전예약
+    # 풀만석' 이라, 여기에 '1차 20명 마감' 을 또 넣으면 두 칸이 같은 말이다.
     c = [(DEEP, EV.SOLD_LINE)]
-    if EV.LAST_FULL:
-        c.append((INK, f'{EV.LAST_FULL[0]} {EV.LAST_FULL[1]}명 마감'))
     if EV.SALE == 'table':
         c.append((CORAL, '남은 건 테이블뿐'))
     else:
@@ -200,10 +200,16 @@ def sale_cards():
         m = re.search(r'(\d+/\d+)', EV.NEXT_OPEN)
         c.append((AQUA, f'{EV.OPEN_WAVE[0]}는 {m.group(1)}부터' if m and EV.OPEN_WAVE
                         else EV.NEXT_OPEN))
+    else:
+        # 이미 열려 있으면 '언제부터' 대신 **지금 사야 할 이유**를 넣는다
+        if EV.price_str():
+            c.append((AQUA, EV.price_str()))
+        if EV.price_up():
+            c.append((INK, EV.price_up()))
     c.append((DEEP, '혼자 온 사람들끼리'))
     c.append((AQUA, '8월 29일 토요일'))
     c.append((INK, '양재 루프탑'))
-    return c
+    return c[:7]
 
 
 # 현장 컷 — 겹치지 않는 구간만. 0.94초씩이라 짧게 잘라도 남는다
@@ -340,7 +346,14 @@ def render(mode='intro'):
             # (AQUA)에서 흐려지고, 강조색이 판 색과 같으면(CORAL 판 위 CORAL)
             # 줄이 통째로 사라진다 — 실제로 '2차 OPEN' 이 안 보였다.
             base = ink
-            accent = AQUA if float(np.abs(col - CORAL).max()) < 0.02 else CORAL
+            # **강조색은 판 색을 보고 정한다. 글자색이 아니다.**
+            # 처음엔 글자색 기준으로 골랐는데, 산호 판에서 글자가 흰색이라
+            # 강조색이 다시 산호로 잡혀 줄이 통째로 사라졌다.
+            #   짙은 판   산호로 강조. 브랜드 강조색이 여기서만 산다
+            #   밝은 판   글자색 그대로. 청록 위 산호는 서로 싸워 둘 다 죽는다
+            #   산호 판   글자색 그대로. 같은 색을 얹으면 안 보인다
+            dark = float(col @ np.float32([0.299, 0.587, 0.114])) < 0.30
+            accent = CORAL if dark else base
             # **글자를 판 폭에 맞춰 키운다.** 숏폼에서 글자는 클수록 이긴다
             # **96 은 작다.** 판이 비어 있는데 글자를 안 키울 이유가 없다 —
             # 폭이 허락하는 데까지 키우고, 긴 줄만 fit 이 알아서 줄인다
