@@ -1482,33 +1482,74 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
                 white-space: nowrap; }
 .evt__extra li > span { min-width: 0; overflow-wrap: anywhere; }
 
-/* ── 상시 띠 ─────────────────────────────────────────────────
-   팝업은 한 번 닫으면 끝이다. 그 뒤에도 갈 길이 남아 있어야 한다. */
-.evtbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-          display: flex; align-items: stretch;
-          background: rgba(8, 8, 9, 0.94); backdrop-filter: blur(10px);
-          border-top: 1px solid var(--line);
-          transform: translateY(100%); transition: transform 0.42s cubic-bezier(.2,.7,.2,1); }
-.evtbar.is-on { transform: none; }
+/* ── 알림 카드 ───────────────────────────────────────────────
+   팝업은 한 번 닫으면 끝이다. 그 뒤에도 갈 길이 남아 있어야 한다.
+
+   **화면 끝에서 끝까지 늘리지 않는다.** 가장자리에 붙은 띠는 쿠키 배너로
+   읽혀서 내용을 보기 전에 손이 ✕ 로 간다 — 안쪽으로 물리고 모서리를
+   둥글리면 '알림' 으로 읽힌다.
+
+   포스터 조각을 왼쪽에 붙였다. 글자만 있으면 무슨 알림인지 한 박자 늦게
+   아는데, 그림이 있으면 바로 안다. */
+.evtbar {
+  position: fixed; z-index: 60;
+  right: clamp(0.75rem, 2.4vw, 1.5rem);
+  bottom: calc(clamp(0.75rem, 2.4vw, 1.5rem) + env(safe-area-inset-bottom, 0px));
+  width: min(24rem, calc(100vw - 1.5rem));
+  display: flex; align-items: stretch;
+  background: rgba(11, 11, 12, 0.92);
+  backdrop-filter: blur(14px) saturate(120%);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  opacity: 0; transform: translateY(14px) scale(0.985);
+  transition: opacity 0.42s var(--ease), transform 0.42s var(--ease);
+}
+.evtbar.is-on { opacity: 1; transform: none; }
 .evtbar[hidden] { display: none; }
-.evtbar__in { flex: 1; display: flex; align-items: center; gap: 0.9rem;
-              padding: 0.72rem clamp(0.9rem, 3vw, 1.6rem); text-decoration: none; min-width: 0; }
-.evtbar__t { font-family: var(--brand); font-size: var(--t-2); letter-spacing: 0.1em;
-             color: var(--white); white-space: nowrap; }
-.evtbar__d { font-size: var(--t-2); color: var(--w-60); white-space: nowrap;
-             overflow: hidden; text-overflow: ellipsis; }
-.evtbar__dday { font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.1em;
-                color: var(--black); background: var(--white); border-radius: 999px;
-                padding: 0.14rem 0.46rem; font-weight: 700; white-space: nowrap; }
-.evtbar__go { margin-left: auto; font-size: var(--t-2); color: var(--white);
-              white-space: nowrap; text-decoration: underline; text-underline-offset: 4px; }
-.evtbar__x { flex: 0 0 auto; width: 2.8rem; background: none; border: 0;
-             border-left: 1px solid var(--line-soft); color: var(--w-45); cursor: pointer; }
+
+.evtbar__in { flex: 1; min-width: 0; display: flex; align-items: center;
+              gap: 0.8rem; padding: 0.62rem 0.7rem 0.62rem 0; text-decoration: none; }
+.evtbar__art { flex: 0 0 auto; width: 3.1rem; height: 3.9rem; object-fit: cover;
+               object-position: 50% 16%; display: block; }
+/* **flex 안에서 줄어들려면 min-width:0 과 flex:1 이 같이 있어야 한다.**
+   하나만 주면 글자가 안 줄고 버튼 밑으로 파고든다 — 실제로 그랬다 */
+.evtbar__txt { flex: 1 1 auto; min-width: 0; display: grid; gap: 0.22rem; }
+
+.evtbar__t { display: flex; min-width: 0; }
+.evtbar__t em { font-style: normal; font-family: var(--brand); font-size: var(--t-2);
+                letter-spacing: 0.06em; color: var(--white); white-space: nowrap;
+                overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.evtbar__dday { flex: 0 0 auto; font-family: var(--brand); font-size: 0.6rem;
+                letter-spacing: 0.08em; color: var(--black); background: var(--white);
+                border-radius: 999px; padding: 0.11rem 0.42rem; font-weight: 700;
+                line-height: 1.5; }
+
+/* 둘째 줄은 정보 세 조각. 가운데점으로 끊어야 한 줄로 안 뭉친다 */
+.evtbar__d { display: flex; align-items: center; gap: 0.4rem; min-width: 0;
+             font-size: var(--t-2); color: var(--w-60); white-space: nowrap; }
+/* 배지 다음은 가운데점으로 끊는다. 배지 바로 뒤에는 안 찍는다 */
+.evtbar__d span + span::before { content: '·'; margin-right: 0.4rem; color: var(--w-30); }
+.evtbar__place { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* **밑줄 글자가 아니라 버튼이어야 눌린다** */
+.evtbar__go { flex: 0 0 auto;
+              font-size: var(--t-2); font-weight: 600; color: var(--black);
+              background: var(--white); border-radius: 999px;
+              padding: 0.44rem 0.85rem; white-space: nowrap;
+              transition: transform 0.2s var(--ease); }
+.evtbar__in:hover .evtbar__go { transform: translateY(-1px); }
+
+.evtbar__x { flex: 0 0 auto; width: 2.1rem; background: none; border: 0;
+             border-left: 1px solid var(--line-soft); color: var(--w-45);
+             font-size: 0.7rem; cursor: pointer; transition: color 0.2s var(--ease); }
 .evtbar__x:hover { color: var(--white); }
 
 @media (max-width: 34rem) {
-  /* 좁으면 장소를 접는다 — 이름과 날짜와 갈 길만 남긴다 */
-  .evtbar__d { display: none; }
+  /* 폰에서는 좌우로 벌린다. 오른쪽에만 두면 화면을 반만 쓴다 */
+  .evtbar { left: 0.75rem; right: 0.75rem; width: auto; }
+  .evtbar__go { padding: 0.4rem 0.7rem; }
 }
 
 

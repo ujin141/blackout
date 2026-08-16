@@ -137,6 +137,7 @@ const I18N = {
     'evt.dday': 'D-{n}',
     'evt.today': '오늘 밤',
     'evt.left': '{cap}명 중 {done}명',
+    'evt.barPlace': '양재 루프탑',
   },
 
   en: {
@@ -270,5 +271,6 @@ const I18N = {
     'evt.dday': 'D-{n}',
     'evt.today': 'TONIGHT',
     'evt.left': '{done} of {cap} booked',
+    'evt.barPlace': 'Yangjae Rooftop',
   }
 };
