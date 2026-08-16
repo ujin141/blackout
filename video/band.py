@@ -171,6 +171,28 @@ TIERS = [
 ]
 
 
+def chip_width(word, n):
+    """칩이 먹는 폭. **그리지 않고 재기만 한다** — 이름 자간을 네 등급이
+    똑같이 쓰려면 그리기 전에 네 폭을 다 알아야 한다."""
+    ws = step(2)
+    wm = tmask_bl(word, BRAND, ws, track(ws))
+    bw = gap = U - 6
+    return U * 4 + n * bw + (n - 1) * gap + int(U * 1.5) + wm[0].shape[1]
+
+
+def name_track():
+    """네 등급이 **같이 쓰는** 자간.
+
+    등급마다 남는 폭이 달라서(칩 낱말 길이가 다르다) 각자 채우게 두면
+    VIP 는 1.02, STAFF 는 0.67 이 나왔다 — 자간이 그만큼 다르면 네 종이
+    다른 판으로 보인다. 막대 자리를 4개분으로 고정한 것과 같은 이유로,
+    **제일 좁은 등급에 맞춰 하나로 묶는다.**"""
+    x = U * 6 + 4 * (U - 6) + 3 * (U - 6) + U * 2
+    x += logo(U * 6).shape[1] + U * 3
+    avail = min(UNIT - U * 5 - chip_width(w, n) - U * 6 - x for w, n, _, _ in TIERS)
+    return spread(BAND_NAME, step(4), avail)
+
+
 def tier_chip(u, word, n, bg, fg):
     """오른쪽 끝 등급 표시.
 
@@ -183,9 +205,8 @@ def tier_chip(u, word, n, bg, fg):
     ws = step(2)
     wm = tmask_bl(word, BRAND, ws, track(ws))
     bw = gap = U - 6
-    bars_w = n * bw + (n - 1) * gap
     pad = U * 2
-    cw = pad + bars_w + int(U * 1.5) + wm[0].shape[1] + pad
+    cw = chip_width(word, n)
     x1 = UNIT - U * 5
     x0 = x1 - cw
     # **칩도 세로 가운데에 앉힌다.** 베이스라인에서 잰 값으로 두면
@@ -210,6 +231,22 @@ def tier_marks(u, n, fg, x, cy):
     for i in range(n):
         box(u, x + i * (bw + gap), cy - U * 1.6, x + i * (bw + gap) + bw, cy + U * 1.6, fg, 0.85)
     return x + 4 * bw + 3 * gap                      # 항상 4개분을 비워 둔다
+
+
+def spread(text, size, target_w, cap=1.05):
+    """주어진 폭을 채우는 자간을 **역산한다.**
+
+    글자 폭은 `기본 폭 + 자간 × 크기 × (글자 수 - 1)` 이다. 목표 폭에서
+    기본 폭을 빼고 나누면 필요한 자간이 나온다.
+
+    크기를 키워 채우지 않는 이유 — 25mm 띠에서 획이 굵어지면 타이벡 인쇄가
+    뭉갠다. **자간은 얼마를 늘려도 획이 안 굵어진다.**
+
+    `cap` 은 상한. 넘어가면 글자가 아니라 낱자 나열로 읽힌다 — 다만 밴드는
+    한 낱말만 있고 그 낱말이 판의 성격이라, 포스터보다 훨씬 벌려도 된다."""
+    base = tmask_bl(text, BRAND, size, 0.0)[0].shape[1]
+    n = max(len(text) - 1, 1)
+    return max(0.0, min(cap, (target_w - base) / (size * n)))
 
 
 def draw_unit(u, bg, fg, word, n):
@@ -237,11 +274,15 @@ def draw_unit(u, bg, fg, word, n):
     # **오른쪽부터 자리를 잡고 이름을 역산한다.**
     chip_x = tier_chip(u, word, n, bg, fg)
 
-    # 자간을 넓게 준다. 브랜드 톤이 '여백 넓게'라 밴드에서도 글자를 붙이지 않는다
-    ns = min(step(4), fit(BAND_NAME, BRAND, chip_x - U * 8 - x, track(step(4))))
-    name = tmask_bl(BAND_NAME, BRAND, ns, track(ns))
+    # **남는 폭은 자간으로 채운다.** 크기로 채우면 25mm 띠에서 획이 뭉개지고,
+    # 그대로 두면 이름과 칩 사이가 휑하게 빈다 — 브랜드 톤이 '여백 넓게' 라
+    # 늘려 쓴 글자가 오히려 판에 맞는다.
+    name = tmask_bl(BAND_NAME, BRAND, step(4), NAME_TRACK)
     # 대문자라 마스크 높이 = 캡 높이. 절반을 내리면 광학 중심에 앉는다
     paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
+
+
+NAME_TRACK = None                                 # 첫 그리기 전에 채운다
 
 
 def build(word, n, bg, fg):
@@ -265,5 +306,6 @@ def save(img, name):
 
 
 if __name__ == '__main__':
+    NAME_TRACK = name_track()
     for word, n, bg, fg in TIERS:
         save(build(word, n, bg, fg), f'band_{word.lower()}')
