@@ -3,6 +3,7 @@
     python short_cover.py          →  out/short/cover_ad.png
     python short_cover.py scene    →  out/short/cover_scene.png
     python short_cover.py promo    →  out/short/cover_promo.png
+    python short_cover.py sale     →  out/short/cover_sale.png
 
 **커버는 두 군데에서 다르게 보인다.**
 
@@ -24,6 +25,7 @@
     ad     한글 훅이 제일 크다. 파는 판
     scene  행사 이름이 제일 크다. 브랜드 판 — 영상 자체가 분위기라 훅이 없다
     promo  받는 물건(샴페인)이 제일 크다. **상품을 말로만 하면 안 믿는다**
+    sale   이미 간 사람 수가 제일 크다. 남은 걸 먼저 말하면 안 팔린 것으로 읽힌다
 """
 import os
 import numpy as np
@@ -62,6 +64,13 @@ AQUA = np.float32([0.34, 0.94, 1.00])
 #   head  한글 훅. None 이면 행사 이름을 주인공으로 세운다
 #   lines 훅 아래 두 줄. 판마다 무엇을 알려야 하는지가 다르다
 #   bottle 병을 얹을지. 참여 이벤트 판에만 쓴다
+#   press  아래쪽을 누르는 정도. 기본 0.66. **사람이 아래쪽에 몰린 사진은
+#          덜 눌러야 한다** — 세게 누르면 "많다" 가 어둠 속으로 사라져서
+#          정작 그 말을 하려고 고른 사진이 아무 말도 안 하게 된다
+#   soft   사진을 흐리는 정도(σ). **사람이 많은 그림에는 이게 필요하다** —
+#          어느 컷을 골라도 손님 얼굴이 나오는데, 커버는 프로필에 계속 남는다.
+#          장면은 읽히되 개인은 안 잡히는 선까지만. `assets/img/event/bg.webp`
+#          와 같은 판단이다. 0 으로 내리지 마세요
 VARIANTS = {
     'ad':    dict(src=('live', 'floor', 2.8, 0.46), head='혼자 와도 되는 풀파티',
                   lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
@@ -72,6 +81,13 @@ VARIANTS = {
                          f'{EV.PROMO_NOTE}  ·  {EV.PROMO_DUE} 마감')),
     # scene_story 는 영상 자체가 분위기라 훅이 없다. 커버까지 한글 훅을 달면
     # ad 커버와 격자에서 같은 말을 두 번 하게 된다 — 여기는 이름을 크게 세운다
+    # **먼저 찼다는 말이 먼저다.** '60자리 남았습니다' 를 크게 쓰면 안 팔린
+    # 판으로 읽히고, '20명은 이미 갔습니다' 는 안 가면 손해로 읽힌다.
+    # 남은 자리는 아랫줄에서 말한다 — 순서가 뜻을 바꾼다
+    'sale':  dict(src=('live', 'crowd', 2.0, 0.50), soft=4.2, press=0.44,
+                  head=f'{EV.DONE}명은 이미 갔습니다',
+                  lines=('8.29 SAT  ·  양재 루프탑',
+                         f'{EV.OPEN_LEFT}자리 남았습니다  ·  {EV.price_str()}')),
     'scene': dict(src=('scene', 180), head=None,
                   lines=('8.29 SAT  ·  양재 루프탑', EV.price_str())),
 }
@@ -105,6 +121,8 @@ def build(name='ad'):
     v = VARIANTS[name]
     HEAD = v['head']
     img = frame(v['src'])
+    if v.get('soft'):
+        img = cv2.GaussianBlur(img, (0, 0), v['soft'])
     yy = np.arange(H, dtype=np.float32)[:, None, None]
 
     # **잘리는 위아래를 어둡게 눌러 둔다.** 격자에서 잘린 자리가 그대로 밝으면
@@ -112,7 +130,7 @@ def build(name='ad'):
     img *= 1 - 0.62 * np.clip((TOP + 40 - yy) / (TOP + 40), 0, 1) ** 0.9
     img *= 1 - 0.62 * np.clip((yy - (TOP + TH - 40)) / (TOP + 40), 0, 1) ** 0.9
     # 글자가 앉는 아래쪽을 통째로 떨어뜨린다. 띠를 두르지 않는다
-    img *= 1 - 0.66 * np.clip((yy - H * 0.50) / (H * 0.22), 0, 1) ** 1.1
+    img *= 1 - v.get('press', 0.66) * np.clip((yy - H * 0.50) / (H * 0.22), 0, 1) ** 1.1
     # **제목 자리도 눌러야 한다.** 뒤에 형광 기둥이 서 있어서 흰 글자가
     # 거기서만 먹혔다 — 띠 대신 가우시안으로 부드럽게 떨어뜨린다
     img *= 1 - 0.42 * np.exp(-((yy - (TOP + 180)) / 130.0) ** 2)
