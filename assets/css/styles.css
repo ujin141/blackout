@@ -1436,8 +1436,8 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
   /* **글자 뒤로도 사진이 비쳐야 한 장으로 읽힌다.** 완전히 덮으면 사진과
      글자가 다시 두 판으로 갈린다 — 0.88 까지만 올린다 */
   background: linear-gradient(90deg,
-    rgba(11,11,12,0) 0%, rgba(11,11,12,0.12) 22%,
-    rgba(11,11,12,0.74) 36%, rgba(11,11,12,0.90) 48%, rgba(11,11,12,0.92) 100%);
+    rgba(11,11,12,0) 0%, rgba(11,11,12,0.08) 26%,
+    rgba(11,11,12,0.70) 40%, rgba(11,11,12,0.90) 50%, rgba(11,11,12,0.92) 100%);
 }
 /* **아래 여백이 남던 자리를 글자가 나눠 쓴다.** 위에 몰아 두면 판이 반만 찬다 */
 .evt__body { position: relative; z-index: 1; grid-column: 2;
@@ -1578,14 +1578,20 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
      실제로 그렇게 삐져나갔다 — 칸도 1번으로 되돌린다. */
   .evt { grid-template-columns: minmax(0, 1fr); }
   .evt__body { grid-column: 1; justify-content: flex-start;
-               padding: 4.4rem 1.15rem 1.0rem; }
+               padding: 8.4rem 1.15rem 1.0rem; }   /* 8.4rem = 134px — 위 그늘 130px 바로 아래 */
   /* 가로로 벌어진 판이 아니라 세로로 쌓인 판이라 그늘도 세로로 눕힌다 —
-     위쪽은 사진 그대로, 글자가 시작되는 데서 짙어진다 */
-  .evt__art img { object-position: 50% 24%; }
+     위쪽은 사진 그대로, 글자가 시작되는 데서 짙어진다.
+
+     **퍼센트가 아니라 픽셀로 잡는다.** 판 높이는 기기마다 다른데 그늘을
+     퍼센트로 두면 어떤 폰에서는 글자가 옅은 데 앉고 어떤 폰에서는
+     사진이 다 덮인다 — 아래 130px 는 .evt__body 의 padding-top 과 짝이다.
+     하나를 고치면 하나도 같이 고쳐야 한다. */
+  .evt__art img { object-position: 50% 30%; }
   .evt__art::after {
     background: linear-gradient(180deg,
-      rgba(11,11,12,0) 0%, rgba(11,11,12,0.18) 12%,
-      rgba(11,11,12,0.82) 26%, rgba(11,11,12,0.93) 36%, rgba(11,11,12,0.95) 100%);
+      rgba(11,11,12,0) 0,      rgba(11,11,12,0.06) 72px,
+      rgba(11,11,12,0.78) 130px, rgba(11,11,12,0.92) 196px,
+      rgba(11,11,12,0.94) 100%);
   }
   /* **버튼을 세로로 쌓으면 한 줄이 더 생겨 아래가 밀린다.**
      둘 다 짧아서 나란히 놓아도 안 좁다 */
@@ -1601,10 +1607,6 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
   .evt__extra b { letter-spacing: 0.2em; }
   .evt__cta { margin-top: 0.85rem; }
   .evt__mute { margin-top: 0.7rem; }
-  /* 가로 띠가 되면 세로 포스터의 가운데가 잡힌다 — 하늘만 나온다.
-     제목이 위에 있으니 위쪽을 보여준다 */
-  .evt__art img { object-position: 50% 10%; }
-  .evt__cta { flex-direction: column; }
 }
 
 
@@ -1647,6 +1649,20 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
   .evt__meta li { padding: 0.42rem 0; }
 }
 /* 화면이 낮으면(주소창 있는 폰 가로, 작은 기기) 곁들이를 통째로 뺀다 */
+/* **화면이 낮으면 사진 띠부터 줄인다.** 130px 짜리 띠는 844 짜리 폰에서나
+   여유고, 560 짜리에서는 그 45px 때문에 '오늘 하루 안 보기' 가 아래로 밀린다 —
+   사진이 조금 좁아지는 것과 버튼이 안 보이는 것 중에는 앞이 낫다.
+   그늘과 padding-top 은 언제나 같이 움직인다. */
+@media (max-width: 44rem) and (max-height: 720px) {
+  .evt__art::after {
+    background: linear-gradient(180deg,
+      rgba(11,11,12,0) 0,      rgba(11,11,12,0.06) 36px,
+      rgba(11,11,12,0.76) 68px, rgba(11,11,12,0.92) 120px,
+      rgba(11,11,12,0.94) 100%);
+  }
+  .evt__body { padding-top: 4.4rem; }   /* 70px — 위 그늘 68px 바로 아래 */
+}
+
 @media (max-height: 620px) {
   .evt__extra { display: none; }
 }
