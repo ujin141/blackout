@@ -81,14 +81,55 @@ def field(w, h, i):
     return img
 
 
+_FRAME = {}
+
+
+def frame_for(i):
+    """그 편의 첫 컷에서 한 장을 뽑는다.
+
+    **커버가 그림 없이 색만 있으면 다른 자산들과 따로 논다.** 그리고 커버에
+    쓰인 장면이 영상 안에도 나와야 커버와 본편이 한 물건으로 읽힌다 —
+    그래서 첫 컷의 시작 프레임을 그대로 쓴다.
+
+    얼굴은 뭉갠다. 손님 얼굴이라 인스타 카드와 같은 기준으로 간다."""
+    if i in _FRAME:
+        return _FRAME[i]
+    key, at, _, ox = PARTS[i][4][0]
+    cap = short.load(key)
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    cap.set(cv2.CAP_PROP_POS_FRAMES, int(at * fps))
+    ok, fr = cap.read()
+    cap.release()
+    if not ok:
+        return None
+    a = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB).astype(np.float32) / 255
+    h, w = a.shape[:2]
+    tw = h * W / TH
+    x0 = int(np.clip((w - tw) * ox, 0, w - tw))
+    a = cv2.resize(a[:, x0:x0 + int(tw)], (W, TH), interpolation=cv2.INTER_AREA)
+    a = cv2.GaussianBlur(a, (0, 0), 4.5)
+    g = (a @ np.float32([0.299, 0.587, 0.114]))[..., None]
+    a = a * 0.42 + (INK + (AQUA * 0.80 + PAPER * 0.26) * g ** 0.92) * 0.58
+    _FRAME[i] = np.clip(a * 0.62, 0, 1)
+    return _FRAME[i]
+
+
 def tile(i):
     """그리드 한 칸(1080×1350). 커버의 가운데에 그대로 앉는다."""
     num, en, ko, tm, _ = PARTS[i]
     img = field(W, TH, i)
+    fr = frame_for(i)
+    if fr is not None:
+        img = np.clip(img * 0.30 + fr, 0, 1)
     cx = W / 2
 
+    # 글자가 앉는 두 띠만 눌러 준다. 판 전체를 덮으면 사진이 죽는다
+    yy = np.arange(TH, dtype=np.float32)[:, None, None]
+    for c, half, amt in ((TH * 0.30, TH * 0.16, 0.52), (TH * 0.80, TH * 0.18, 0.58)):
+        img *= 1 - amt * np.exp(-((yy - c) / half) ** 2)
+
     # 세 칸을 관통하는 가로선 — 붙이면 한 줄로 이어진다
-    rule(img, TH * 0.615, 0, W, PAPER, 0.16, 2)
+    rule(img, TH * 0.615, 0, W, PAPER, 0.20, 2)
 
     paint(img, tmask(num, BRAND, 210, 0.0), cx, TH * 0.30, color=PAPER, a=0.16,
           anchor='c')
