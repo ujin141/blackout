@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>BLACKOUT CREW × 뜬금포차 — 협업 제안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="../proposal/style.css" />
+<style>
+  /* 표지 — 두 이름을 나란히. **한쪽이 크면 갑을이 된다** */
+  .cover { justify-content: center; text-align: center; }
+  .cover__x { display: flex; align-items: center; justify-content: center;
+              gap: 10mm; margin-bottom: 9mm; }
+  .cover__n { font-family: var(--brand); font-size: 19pt; letter-spacing: 0.1em; }
+  .cover__n small { display: block; font-family: var(--body); font-size: 8pt;
+                    letter-spacing: 0; color: var(--w45); margin-top: 2.5mm; }
+  .cover__op { font-family: var(--brand); font-size: 12pt; color: var(--w28); }
+  .cover__one { font-size: 15pt; font-weight: 700; line-height: 1.55;
+                max-width: 175mm; margin: 0 auto; letter-spacing: -0.01em; }
+  .cover__one em { font-style: normal; color: var(--w45); font-weight: 400; }
+  .cover__meta { margin-top: 11mm; font-family: var(--brand); font-size: 7pt;
+                 letter-spacing: 0.24em; color: var(--w45); }
+
+  /* 주고받는 표 — 두 칸이 같은 무게여야 거래로 읽힌다 */
+  .swap { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 2mm; }
+  .swap__c { border: 1px solid var(--line-soft); padding: 7mm;
+             background: linear-gradient(180deg, rgba(255,255,255,.035), transparent 60%); }
+  .swap__c.is-us { border-color: var(--line); }
+  .swap__w { font-family: var(--brand); font-size: 6.6pt; letter-spacing: 0.24em;
+             color: var(--w45); margin-bottom: 4mm; }
+  .swap__h { font-size: 13pt; font-weight: 700; line-height: 1.35; margin-bottom: 4mm; }
+  .swap__l { list-style: none; }
+  .swap__l li { font-size: 8.6pt; line-height: 1.7; color: var(--w65);
+                padding-left: 4mm; position: relative; margin-bottom: 1.6mm; }
+  .swap__l li::before { content: ''; position: absolute; left: 0; top: 2.6mm;
+                        width: 2mm; height: 1px; background: var(--w28); }
+  .swap__free { margin-top: 5mm; padding-top: 4mm; border-top: 1px solid var(--line-soft);
+                font-family: var(--brand); font-size: 7pt; letter-spacing: 0.18em;
+                color: var(--w45); }
+
+  /* 숫자 — 약속할 수 있는 것만 크게 */
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 6mm; }
+  .nums__i { border-top: 1px solid var(--line); padding-top: 4mm; }
+  .nums__n { font-size: 26pt; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .nums__n em { font-style: normal; font-size: 11pt; color: var(--w45); margin-left: 1.5mm; }
+  .nums__k { font-size: 8.4pt; color: var(--w65); margin-top: 3mm; line-height: 1.65; }
+
+  /* 하루 흐름 — **2차 파트너한테 제일 중요한 건 몇 시에 끝나느냐다** */
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+          margin-top: 9mm; border: 1px solid var(--line-soft); }
+  .flow__i { padding: 5mm 6mm; border-right: 1px solid var(--line-soft); }
+  .flow__i:last-child { border-right: 0; }
+  .flow__i.is-on { background: rgba(255,255,255,0.07); }
+  .flow__i b { display: block; font-family: var(--brand); font-size: 9.5pt;
+               letter-spacing: 0.1em; margin-bottom: 2.5mm; }
+  .flow__i span { font-size: 8.4pt; color: var(--w65); line-height: 1.6; }
+  .flow__i.is-on span { color: var(--white); }
+
+  /* 노출 자리 — 실물을 보여야 믿는다 */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 5mm; }
+  .shots figure { border: 1px solid var(--line-soft); background: #050505; }
+  .shots img { width: 100%; height: 62mm; object-fit: cover; object-position: 50% 40%;
+               display: block; }
+  /* **가로로 긴 인쇄물은 cover 로 자르면 글자 조각만 남는다.** 밴드가
+     그랬다 — 통째로 보여야 무슨 물건인지 안다 */
+  .shots figure.wide img { object-fit: contain; background: #050505; padding: 6mm 4mm; }
+  .shots figcaption { padding: 3.5mm 4mm; font-size: 8pt; color: var(--w65); line-height: 1.6; }
+  .shots figcaption b { display: block; font-family: var(--brand); font-size: 6.4pt;
+                        letter-spacing: 0.2em; color: var(--w45); margin-bottom: 1.8mm; }
+
+  /* 조건 줄 */
+  .terms { margin-top: 4mm; }
+  .terms__r { display: grid; grid-template-columns: 34mm 1fr; gap: 6mm;
+              padding: 4mm 0; border-bottom: 1px solid var(--line-soft); }
+  .terms__r:last-child { border-bottom: 0; }
+  .terms__k { font-family: var(--brand); font-size: 7pt; letter-spacing: 0.2em;
+              color: var(--w45); padding-top: 0.8mm; }
+  .terms__v { font-size: 9.2pt; line-height: 1.75; color: var(--w90); }
+  .terms__v small { display: block; font-size: 8.2pt; color: var(--w45); margin-top: 1.6mm; }
+
+  .note { margin-top: 6mm; padding: 5mm 6mm; border: 1px solid var(--line-soft);
+          background: rgba(255,255,255,0.03); font-size: 8.6pt; line-height: 1.75;
+          color: var(--w65); }
+  .note b { color: var(--white); font-weight: 600; }
+
+  .ask { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 6mm; }
+  .ask__i { border: 1px solid var(--line-soft); padding: 6mm; }
+  .ask__n { font-family: var(--brand); font-size: 6.4pt; letter-spacing: 0.22em;
+            color: var(--w28); margin-bottom: 3.5mm; }
+  .ask__t { font-size: 10.5pt; font-weight: 700; margin-bottom: 2.5mm; }
+  .ask__d { font-size: 8.4pt; line-height: 1.7; color: var(--w65); }
+
+  .sign { margin-top: auto; padding-top: 6mm; border-top: 1px solid var(--line-soft);
+          display: flex; justify-content: space-between; align-items: flex-end; }
+  .sign__l { font-size: 9pt; line-height: 1.8; color: var(--w65); }
+  .sign__l b { display: block; font-size: 11pt; color: var(--white); margin-bottom: 2mm; }
+  .sign__r { font-family: var(--brand); font-size: 6.6pt; letter-spacing: 0.24em;
+             color: var(--w28); text-align: right; }
+</style>
+</head>
+<body>
+
+<!-- 1 — 표지 -->
+<section class="page cover">
+  <div class="cover__x">
+    <div class="cover__n">BLACKOUT<small>서울 DJ 크루</small></div>
+    <div class="cover__op">×</div>
+    <div class="cover__n">뜬금포차<small>구의</small></div>
+  </div>
+  <p class="cover__one">
+    돈은 오가지 않습니다.<br />
+    <em>저희가 손님을 보내고, 그 손님에게 서비스 하나를 주시고,<br />
+    저희가 만드는 판에 매장을 넣습니다.</em>
+  </p>
+  <div class="cover__meta">AFTER SUNSET　·　2026.08.29. SAT　·　양재 어나더 루프탑 라운지</div>
+</section>
+
+<!-- 2 — 무슨 행사인가 -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">The Event</div>
+  </div>
+  <div class="body-wrap">
+    <div class="eyebrow"><i>01</i> 무슨 행사인가</div>
+    <h1 class="title">8월 29일 토요일,<br />양재 루프탑에서 80명이 놉니다.</h1>
+    <p class="lead">
+      풀파티입니다. 해 지기 전엔 물에서 놀고, <strong>밤 9시 반부터 한 시간 반은
+      솔로파티</strong>로 돌립니다. 혼자 온 사람들끼리 섞이는 시간이고 이게 이번
+      행사의 핵심입니다. 자정에 끝나면 손님들이 2차를 찾아 흩어집니다.
+    </p>
+    <div class="nums">
+      <div class="nums__i">
+        <div class="nums__n">80<em>명</em></div>
+        <div class="nums__k">정원. 사전예약제라 당일 현장 판매를 하지 않습니다</div>
+      </div>
+      <div class="nums__i">
+        <div class="nums__n">20<em>자리</em></div>
+        <div class="nums__k">1차 사전예약. 광고 없이 마감됐습니다</div>
+      </div>
+      <div class="nums__i">
+        <div class="nums__n">24:00</div>
+        <div class="nums__k">행사 종료. 이때부터 손님이 2차를 찾습니다</div>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="flow__i"><b>19:00</b><span>입장 · 물에서</span></div>
+      <div class="flow__i"><b>21:30</b><span>솔로파티 90분</span></div>
+      <div class="flow__i"><b>24:00</b><span>행사 종료</span></div>
+      <div class="flow__i is-on"><b>24:00~</b><span>손님이 2차로 흩어집니다</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>BLACKOUT × 뜬금포차</span><span>02</span></div>
+</section>
+
+<!-- 3 — 제안 -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">The Deal</div>
+  </div>
+  <div class="body-wrap">
+    <div class="eyebrow"><i>02</i> 서로 무엇을 하는가</div>
+    <h1 class="title">한쪽이 사고 한쪽이 파는 게 아닙니다.</h1>
+    <div class="swap">
+      <div class="swap__c">
+        <div class="swap__w">뜬금포차가 하는 것</div>
+        <div class="swap__h">저희 밴드를 찬 손님에게<br />서비스 하나</div>
+        <ul class="swap__l">
+          <li>안주 하나, 음료 하나, 금액 할인 — <b>정해 주시는 대로</b> 씁니다</li>
+          <li>밴드를 안 찬 손님에게는 해주지 않으셔도 됩니다</li>
+          <li>확인 수단이 밴드라 따로 명단을 받으실 필요가 없습니다</li>
+        </ul>
+        <div class="swap__free">비용 없음</div>
+      </div>
+      <div class="swap__c is-us">
+        <div class="swap__w">BLACKOUT 이 하는 것</div>
+        <div class="swap__h">저희가 만드는 판에<br />매장을 넣습니다</div>
+        <ul class="swap__l">
+          <li>협업 발표 스토리 · 피드</li>
+          <li>행사 포스터 하단 협업사 줄</li>
+          <li>입장 밴드 안내 판</li>
+          <li>행사 안내 페이지</li>
+        </ul>
+        <div class="swap__free">비용 없음</div>
+      </div>
+    </div>
+    <div class="note">
+      <b>서비스 내용은 저희가 정하지 않습니다.</b> 매장 사정을 저희가 모르는 채로
+      "이걸 해주세요" 라고 적으면 그건 제안이 아니라 요구입니다.
+      정해 주신 한 줄을 판에 그대로 적겠습니다.
+    </div>
+  </div>
+  <div class="foot"><span>BLACKOUT × 뜬금포차</span><span>03</span></div>
+</section>
+
+<!-- 4 — 어디에 들어가는가 -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">Where</div>
+  </div>
+  <div class="body-wrap">
+    <div class="eyebrow"><i>03</i> 어디에 들어가는가</div>
+    <h1 class="title">이미 만들어 둔 판입니다.</h1>
+    <div class="shots">
+      <figure>
+        <img src="../video/out/poster/ally_story.png" alt="" />
+        <figcaption><b>협업 발표</b>네 곳을 같이 발표하는 스토리 · 피드.
+          매장명과 동네, 그리고 서비스 내용이 한 줄로 들어갑니다.</figcaption>
+      </figure>
+      <figure>
+        <img src="../video/out/poster/promo_story.png" alt="" />
+        <figcaption><b>행사 포스터</b>모객용 스토리 포스터. 하단 협업사 줄에
+          매장명이 들어갑니다.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="../video/out/band/band_guest.png" alt="" />
+        <figcaption><b>입장 밴드</b>손님이 그날 차고 다니는 밴드. 이 밴드가
+          매장에서의 확인 수단이 됩니다.</figcaption>
+      </figure>
+    </div>
+    <div class="note">
+      <b>도달 숫자는 약속드리지 않겠습니다.</b> 저희가 신생 크루라 아직 크지 않고,
+      못 지킬 숫자를 미리 말씀드리는 건 하지 않겠습니다. 확실한 것은 그날 오는
+      <b>80명</b>이고, 그 사람들이 자정에 2차를 찾는다는 것입니다.
+    </div>
+  </div>
+  <div class="foot"><span>BLACKOUT × 뜬금포차</span><span>04</span></div>
+</section>
+
+<!-- 5 — 조건 -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">Terms</div>
+  </div>
+  <div class="body-wrap">
+    <div class="eyebrow"><i>04</i> 조건</div>
+    <h1 class="title">애매하게 두면 항의가 매장으로 갑니다.</h1>
+    <div class="terms">
+      <div class="terms__r">
+        <div class="terms__k">기간</div>
+        <div class="terms__v">2026년 8월 29일 하루
+          <small>구의는 양재에서 거리가 있어 당일 방문이 많지 않을 수 있습니다.
+            <b>「밴드를 보여주면 언제든」</b>으로 여시는 것도 가능합니다 —
+            어느 쪽이 편하신지 말씀 주시면 그대로 적겠습니다.</small></div>
+      </div>
+      <div class="terms__r">
+        <div class="terms__k">확인</div>
+        <div class="terms__v">행사 입장 밴드 착용
+          <small>밴드가 없으면 해주지 않으셔도 됩니다. 명단을 주고받지 않습니다.</small></div>
+      </div>
+      <div class="terms__r">
+        <div class="terms__k">비용</div>
+        <div class="terms__v">양쪽 모두 없음
+          <small>서비스 원가는 매장 부담, 제작·노출 비용은 저희 부담입니다.
+            정산이 발생하지 않습니다.</small></div>
+      </div>
+      <div class="terms__r">
+        <div class="terms__k">공식 애프터</div>
+        <div class="terms__v">강남 ACE 힙합존
+          <small>당일 공식 2차는 강남입니다. 뜬금포차는 <b>밴드 혜택 제휴</b>로
+            성격을 나눠 적습니다 — 같은 급으로 적으면 손님이 헷갈립니다.</small></div>
+      </div>
+      <div class="terms__r">
+        <div class="terms__k">그 밖에</div>
+        <div class="terms__v">서로 언제든 그만둘 수 있습니다
+          <small>계약서를 쓰지 않습니다. 다만 이미 나간 판은 회수가 안 되니
+            시작 전에 조건을 확정해 주시면 좋겠습니다.</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>BLACKOUT × 뜬금포차</span><span>05</span></div>
+</section>
+
+<!-- 6 — 다음 -->
+<section class="page">
+  <div class="head">
+    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__sec">Next</div>
+  </div>
+  <div class="body-wrap">
+    <div class="eyebrow"><i>05</i> 필요한 것</div>
+    <h1 class="title">세 가지만 주시면 바로 넣겠습니다.</h1>
+    <div class="ask">
+      <div class="ask__i">
+        <div class="ask__n">01</div>
+        <div class="ask__t">서비스 내용 한 줄</div>
+        <div class="ask__d">판에 그대로 적습니다. 예 — 「기본 안주 서비스」
+          「음료 1잔 서비스」 「10% 할인」</div>
+      </div>
+      <div class="ask__i">
+        <div class="ask__n">02</div>
+        <div class="ask__t">상호와 인스타 계정</div>
+        <div class="ask__d">판에 적을 정확한 상호와 태그할 계정입니다.</div>
+      </div>
+      <div class="ask__i">
+        <div class="ask__n">03</div>
+        <div class="ask__t">로고 파일</div>
+        <div class="ask__d">있으면 이미지로, 없으면 글자로 넣습니다.
+          없어도 진행에 문제 없습니다.</div>
+      </div>
+    </div>
+    <div class="note">
+      <b>8월 20일까지 주시면 좋겠습니다.</b> 2차 예약 모객이 그 주에 몰려서
+      판을 그 전에 확정해야 합니다. 늦어지면 이번 행사에는 못 넣고
+      다음 행사에 넣게 됩니다.
+    </div>
+    <div class="sign">
+      <div class="sign__l">
+        <b>BLACKOUT　우진</b>
+        인스타그램 @blackoutcrew_official<br />
+        메일 ujin141@naver.com
+      </div>
+      <div class="sign__r">SEOUL　·　DJ CREW<br />BLACKOUTSOUND.COM</div>
+    </div>
+  </div>
+  <div class="foot"><span>BLACKOUT × 뜬금포차</span><span>06</span></div>
+</section>
+
+</body>
+</html>
