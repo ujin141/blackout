@@ -9,12 +9,12 @@
   /* 표지 — 두 이름을 나란히. **한쪽이 크면 갑을이 된다** */
   .cover { justify-content: center; text-align: center; }
   .cover__x { display: flex; align-items: center; justify-content: center;
-              gap: 10mm; margin-bottom: 9mm; }
+              gap: 14mm; margin-bottom: 11mm; }
   .cover__side { display: flex; flex-direction: column; align-items: center; }
   /* **로고를 글자로 다시 치지 않는다.** 원본 PNG 를 그대로 쓴다 —
      다시 그리면 자간과 획이 달라져서 다른 크루로 보인다 */
-  .cover__lock { height: 21mm; width: auto; display: block; }
-  .cover__n { font-family: var(--brand); font-size: 19pt; letter-spacing: 0.1em; }
+  .cover__lock { height: 32mm; width: auto; display: block; }
+  .cover__n { font-family: var(--brand); font-size: 23pt; letter-spacing: 0.1em; }
   .cover__side small { display: block; font-family: var(--body); font-size: 8pt;
                        letter-spacing: 0; color: var(--w45); margin-top: 3.5mm; }
   .cover__op { font-family: var(--brand); font-size: 12pt; color: var(--w28); }
@@ -115,6 +115,8 @@
   .sign__l b { display: block; font-size: 11pt; color: var(--white); margin-bottom: 2mm; }
   .sign__r { font-family: var(--brand); font-size: 6.6pt; letter-spacing: 0.24em;
              color: var(--w28); text-align: right; }
+  /* 머리말 마크가 7mm 라 인쇄하면 거의 안 보였다 */
+  .head__logo img { height: 9mm; }
 </style>
 </head>
 <body>
