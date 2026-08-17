@@ -10,9 +10,13 @@
   .cover { justify-content: center; text-align: center; }
   .cover__x { display: flex; align-items: center; justify-content: center;
               gap: 10mm; margin-bottom: 9mm; }
+  .cover__side { display: flex; flex-direction: column; align-items: center; }
+  /* **로고를 글자로 다시 치지 않는다.** 원본 PNG 를 그대로 쓴다 —
+     다시 그리면 자간과 획이 달라져서 다른 크루로 보인다 */
+  .cover__lock { height: 21mm; width: auto; display: block; }
   .cover__n { font-family: var(--brand); font-size: 19pt; letter-spacing: 0.1em; }
-  .cover__n small { display: block; font-family: var(--body); font-size: 8pt;
-                    letter-spacing: 0; color: var(--w45); margin-top: 2.5mm; }
+  .cover__side small { display: block; font-family: var(--body); font-size: 8pt;
+                       letter-spacing: 0; color: var(--w45); margin-top: 3.5mm; }
   .cover__op { font-family: var(--brand); font-size: 12pt; color: var(--w28); }
   .cover__one { font-size: 15pt; font-weight: 700; line-height: 1.55;
                 max-width: 175mm; margin: 0 auto; letter-spacing: -0.01em; }
@@ -118,9 +122,15 @@
 <!-- 1 — 표지 -->
 <section class="page cover">
   <div class="cover__x">
-    <div class="cover__n">BLACKOUT<small>서울 DJ 크루</small></div>
+    <div class="cover__side">
+      <img class="cover__lock" src="../assets/img/logo-lockup.png" alt="BLACKOUT CREW" />
+      <small>서울 DJ 크루</small>
+    </div>
     <div class="cover__op">×</div>
-    <div class="cover__n">뜬금포차<small>구의</small></div>
+    <div class="cover__side">
+      <div class="cover__n">뜬금포차</div>
+      <small>구의</small>
+    </div>
   </div>
   <p class="cover__one">
     돈은 오가지 않습니다.<br />
@@ -133,7 +143,7 @@
 <!-- 2 — 무슨 행사인가 -->
 <section class="page">
   <div class="head">
-    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
     <div class="head__sec">The Event</div>
   </div>
   <div class="body-wrap">
@@ -171,7 +181,7 @@
 <!-- 3 — 제안 -->
 <section class="page">
   <div class="head">
-    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
     <div class="head__sec">The Deal</div>
   </div>
   <div class="body-wrap">
@@ -212,7 +222,7 @@
 <!-- 4 — 마케팅 협업 -->
 <section class="page">
   <div class="head">
-    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
     <div class="head__sec">Marketing</div>
   </div>
   <div class="body-wrap">
@@ -259,7 +269,7 @@
 <!-- 5 — 어디에 들어가는가 -->
 <section class="page">
   <div class="head">
-    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
     <div class="head__sec">Where</div>
   </div>
   <div class="body-wrap">
@@ -294,7 +304,7 @@
 <!-- 5 — 조건 -->
 <section class="page">
   <div class="head">
-    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
     <div class="head__sec">Terms</div>
   </div>
   <div class="body-wrap">
@@ -339,7 +349,7 @@
 <!-- 6 — 다음 -->
 <section class="page">
   <div class="head">
-    <div class="head__logo"><span>BLACKOUT CREW</span></div>
+    <div class="head__logo"><img src="../assets/img/logo-mark.png" alt="" /><span>BLACKOUT CREW</span></div>
     <div class="head__sec">Next</div>
   </div>
   <div class="body-wrap">
