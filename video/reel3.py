@@ -378,12 +378,16 @@ def covers():
     # 같은 글자가 세 번 나와 한 장으로 안 읽힌다.
     paint(big, tmask(EV.NAME, BRAND, fit(EV.NAME, BRAND, WW * 0.30, 0.14), 0.14),
           WW / 2, TH * 0.212, color=PAPER, anchor='c')
-    # 대신 **로고 마크는 칸마다** 둔다 — 릴스 탭에서 낱장으로 떠도
-    # 1·3번 칸에 브랜드가 하나도 없으면 누구 판인지 모른다
-    lg = logo(56)
+    # 대신 **마크 + BLACKOUT 글자를 칸마다** 둔다 — 마크만 있으면
+    # 우리를 모르는 사람한테는 아무 표시도 아니다. 이름이 같이 있어야 한다
+    lg = logo(52)
+    wm = tmask('BLACKOUT  CREW', BRAND, 28, 0.30)
+    gap = 26
+    tw = lg.shape[1] + gap + wm.shape[1]
     for i in range(3):
-        paint(big, lg, 1080 * i + 540 - lg.shape[1] / 2, TH * 0.130,
-              color=PAPER, a=0.96)
+        x0 = 1080 * i + 540 - tw / 2
+        paint(big, lg, x0, TH * 0.130, color=PAPER, a=0.96)
+        paint(big, wm, x0 + lg.shape[1] + gap, TH * 0.130, color=PAPER, a=0.92)
     # 아래 두 줄도 칸마다 따로. 가운데 한 번만 적으면 1·3번 칸이 허전하다
     for i in range(3):
         cx = 1080 * i + 540
