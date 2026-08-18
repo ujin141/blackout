@@ -146,11 +146,12 @@ const MEMBERS = [
            'Ximxim, Seongsu — Challengers Quartet', 'Zspot, Gangnam (open deck)',
            'Seoul Community Radio (shoot)']
     },
-    // ⚠ 인스타 핸들과 사진이 아직 없다. 사진이 들어오면
-    //    cutout 을 채우고, 그때까지는 생성 아트가 자리를 지킨다
+    // **원본이 571px 이라 다른 누끼보다 작다.** 카드가 레티나에서 728px 를
+    // 쓰므로 살짝 올려 쓰는 셈이다 — 더 큰 원본이 생기면 다시 뽑을 것.
+    // 인스타 핸들은 아직 못 받았다
     instagram: '',
     soundcloud: '',
-    cutout: '',
+    cutout: 'assets/img/members/lucky-cutout.webp',
     photo: ''
   },
   {
@@ -169,7 +170,7 @@ const MEMBERS = [
     // 비어 보인다. 선 곳이 생기면 그때 채우는 게 낫다.
     instagram: '',
     soundcloud: '',
-    cutout: '',
+    cutout: 'assets/img/members/chips-cutout.webp',
     photo: ''
   },
   {
