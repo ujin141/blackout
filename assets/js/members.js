@@ -171,6 +171,28 @@ const MEMBERS = [
     soundcloud: '',
     cutout: '',
     photo: ''
+  },
+  {
+    name: 'HEIDY',
+    role: { ko: 'DJ', en: 'DJ' },
+    // **한 장르만 적는다.** 넷씩 늘어놓은 다른 멤버 옆에서 오히려 이게 세다 —
+    // 3년 반을 한 장르에 썼다는 게 그대로 읽힌다
+    genres: {
+      ko: ['바운스'],
+      en: ['Bounce']
+    },
+    bio: {
+      ko: '미친듯이 뛰어놀고 싶다면, HEIDY 바운스의 세계로.',
+      en: 'If you came to jump — welcome to HEIDY bounce.'
+    },
+    career: {
+      ko: ['바운스만 3년 반'],
+      en: ['3.5 years, bounce only']
+    },
+    instagram: '',
+    soundcloud: '',
+    cutout: 'assets/img/members/heidy-cutout.webp',
+    photo: ''
   }
 ];
 
