@@ -152,6 +152,25 @@ const MEMBERS = [
     soundcloud: '',
     cutout: '',
     photo: ''
+  },
+  {
+    name: 'CHIPS',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['하우스', '테크노', '바운스', '페스티벌 EDM'],
+      en: ['House', 'Techno', 'Bounce', 'Festival EDM']
+    },
+    bio: {
+      ko: '월디페 느낌을 내고 싶다면.',
+      en: 'When you want that festival main-stage feeling.'
+    },
+    // **경력 줄은 비워 뒀다.** 받은 건 '디제이 연습생 1년' 인데, 다른 멤버
+    // 칸에는 선 업장 이름이 들어간다 — 같은 자리에 연차를 적으면 그 한 칸만
+    // 비어 보인다. 선 곳이 생기면 그때 채우는 게 낫다.
+    instagram: '',
+    soundcloud: '',
+    cutout: '',
+    photo: ''
   }
 ];
 

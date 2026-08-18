@@ -190,6 +190,8 @@ function localizeMembers() {
   }
 
   grid.innerHTML = html.join('');
+  // 새로 그린 칸을 생성 아트에 등록한다. 언어를 바꿔 다시 그려도 마찬가지다
+  if (window.__scanArt) window.__scanArt();
 })();
 
 /* ── intro ───────────────────────────────────────────────── */
@@ -571,8 +573,11 @@ const ART = {
 
 /* ── gallery tiles ───────────────────────────────────────── */
 (function generatedArt() {
-  const tiles = $$('[data-art]');
-  if (!tiles.length) return;
+  /* **여기서 빈 목록을 보고 나가면 안 된다.** [data-art] 칸은 전부 JS 로
+     그려지는데 그 코드가 이 함수보다 늦게 돈다 — 예전에는 `if (!tiles.length)
+     return;` 이 있어서 이 함수가 아무것도 안 하고 끝났고, 사진도 누끼도 없는
+     멤버가 들어오자 485px 짜리 빈 칸이 그대로 드러났다. */
+  const tiles = [];
 
   const paint = tile => {
     /* 꽉 채우는 사진·영상이 있으면 생성 아트는 건너뜀. 누끼(.member__cut)는 조명 위에 얹히므로 예외 */
@@ -602,7 +607,19 @@ const ART = {
       obs.unobserve(en.target);
     });
   }, { rootMargin: '250px' });
-  tiles.forEach(t => io.observe(t));
+
+  /* 새로 그려진 칸을 관찰 목록에 넣는다. 카드를 그린 쪽에서 부르고,
+     여기서도 한 번 부른다 — 이미 그려져 있는 칸을 잡기 위해서다. */
+  window.__scanArt = () => {
+    $$('[data-art]').forEach(t => {
+      if (tiles.includes(t)) return;
+      tiles.push(t);
+      io.observe(t);
+    });
+  };
+  window.__scanArt();
+  // 카드가 아직 안 그려졌을 수도 있다 — 한 박자 뒤에 한 번 더 훑는다
+  requestAnimationFrame(() => window.__scanArt());
 
   let rt;
   window.addEventListener('resize', () => {
