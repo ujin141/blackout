@@ -126,6 +126,32 @@ const MEMBERS = [
     soundcloud: '',
     cutout: 'assets/img/members/xanthic-cutout.webp',
     photo: ''
+  },
+  {
+    name: 'LUCKY',
+    role: { ko: 'DJ', en: 'DJ' },
+    genres: {
+      ko: ['덥스텝', '베이스하우스', '테크하우스'],
+      en: ['Dubstep', 'Bass House', 'Tech House']
+    },
+    bio: {
+      ko: '베이스 위주로 갑니다. 덥스텝부터 테크하우스까지.',
+      en: 'Bass first. Dubstep through tech house.'
+    },
+    career: {
+      ko: ['강남 ZSPOT EDM 파티', '이태원 UNION 안과밖',
+           '성수동 XIMXIM Challengers Quartet', '강남 ZSPOT 오픈덱 파티',
+           '서울 커뮤니티라디오 촬영'],
+      en: ['Zspot, Gangnam (EDM party)', 'UNION, Itaewon — Inside Out',
+           'Ximxim, Seongsu — Challengers Quartet', 'Zspot, Gangnam (open deck)',
+           'Seoul Community Radio (shoot)']
+    },
+    // ⚠ 인스타 핸들과 사진이 아직 없다. 사진이 들어오면
+    //    cutout 을 채우고, 그때까지는 생성 아트가 자리를 지킨다
+    instagram: '',
+    soundcloud: '',
+    cutout: '',
+    photo: ''
   }
 ];
 
