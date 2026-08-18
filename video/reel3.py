@@ -152,7 +152,14 @@ REELS = [
 ]
 
 # 커버 — 한 장을 셋으로 자른다. (클립, 초, 가로 위치)
-COVER_SRC = (5, 3.0, 0.50)
+# 3.0초는 왼쪽 칸이 나무와 하늘뿐이었다 — 셋으로 잘랐을 때 **세 칸에 다
+# 사람이 있는 순간**을 골라야 한다. 4.6초는 물이 화면을 가로지른다.
+COVER_SRC = (5, 4.6, 0.50)
+COVER_Y = 0.55                            # 세로 크롭. 0.42는 하늘이 반이었다
+# 16:9 원본을 3240 폭에 그냥 맞추면 가로가 꽉 차서 **좌우를 고를 수가 없다** —
+# 왼쪽 나무·난간이 그대로 1번 칸이 됐다. 더 당겨서(zoom) 고를 폭을 만든다.
+COVER_ZOOM = 1.30
+COVER_OX = 0.72                           # 당긴 뒤 어디를 볼지. 오른쪽 = 파티 쪽
 # **칸마다 완성된 한 줄을 준다.** 한 문장을 셋으로 쪼개면 격자에서는
 # 멋있는데, 릴스 탭에서 낱장으로 뜨면 '되는' 한 단어라 아무 말도 안 한다.
 # 사진은 셋을 관통하고 글은 각자 선다 — 둘 다 얻는 방법이다.
@@ -348,10 +355,10 @@ def covers():
     # 3240×1350 — 가로 셋을 이어 붙인 넓은 그림
     WW = 1080 * 3
     h, w = fr.shape[:2]
-    s = max(WW / w, TH / h)
+    s = max(WW / w, TH / h) * COVER_ZOOM
     big = cv2.resize(fr, (int(w * s) + 1, int(h * s) + 1), interpolation=cv2.INTER_AREA)
-    x0 = int(np.clip((big.shape[1] - WW) * ox, 0, big.shape[1] - WW))
-    y0 = int(np.clip(big.shape[0] * 0.42 - TH / 2, 0, big.shape[0] - TH))
+    x0 = int(np.clip((big.shape[1] - WW) * COVER_OX, 0, big.shape[1] - WW))
+    y0 = int(np.clip(big.shape[0] * COVER_Y - TH / 2, 0, big.shape[0] - TH))
     big = big[y0:y0 + TH, x0:x0 + WW].astype(np.float32) / 255
     big = np.clip((big - 0.5) * 1.14 + 0.5, 0, 1)
     g = big @ np.float32([0.299, 0.587, 0.114])
