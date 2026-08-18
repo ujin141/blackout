@@ -54,9 +54,19 @@ OUT = os.path.join(HERE, 'out', 'reel3')
 os.makedirs(OUT, exist_ok=True)
 
 W, H, FPS = 1080, 1920, 30
-BPM, NBEAT = 128.0, 32
-BEAT = 60.0 / BPM
+NBEAT = 32                                # 곡 골격이 8마디 = 32박
 TAIL = 5                                  # 끝 다섯 박은 마무리 판
+
+# **편마다 곡이 다르다.** 셋을 연달아 보면 같은 곡이 세 번 나오는 게
+# 그림보다 먼저 지겹다 — 컷을 아무리 다르게 짜도 귀가 먼저 알아챈다.
+# BPM 이 다르면 한 박의 길이도 달라지고, 그래서 **컷 길이와 영상 길이가
+# 곡을 따라간다.** 박 수(32)만 고정이다.
+#   heavy 142  하프타임. 제일 센 판 — 가속 컷에 붙인다
+#   deep  124  딥하우스. 제일 느리다 — 시간이 흐르는 판에
+#   dark  130  다크테크노. 킥 럼블 — 길게 끌다 몰아치는 판에
+def beat_of(style):
+    import audio_motion
+    return 60.0 / audio_motion.STYLES[style][0]
 
 PAPER = np.float32([0.99, 1.00, 1.00])
 AQUA = np.float32([0.34, 0.94, 1.00])
@@ -85,7 +95,7 @@ def _cut(clip, at, beats, ox=0.5, z0=1.0, z1=1.06, speed=1.0):
 # 본 것으로 느끼면 세 편을 만든 의미가 없다.
 REELS = [
     dict(
-        name='reel_1', style='party',
+        name='reel_1', style='heavy',
         # 가속 — 뒤로 갈수록 컷이 짧아진다
         # 5·5·4·3·2·2·1·1·1·1·3·4 = 32박
         cuts=[_cut(5, 0.5, 5, 0.50, 1.00, 1.10),
@@ -105,7 +115,7 @@ REELS = [
               (16, 21, '9시 반부터 솔로파티'),
               (21, 27, '혼자 와도 됩니다')]),
     dict(
-        name='reel_2', style='party',
+        name='reel_2', style='deep',
         # 시간 — 해 질 녘은 길게, 밤이 되면 짧게
         # 5·5·5·3·3·3·2·2·2·2 = 32박
         cuts=[_cut(5, 2.4, 5, 0.44, 1.00, 1.08),
@@ -124,7 +134,7 @@ REELS = [
               (15, 20, '판이 바뀝니다'),
               (20, 27, '9시 반부터 솔로파티')]),
     dict(
-        name='reel_3', style='party',
+        name='reel_3', style='dark',
         # 대비 — 길게 보다가 확 몰아친다
         # 8·1·1·1·1·8·3·3·3·3 = 32박
         cuts=[_cut(3, 0.4, 8, 0.48, 1.00, 1.14),               # 롱테이크
@@ -189,7 +199,7 @@ def band(img, cy, half, amt):
     img *= 1 - amt * np.exp(-((yy - cy) / half) ** 2)
 
 
-def plan(cuts):
+def plan(cuts, BEAT):
     """컷 목록 → 프레임별 (클립, 원본 프레임번호, ox, 배율).
 
     **속도(speed)가 여기서 들어간다.** 컷 안에서 원본을 얼마나 빨리
@@ -232,6 +242,7 @@ def grab(clip, fno):
 
 def render(spec):
     cuts, caps = spec['cuts'], spec['caps']
+    BEAT = beat_of(spec['style'])
     nb = sum(c['beats'] for c in cuts)
     assert nb == NBEAT, f"{spec['name']}: 컷이 {nb}박인데 곡은 {NBEAT}박이다 — 뒤가 잘린다"
 
@@ -240,7 +251,7 @@ def render(spec):
     if not os.path.exists(wav):
         audio_motion.write(spec['style'])
 
-    fr_plan = plan(cuts)
+    fr_plan = plan(cuts, BEAT)
     nf = int(round(NBEAT * BEAT * FPS))
     fr_plan = fr_plan[:nf] + [fr_plan[-1]] * max(0, nf - len(fr_plan))
     # 컷이 바뀌는 프레임 번호 — 여기서 한 번 번쩍인다
@@ -315,8 +326,8 @@ def render(spec):
                     '-movflags', '+faststart', final],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     os.remove(raw)
-    print(f"{final}  {NBEAT * BEAT:.2f}s  컷 {len(cuts)}개 "
-          f"({'·'.join(str(c['beats']) for c in cuts)}박)")
+    print(f"{final}  {NBEAT * BEAT:.2f}s  {spec['style']} {60 / BEAT:.0f}BPM  "
+          f"컷 {len(cuts)}개 ({'·'.join(str(c['beats']) for c in cuts)}박)")
 
 
 def covers():
