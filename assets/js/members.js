@@ -128,7 +128,7 @@ const MEMBERS = [
     photo: ''
   },
   {
-    name: 'LUCKY',
+    name: '1UCKY',
     role: { ko: 'DJ', en: 'DJ' },
     genres: {
       ko: ['덥스텝', '베이스하우스', '테크하우스'],
@@ -148,10 +148,9 @@ const MEMBERS = [
     },
     // **원본이 571px 이라 다른 누끼보다 작다.** 카드가 레티나에서 728px 를
     // 쓰므로 살짝 올려 쓰는 셈이다 — 더 큰 원본이 생기면 다시 뽑을 것.
-    // 인스타 핸들은 아직 못 받았다
-    instagram: '',
+    instagram: '1uckym1n4_',
     soundcloud: '',
-    cutout: 'assets/img/members/lucky-cutout.webp',
+    cutout: 'assets/img/members/1ucky-cutout.webp',
     photo: ''
   },
   {
