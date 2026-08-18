@@ -12,7 +12,7 @@ const EVENT = {
   delay: 1200,                                    // 들어오자마자 덮치면 그냥 닫는다
   muteHours: 20,                                  // '오늘 하루 안 보기' 가 유지되는 시간
   cap: 80,                                        // 정원
-  done: 20                                        // 지금까지 예약된 수 — 여기만 고치면 막대가 따라온다
+  done: 29                                        // 지금까지 예약된 수 — 여기만 고치면 막대가 따라온다
 };
 
 const CONFIG = {
@@ -993,8 +993,10 @@ const ART = {
       el.textContent = (d['evt.left'] || '{cap}명 중 {done}명')
         .replace('{cap}', EVENT.cap).replace('{done}', EVENT.done);
     });
-    const bar = $('.evt__bar span');
-    if (bar) bar.style.setProperty('--fill', Math.round(EVENT.done / EVENT.cap * 100) + '%');
+    // **막대가 두 곳이다** — 팝업과 파티 섹션. $ 로 하나만 잡으면
+    // 섹션 쪽 막대가 0% 로 남는다
+    const pct = Math.round(EVENT.done / EVENT.cap * 100) + '%';
+    $$('.evt__bar span').forEach(el => el.style.setProperty('--fill', pct));
   };
   paint();
   document.addEventListener('blackout:lang', paint);   // 언어를 바꾸면 다시 그린다

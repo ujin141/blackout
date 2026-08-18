@@ -55,6 +55,7 @@
 
   <nav class="nav__links" aria-label="Primary">
     <a href="#about" data-i18n="nav.about">소개</a>
+    <a href="#party" data-i18n="nav.party">파티</a>
     <a href="#philosophy" data-i18n="nav.philosophy">철학</a>
     <a href="#work" data-i18n="nav.work">활동</a>
     <a href="#members" data-i18n="nav.members">멤버</a>
@@ -79,12 +80,13 @@
 <div class="menu" id="menu" hidden>
   <nav class="menu__links" aria-label="Mobile">
     <a href="#about"><i>01</i> <b data-i18n="nav.about">소개</b></a>
-    <a href="#philosophy"><i>02</i> <b data-i18n="nav.philosophy">철학</b></a>
-    <a href="#work"><i>03</i> <b data-i18n="nav.work">활동</b></a>
-    <a href="#members"><i>04</i> <b data-i18n="nav.members">멤버</b></a>
-    <a href="#gallery"><i>05</i> <b data-i18n="nav.gallery">갤러리</b></a>
-    <a href="#join"><i>06</i> <b data-i18n="nav.join">합류</b></a>
-    <a href="#contact"><i>07</i> <b data-i18n="nav.contact">문의</b></a>
+    <a href="#party"><i>02</i> <b data-i18n="nav.party">파티</b></a>
+    <a href="#philosophy"><i>03</i> <b data-i18n="nav.philosophy">철학</b></a>
+    <a href="#work"><i>04</i> <b data-i18n="nav.work">활동</b></a>
+    <a href="#members"><i>05</i> <b data-i18n="nav.members">멤버</b></a>
+    <a href="#gallery"><i>06</i> <b data-i18n="nav.gallery">갤러리</b></a>
+    <a href="#join"><i>07</i> <b data-i18n="nav.join">합류</b></a>
+    <a href="#contact"><i>08</i> <b data-i18n="nav.contact">문의</b></a>
   </nav>
   <div class="menu__foot">
     <span data-i18n="menu.base">서울, 대한민국</span>
@@ -160,10 +162,81 @@
   </div>
 </section>
 
+<!-- ── party ────────────────────────────────────────────────
+     **행사 정보는 여기와 팝업 두 곳에 있다.** 날짜·정원 같은 숫자는
+     main.js 의 EVENT 한 곳에서 나오고(D-day·남은 자리 막대), 나머지 글은
+     i18n.js 의 evt.* 키를 팝업과 같이 쓴다 — 한쪽만 고치면 어긋난다. -->
+<section class="section party" id="party">
+  <div class="wrap">
+    <p class="label" data-reveal><i>02</i> <b data-i18n="party.label">다음 파티</b></p>
+
+    <div class="party__top">
+      <div>
+        <h2 class="display" data-reveal-lines data-i18n="party.title">AFTER SUNSET</h2>
+        <p class="party__kick" data-reveal>
+          <span data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</span>
+          <b class="party__dday" data-evt-dday hidden></b>
+        </p>
+      </div>
+      <a class="party__poster" href="#" data-evt-link data-reveal aria-hidden="true" tabindex="-1">
+        <img src="assets/img/event/bg.webp" alt="" width="1400" height="897"
+             loading="lazy" decoding="async" />
+      </a>
+    </div>
+
+    <ul class="party__facts" data-reveal>
+      <li><b>2026.08.29</b><span data-i18n="evt.day">토요일</span></li>
+      <li><b>19:00 — 24:00</b><span data-i18n="party.hours">오픈 · 종료</span></li>
+      <li><b data-i18n="party.venueName">어나더 루프탑 라운지</b><span data-i18n="party.venueAddr">서울 서초구 양재동 122-6</span></li>
+      <li><b data-i18n="party.capN">80명</b><span data-i18n="party.capS">정원 · 사전예약제</span></li>
+    </ul>
+
+    <div class="party__grid">
+      <div class="party__col">
+        <h3 data-i18n="party.timeK">타임테이블</h3>
+        <ul class="party__time">
+          <li><b>19:00</b><span data-i18n="party.t1">입장 · 해 지기 전엔 물에서</span></li>
+          <li class="is-on"><b>21:30</b><span data-i18n="party.t2">솔로파티 90분 — 혼자 온 사람들끼리</span></li>
+          <li><b>24:00</b><span data-i18n="party.t3">종료</span></li>
+          <li><b data-i18n="party.t4b">AFTER</b><span data-i18n="party.t4">강남 ACE 힙합존 — 밴드 차고 가면 혜택</span></li>
+        </ul>
+      </div>
+
+      <div class="party__col">
+        <h3 data-i18n="party.lineK">라인업</h3>
+        <p class="party__line" data-i18n="party.line">TS · LYNN · V · CHIPS · HEIDY · DEMIC · AROS</p>
+
+        <h3 data-i18n="party.allyK">협업</h3>
+        <ul class="party__ally">
+          <li><b>Z SPOT LOUNGE</b><span data-i18n="party.ally1">강남 · 밴드 착용 시 할인</span></li>
+          <li><b>CLUB ACE</b><span data-i18n="party.ally2">강남 · 테이블 3팀 샴페인</span></li>
+          <li><b>ANOTHER LOUNGE</b><span data-i18n="party.ally3">양재 루프탑 · 행사장</span></li>
+          <li><b>뜬금포차</b><span data-i18n="party.ally4">구의 · 방문 시 서비스</span></li>
+        </ul>
+      </div>
+
+      <div class="party__col party__book">
+        <h3 data-i18n="party.bookK">예약</h3>
+        <div class="evt__bar" role="img" aria-label="예약 현황">
+          <span style="--fill:36%"></span>
+        </div>
+        <p class="party__status">
+          <span class="evt__off" data-i18n="evt.sold">1차 사전예약 마감</span>
+          <b data-i18n="evt.open">2차 예약중</b>
+          <span data-evt-left>80명 중 29명</span>
+        </p>
+        <p class="party__note" data-i18n="party.note">사전예약만 받습니다. 현장 판매는 없습니다.</p>
+        <a class="btn btn--solid btn--lg" href="#" data-evt-link data-i18n="party.cta">예약하기</a>
+        <p class="party__ask" data-i18n="party.ask">테이블 문의는 인스타 DM 으로 받습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── philosophy ───────────────────────────────────────────── -->
 <section class="section philosophy" id="philosophy">
   <div class="wrap">
-    <p class="label" data-reveal><i>02</i> <b data-i18n="phil.label">브랜드 철학</b></p>
+    <p class="label" data-reveal><i>03</i> <b data-i18n="phil.label">브랜드 철학</b></p>
     <h2 class="display display--center" data-reveal-lines data-i18n="phil.title">우리가 지키는<br>여덟 단어.</h2>
     <ul class="words">
       <li data-reveal><i>01</i><b>Underground</b><span data-i18n="phil.1d">피드보다 플로어. 알고리즘이 아니라 그 공간이 결정합니다.</span></li>
@@ -181,7 +254,7 @@
 <!-- ── what we do ───────────────────────────────────────────── -->
 <section class="section work" id="work">
   <div class="wrap">
-    <p class="label" data-reveal><i>03</i> <b data-i18n="work.label">활동</b></p>
+    <p class="label" data-reveal><i>04</i> <b data-i18n="work.label">활동</b></p>
     <h2 class="display" data-reveal-lines data-i18n="work.title">우리가 밤을<br>장악하는 다섯 가지.</h2>
     <div class="cards">
       <article class="card" data-reveal>
@@ -216,7 +289,7 @@
 <!-- ── members ──────────────────────────────────────────────── -->
 <section class="section members" id="members">
   <div class="wrap">
-    <p class="label" data-reveal><i>04</i> <b data-i18n="mem.label">멤버</b></p>
+    <p class="label" data-reveal><i>05</i> <b data-i18n="mem.label">멤버</b></p>
     <div class="members__head">
       <h2 class="display" data-reveal-lines data-i18n="mem.title">밤을 만드는<br>사람들.</h2>
       <p class="members__lead" data-reveal data-i18n="mem.lead">BLACKOUT은 이름 하나로 움직입니다.</p>
@@ -246,7 +319,7 @@
 <!-- ── gallery ──────────────────────────────────────────────── -->
 <section class="section gallery" id="gallery">
   <div class="wrap">
-    <p class="label" data-reveal><i>05</i> <b data-i18n="gal.label">갤러리</b></p>
+    <p class="label" data-reveal><i>06</i> <b data-i18n="gal.label">갤러리</b></p>
     <h2 class="display" data-reveal-lines data-i18n="gal.title">그날 밤의<br>기록.</h2>
   </div>
 
@@ -281,7 +354,7 @@
 <!-- ── join ─────────────────────────────────────────────────── -->
 <section class="section join" id="join">
   <div class="wrap">
-    <p class="label" data-reveal><i>06</i> <b data-i18n="join.label">JOIN BLACKOUT</b></p>
+    <p class="label" data-reveal><i>07</i> <b data-i18n="join.label">JOIN BLACKOUT</b></p>
     <div class="join__head">
       <h2 class="display" data-reveal-lines data-i18n="join.title">창립 멤버<br>모집</h2>
       <div class="join__copy">
@@ -309,7 +382,7 @@
 <!-- ── contact ──────────────────────────────────────────────── -->
 <section class="section contact" id="contact">
   <div class="wrap">
-    <p class="label" data-reveal><i>07</i> <b data-i18n="contact.label">문의</b></p>
+    <p class="label" data-reveal><i>08</i> <b data-i18n="contact.label">문의</b></p>
     <h2 class="display" data-reveal-lines data-i18n="contact.title">연락 주세요.</h2>
     <ul class="contact__list">
       <li data-reveal>
@@ -583,6 +656,41 @@
           "description": "떡볶이 페스티벌, SCR, MUSHROOM, 춘희, 스타디움, XIMXIM 등에서 플레이한 DJ."
         }
       ]
+    },
+    {
+      "@type": "Event",
+      "name": "AFTER SUNSET — POOL PARTY × SOLO PARTY",
+      "startDate": "2026-08-29T19:00+09:00",
+      "endDate": "2026-08-30T00:00+09:00",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "description": "서울 DJ 크루 BLACKOUT 이 여는 풀파티. 21:30부터 90분은 솔로파티로 혼자 온 사람들끼리 섞인다. 정원 80명, 사전예약제.",
+      "maximumAttendeeCapacity": 80,
+      "location": {
+        "@type": "Place",
+        "name": "어나더 루프탑 라운지",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "양재동 122-6",
+          "addressLocality": "서초구",
+          "addressRegion": "서울",
+          "addressCountry": "KR"
+        }
+      },
+      "organizer": { "@type": "Organization", "name": "BLACKOUT CREW",
+                     "url": "https://www.blackoutsound.com/" },
+      "performer": [
+        { "@type": "Person", "name": "TS" }, { "@type": "Person", "name": "LYNN" },
+        { "@type": "Person", "name": "V" }, { "@type": "Person", "name": "CHIPS" },
+        { "@type": "Person", "name": "HEIDY" }, { "@type": "Person", "name": "DEMIC" },
+        { "@type": "Person", "name": "AROS" }
+      ],
+      "offers": {
+        "@type": "Offer",
+        "url": "https://forms.gle/sue3a9jZNCi8U8dC7",
+        "availability": "https://schema.org/InStock",
+        "validFrom": "2026-08-17T00:00+09:00"
+      }
     },
     {
       "@type": "WebSite",

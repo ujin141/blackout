@@ -1677,3 +1677,79 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 @media (max-width: 44rem) {
   .evt__mute { margin-bottom: 0.9rem; }
 }
+
+
+/* ══ party ══════════════════════════════════════════════════
+   행사 섹션. **팝업과 같은 숫자를 쓴다** — D-day 와 막대는 main.js 의
+   EVENT 한 곳에서 칠해지고, 글은 i18n 의 evt.*·party.* 키에서 온다. */
+.party__top { display: grid; grid-template-columns: 1fr minmax(0, 0.9fr);
+              gap: clamp(1.5rem, 4vw, 3.5rem); align-items: end; margin-bottom: 2.5rem; }
+.party__kick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem;
+               margin-top: 1rem; font-family: var(--brand); font-size: var(--t-1);
+               letter-spacing: 0.16em; color: var(--w-45); }
+/* 남은 날. **'며칠 남았다' 가 날짜보다 급하게 읽힌다** */
+.party__dday { font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.1em;
+               color: var(--white); border: 1px solid var(--line);
+               border-radius: var(--r-3); padding: 0.2rem 0.65rem; }
+.party__poster { display: block; border: 1px solid var(--line-soft); overflow: hidden;
+                 border-radius: var(--r-1); }
+.party__poster img { width: 100%; height: 100%; max-height: 15rem; object-fit: cover;
+                     object-position: 50% 45%; display: block;
+                     filter: grayscale(0.25) contrast(1.05); }
+
+.party__facts { list-style: none; display: grid; gap: 0; margin: 0 0 3rem;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                border-block: 1px solid var(--line-soft); }
+.party__facts li { padding: 1.15rem 1.2rem; border-left: 1px solid var(--line-soft); }
+.party__facts li:first-child { border-left: 0; padding-left: 0; }
+.party__facts b { display: block; font-family: var(--brand); font-size: var(--t-3);
+                  letter-spacing: 0.04em; }
+.party__facts span { display: block; font-size: var(--t-2); color: var(--w-45);
+                     margin-top: 0.45rem; }
+
+.party__grid { display: grid; gap: clamp(1.5rem, 3vw, 3rem);
+               grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.party__col h3 { font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.22em;
+                 color: var(--w-45); font-weight: 400; margin-bottom: 1.1rem;
+                 padding-bottom: 0.7rem; border-bottom: 1px solid var(--line-soft); }
+.party__col h3 + h3 { margin-top: 2.2rem; }
+
+.party__time, .party__ally { list-style: none; }
+.party__time li, .party__ally li { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr);
+                                   gap: 0.9rem; padding: 0.6rem 0; font-size: var(--t-3); }
+.party__ally li { grid-template-columns: 9.5rem minmax(0, 1fr); }
+.party__time b, .party__ally b { font-family: var(--brand); font-size: var(--t-2);
+                                 letter-spacing: 0.06em; color: var(--w-90); }
+.party__time span, .party__ally span { color: var(--w-60); line-height: 1.6; }
+/* 솔로파티가 이 행사의 핵심이라 한 줄만 밝게 둔다 */
+.party__time li.is-on b, .party__time li.is-on span { color: var(--white); }
+.party__line { font-family: var(--brand); font-size: var(--t-3); letter-spacing: 0.06em;
+               line-height: 1.9; color: var(--w-90); }
+
+.party__book .evt__bar { margin: 0.2rem 0 0.9rem; }
+.party__status { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem;
+                 font-size: var(--t-2); margin-bottom: 0.9rem; }
+.party__status b { color: var(--white); font-weight: 600; }
+.party__status span:last-child { color: var(--w-60); }
+.party__note { font-size: var(--t-3); color: var(--w-60); line-height: 1.7;
+               margin-bottom: 1.2rem; }
+.party__book .btn { width: 100%; text-align: center; }
+.party__ask { font-size: var(--t-2); color: var(--w-45); margin-top: 0.9rem; line-height: 1.6; }
+
+@media (max-width: 62rem) {
+  .party__grid { grid-template-columns: minmax(0, 1fr); }
+  .party__col h3 + h3 { margin-top: 2rem; }
+}
+@media (max-width: 44rem) {
+  .party__top { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .party__poster { order: -1; }
+  .party__poster img { max-height: 11rem; }
+  /* 넷을 한 줄에 두면 글자가 줄바꿈으로 깨진다 — 둘씩 두 줄 */
+  .party__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .party__facts li { padding: 0.95rem 0.9rem; border-top: 1px solid var(--line-soft); }
+  .party__facts li:nth-child(-n+2) { border-top: 0; }
+  .party__facts li:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .party__time li { grid-template-columns: 4.4rem minmax(0, 1fr); gap: 0.7rem; }
+  .party__ally li { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+}
+
