@@ -22,14 +22,17 @@ reel3 은 "이 파티가 뭔지" 를 알리는 판이었다. 지금은 D-10 에 
 
 ## 곡
 
-reel3 이 쓴 heavy·deep·dark 을 피한다. **연달아 올리면 귀가 먼저 안다.**
+**기존 곡을 안 쓴다.** `audio_motion` 5개와 `audio_poster` 6개는 뼈대가
+다 같아서 — 킥 넷에 엇박 햇, 그 위에 패드나 스탭 — BPM 만 바꾼 걸로
+들린다. 실제로 "너무 겹친다" 는 말이 나왔다.
 
-    garage      136  8마디  32박  개러지 스윙. 튀는 판 — 숫자 훅에
-    synthwave   118  8마디  32박  제일 넓다 — 질문 던지는 판에
-    industrial  138  9마디  36박  제일 세다 — 마감 압박에
+`audio_reel4.py` 에서 **주인공 악기를 바꿔서** 새로 만든다.
 
-**industrial 은 9마디라 36박이다.** 박 수가 편마다 다르니 컷도 36박을
-채워야 한다 — 32박으로 짜면 뒤가 잘린다(assert 가 잡는다).
+    pluck  117  플럭 아르페지오가 주선율. 킥은 뒤로       — 숫자 훅에
+    perc   108  선율이 아예 없다. 톰·콩가·림만            — 질문 던지는 판에
+    bass   133  굵은 베이스 리프. 위쪽은 비운다            — 마감 압박에
+
+셋 다 32박이다. 박 수는 곡에서 읽어 오니 곡을 바꾸면 컷도 같이 맞춰야 한다.
 
 python reel4.py          세 편 + 커버
 python reel4.py 2        2편만
@@ -68,8 +71,8 @@ DDAY = (datetime.date(2026, 8, 29) - datetime.date.today()).days
 
 
 def bars_of(style):
-    import audio_poster
-    bpm, bars = audio_poster.STYLES[style]
+    import audio_reel4
+    bpm, bars = audio_reel4.STYLES[style]
     return 60.0 / bpm, bars * 4
 
 
@@ -82,7 +85,7 @@ def _cut(clip, at, beats, ox=0.5, z0=1.0, z1=1.06, speed=1.0):
 #   4 물가 뒤통수  5 해 질 녘 전경  6 튜브 클로즈업  7 노란 계단  8 위에서 본 밤 물속
 REELS = [
     dict(
-        name='reel_1', style='garage',
+        name='reel_1', style='pluck',
         # 숫자로 친다. 컷은 짧게 균일 — 숫자가 주인공이라 그림이 튀면 안 된다
         # 4×8 = 32박
         cuts=[_cut(2, 0.8, 4, 0.50, 1.00, 1.10), _cut(8, 1.2, 4, 0.46, 1.02, 1.10),
@@ -96,7 +99,7 @@ REELS = [
               (14, 20, '8월 29일 토요일 · 양재 루프탑'),
               (20, 26, '사전예약만 받습니다')]),
     dict(
-        name='reel_2', style='synthwave',
+        name='reel_2', style='perc',
         # 질문 — 느린 곡이라 컷도 길게. 5·5·5·5·4·4·4 = 32박
         cuts=[_cut(0, 1.0, 5, 0.50, 1.00, 1.08), _cut(4, 1.0, 5, 0.46, 1.02, 1.10),
               _cut(7, 1.2, 5, 0.50, 1.00, 1.08), _cut(1, 4.0, 5, 0.48, 1.02, 1.10),
@@ -107,16 +110,16 @@ REELS = [
               (12, 18, '9시 반부터 90분'),
               (18, 26, '그 시간엔 다 혼자 온 사람들입니다')]),
     dict(
-        name='reel_3', style='industrial',
-        # 마감 — 36박. 뒤로 갈수록 짧아진다. 6·6·5·5·4·4·3·3 = 36박
-        cuts=[_cut(5, 1.2, 6, 0.44, 1.00, 1.10), _cut(6, 0.6, 6, 0.50, 1.00, 1.12),
-              _cut(1, 0.6, 5, 0.50, 1.02, 1.10), _cut(2, 1.4, 5, 0.46, 1.00, 1.10),
-              _cut(8, 2.0, 4, 0.52, 1.00, 1.08), _cut(3, 3.0, 4, 0.48, 1.02, 1.12),
-              _cut(4, 0.8, 3, 0.50, 1.00, 1.10), _cut(7, 2.2, 3, 0.46, 1.00, 1.12)],
-        caps=[(0, 7, '2차는 8월 24일에 닫습니다'),
-              (7, 14, '남은 건 21자리'),
-              (14, 21, '현장에서는 못 삽니다'),
-              (21, 30, '사전예약 안 하면 못 들어옵니다')]),
+        name='reel_3', style='bass',
+        # 마감 — 뒤로 갈수록 짧아진다. 6·5·5·4·4·3·3·2 = 32박
+        cuts=[_cut(5, 1.2, 6, 0.44, 1.00, 1.10), _cut(6, 0.6, 5, 0.50, 1.00, 1.12),
+              _cut(1, 0.6, 5, 0.50, 1.02, 1.10), _cut(2, 1.4, 4, 0.46, 1.00, 1.10),
+              _cut(8, 2.0, 4, 0.52, 1.00, 1.08), _cut(3, 3.0, 3, 0.48, 1.02, 1.12),
+              _cut(4, 0.8, 3, 0.50, 1.00, 1.10), _cut(7, 2.2, 2, 0.46, 1.00, 1.12)],
+        caps=[(0, 6, '2차는 8월 24일에 닫습니다'),
+              (6, 12, '남은 건 21자리'),
+              (12, 19, '현장에서는 못 삽니다'),
+              (19, 26, '사전예약 안 하면 못 들어옵니다')]),
 ]
 
 # 1.4초는 커튼과 소파뿐이라 파티로 안 읽혔다. **커버는 물이 보여야 한다** —
@@ -197,10 +200,10 @@ def render(spec):
     nb = sum(c['beats'] for c in spec['cuts'])
     assert nb == NBEAT, f"{spec['name']}: 컷 {nb}박인데 곡은 {NBEAT}박이다 — 뒤가 잘린다"
 
-    import audio_poster
-    wav = os.path.join(HERE, 'out', 'poster', f"bgm_{spec['style']}.wav")
+    import audio_reel4
+    wav = os.path.join(OUT, f"bgm_{spec['style']}.wav")
     if not os.path.exists(wav):
-        audio_poster.write(spec['style'])
+        audio_reel4.write(spec['style'])
 
     plan, edges, acc = [], set(), 0
     for c in spec['cuts']:
