@@ -97,15 +97,23 @@
 
 **뒷면 (`python band.py back`)**
 
-**크루 이름 하나뿐이다.** 로고와 BLACKOUT 을 가운데에 넓게 벌려 놓는다.
+**앞면에서 칩만 뺀 판이다.** 막대 · 로고 · BLACKOUT 이 앞면과 **똑같은
+자리에, 똑같은 크기와 자간으로** 앉는다.
 
-처음엔 협업사 세 곳(Z SPOT · CLUB ACE · DDEUNGEUM POCHA)을 넣었다가 뺐다.
+한때 가운데 정렬로 만들었다가 되돌렸다 — 양면을 나란히 놓으면 축이
+어긋나서 다른 판 두 장으로 보였다. **같은 물건의 양면은 같은 축에
+서야 한다.** 그래서 뒷면은 새로 그리지 않고 앞면의 x 진행을 그대로 쓴다.
+
+막대는 뒷면에도 둔다. 손목이 돌아가 있으면 문에서 보이는 게 뒷면이라,
+그때도 등급을 셀 수 있어야 한다.
+
+**칩만 뺀다.** 칩이 밴드에서 밝기 대비가 제일 큰 덩어리라(3-1) 그게
+어느 쪽에 있느냐로 앞뒤가 갈린다. 양면에 다 넣으면 앞면이 앞면이 아니게 된다.
+
+협업사 세 곳(Z SPOT · CLUB ACE · DDEUNGEUM POCHA)을 넣었다가 뺐다.
 **협업사는 행사마다 바뀐다** — 그걸 박으면 이 밴드는 8월 29일 하루짜리가
 되고, 다음 행사에는 다시 찍어야 한다. 앞면에서 행사 이름을 빼고 크루
 이름을 남긴 것과 같은 판단이다(위 4번).
-
-등급 막대·칩도 안 넣는다. 앞면에 이미 네 번 나온다. 뒷면은 **조용한 면**이라
-아무 정보도 없는 게 맞다 — 손목 안쪽이라 어차피 스치듯 보인다.
 
 바탕·글자색은 앞면과 같이 간다. 같은 밴드의 양면이라 색이 갈리면
 다른 물건으로 보인다.
@@ -303,41 +311,35 @@ def draw_unit(u, bg, fg, word, n):
     paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
 
 
-def draw_back(u, bg, fg):
-    """뒷면 한 덩어리. **로고와 크루 이름뿐이다.**
+def draw_back(u, bg, fg, n):
+    """뒷면 한 덩어리. **앞면의 x 진행을 그대로 따라간다.**
 
-    앞면은 왼쪽에서 시작해 오른쪽 칩으로 끝나는 판이라 왼쪽 정렬이 맞다.
-    뒷면은 얹을 게 하나뿐이라 **덩어리째 가운데**에 둔다 — 한 덩어리를
-    왼쪽에 붙여 두면 오른쪽 절반이 통째로 비어 잘못 인쇄된 것처럼 보인다."""
+    `draw_unit` 과 같은 순서·같은 값으로 왼쪽부터 앉힌다 — 막대, 로고,
+    이름. 여기서 좌표를 새로 잡으면 양면이 미세하게 어긋나고, 그 어긋남이
+    나란히 놓았을 때 바로 보인다."""
     u[:] = bg
 
-    lg = logo(U * 6)
-    # 앞면(step(4))보다 한 단 작게. 뒷면은 조용한 면이라 앞면과 같은 크기면
-    # 어느 쪽이 앞인지 모르게 된다
-    ns = step(3)
-    name = tmask_bl(BAND_NAME, BRAND, ns, BACK_TRACK)
-    gap = U * 3
-    total = lg.shape[1] + gap + name[0].shape[1]
-    x = (UNIT - total) / 2
+    x = U * 6
+    x = tier_marks(u, n, fg, x, CY) + U * 2       # 앞면과 같은 폭을 먹는다
 
-    # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다
+    lg = logo(U * 6)
     paint(u, lg, x, CY - U * 0.15, color=fg, a=0.95)
-    x += lg.shape[1] + gap
-    # 대문자라 마스크 높이 = 캡 높이. 절반을 내리면 광학 중심에 앉는다
+    x += lg.shape[1] + U * 3
+
+    # **자간도 앞면과 같은 값(NAME_TRACK)을 쓴다.** 뒷면만 다시 계산하면
+    # 이름 끝나는 자리가 달라져서 양면이 안 맞는다
+    name = tmask_bl(BAND_NAME, BRAND, step(4), NAME_TRACK)
     paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
 
 
 NAME_TRACK = None                                 # 첫 그리기 전에 채운다
-# 뒷면 자간. 앞면은 칩까지 남는 폭을 채우느라 역산하지만, 뒷면은 채울
-# 상대가 없어서 값을 하나 준다 — 앞면보다 넓게 벌려야 조용한 면으로 읽힌다
-BACK_TRACK = 0.62
 
 
 def build(word, n, bg, fg, back=False):
     img = np.zeros((H, W, 3), np.float32)
     u = np.zeros((H, UNIT, 3), np.float32)
     if back:
-        draw_back(u, bg, fg)
+        draw_back(u, bg, fg, n)
     else:
         draw_unit(u, bg, fg, word, n)
     img[:, :UNIT] = u
