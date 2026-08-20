@@ -168,6 +168,8 @@ python poster_crew.py                         # AI안 DJ 얼굴 판 — 누끼 �
 python poster_dj.py                           # DJ 한 명짜리 판 일곱 장 (사람마다 색이 다르다)
 python poster_dj.py lynn heidy                # 골라서
 python poster_dj2.py                          # 같은 개인 판 B안 — 색분해·대각 띠·세로 이름
+python poster_dj3.py                          # C안 — 크롬 이름·무대 빔 (강남 클럽 게스트 판)
+python poster_dj4.py                          # D안 — 우진 레퍼런스(월디페) 문법. 정사각 + 흰 정보 띠
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
