@@ -77,7 +77,10 @@ GIVE = 'WELCOME DRINK 1+1'
 TERMS = [('WHO',   '팔로우 화면을 보여주신 분'),
          ('WHEN',  '행사 당일 · 영업 종료 전까지'),
          ('LIMIT', '1인 1회 · 뜯긴 쿠폰만 유효'),
-         ('NOTE',  '현장 교환만 · 현금 교환 불가')]
+         ('NOTE',  '현장 교환만 · 현금 교환 불가'),
+         # **분실 규정은 적어 둬야 한다.** 안 적으면 현장에서 다투고,
+         # 다투면 결국 한 잔 더 내주게 된다
+         ('LOST',  '분실 시 사용 불가 · 재발급 없음')]
 STUB_WORD = 'DRINK'
 
 _QR = None
@@ -164,7 +167,7 @@ def front():
     rule(img, fy - U * 2.0, x, right, INK, 0.14, HAIR)
     # **행사 이름과 날짜를 안 적는다.** 적는 순간 그날에만 쓰는 물건이 된다 —
     # 남는 쿠폰이 다음 행사로 넘어가야 인쇄가 안 아깝다
-    paint_bl(img, tmask_bl('BLACKOUT CREW', BRAND, int(U * 0.82), 0.24),
+    paint_bl(img, tmask_bl('BLACKOUT', BRAND, int(U * 0.82), 0.24),
              x, fy, color=INK, a=0.55)
     # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
     bw = int(U * 5.0)
