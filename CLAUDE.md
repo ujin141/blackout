@@ -120,7 +120,9 @@ python poster_photo.py                        # F안 실사 물 사진 — 밤 �
 python band.py                                # 입장 밴드 앞면 4종 → BAND_1_GUEST_FRONT.png …
 python band.py back                           # 밴드 뒷면 (로고 + BLACKOUT). 크기는 BAND_MM 에서
 python coupon.py                              # 웰컴드링크 쿠폰 앞뒤 + A4 시트. 크기는 COUPON_MM 에서 (148×68mm)
-python to_cmyk.py out/band                    # 인쇄용 CMYK TIFF — 잉크량 250%, 리치블랙 직접 지정
+python print_pack.py                          # **인쇄소에 넘길 폴더 한 방에** → out/print (PDF+TIFF+사양서)
+python to_cmyk.py out/band                    # CMYK TIFF 만 — 잉크량 250%, 리치블랙 직접 지정
+python to_pdf.py out/band_cmyk                # CMYK PDF 만 — 무손실, ICC 심음
 python poster_ally.py                         # 협업 혜택 판 — ONE BAND / FOUR DOORS
 python qr.py                                  # 예약·게스트 폼 QR (읽히는지 재고 뽑음)
 python guest.py                               # 게스트 등록 판 — 폰 · A4 · 명함
