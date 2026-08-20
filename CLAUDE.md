@@ -86,6 +86,7 @@ video/                  영상·카드뉴스·OG 생성 스크립트
 video/event.py          행사 정보 원본 — 날짜·시간·타임테이블·협업 브랜드. 시안 다섯이 여기서 가져감
 video/poster_kit.py     포스터 공통 도구 (C·D·E안이 씀. A·B안은 각자 복사본)
 video/fest_kit.py       페스티벌 시안 전용 도구 (G~K안)
+video/members.py        멤버 데이터를 assets/js/members.js 에서 읽는다. 파이썬에 다시 적지 않는다
 video/scene_kit.py      풀파티 '장면' 을 그리는 도구 (AF~AH안)
 assets/img/partners/    협업 브랜드 로고 4종 — 포스터에 자동으로 들어감 (README 참고)
 assets/img/stock/       배경 사진. `pool-model.jpg` 를 넣으면 장면 배경이 그걸로 바뀜
@@ -164,6 +165,8 @@ python poster_night.py                        # AF안 장면 + 한글 헤드라�
 python poster_deck.py                         # AG안 장면 위 / 정보판 아래
 python poster_dive.py                         # AH안 장면 전면 + 행사명 한 줄
 python poster_crew.py                         # AI안 DJ 얼굴 판 — 누끼 일곱을 칸에 넣는다
+python poster_dj.py                           # DJ 한 명짜리 판 일곱 장 (사람마다 색이 다르다)
+python poster_dj.py lynn heidy                # 골라서
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
