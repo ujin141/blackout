@@ -422,9 +422,10 @@ if __name__ == '__main__':
     back = 'back' in sys.argv[1:]
     NAME_SIZE, NAME_TRACK = name_fit()
     # **파일 이름으로 앞뒤가 갈려야 한다.** `band_` 와 `back_` 은 둘 다 b 로
-    # 시작해서 인쇄소가 헷갈린다 — 한글로 '앞면/뒷면' 을 박는다.
-    # 번호는 등급 순서다. 안 붙이면 파일 목록이 guest·staff·vip·vvip 로
+    # 시작해서 인쇄소가 헷갈린다 — FRONT / BACK 을 끝에 박는다.
+    # 이름은 영문으로 둔다. 한글 파일명은 인쇄소 시스템에 따라 깨진다.
+    # 번호는 등급 순서다. 안 붙이면 파일 목록이 GUEST·STAFF·VIP·VVIP 로
     # 정렬돼서 등급 계단이 안 보인다.
     for i, (word, n, bg, fg) in enumerate(TIERS, 1):
-        side = '뒷면' if back else '앞면'
-        save(build(word, n, bg, fg, back=back), f'밴드_{i}_{word}_{side}')
+        side = 'BACK' if back else 'FRONT'
+        save(build(word, n, bg, fg, back=back), f'BAND_{i}_{word}_{side}')
