@@ -919,6 +919,44 @@ const ART = {
 })();
 
 
+/* ── 판 열고 닫기 ───────────────────────────
+   행사 팝업과 파티 상세가 같은 동작을 쓴다. **두 벌로 두면 한쪽만 고치게
+   된다** — 포커스를 가두는 부분은 티가 안 나서 오래 남는다. */
+const sheet = (modal, focusSel) => {
+  let last = null;
+  const open = () => {
+    last = document.activeElement;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    /* **rAF 는 백그라운드 탭에서 안 돈다.** 링크를 눌러 새 탭으로 열어 두면
+       판이 열린 채 투명하게 남는다 — 타이머로 한 번 더 받쳐 준다 */
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+    setTimeout(() => modal.classList.add('is-open'), 60);
+    const first = focusSel && $(focusSel, modal);
+    if (first) setTimeout(() => first.focus({ preventScroll: true }), 260);
+  };
+  const close = () => {
+    modal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    setTimeout(() => { modal.hidden = true; }, 400);
+    if (last) last.focus({ preventScroll: true });
+  };
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
+  /* 탭이 판 밖으로 새지 않게 가둔다 */
+  modal.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const f = $$('button, a[href]', modal).filter(el => el.offsetParent !== null);
+    if (!f.length) return;
+    const [a, z] = [f[0], f[f.length - 1]];
+    if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+    else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+  });
+  return { open, close };
+};
+
+
 /* ── event popup ─────────────────────────────────────────── */
 (() => {
   const modal = $('#event');
@@ -938,24 +976,7 @@ const ART = {
     a.href = EVENT.form; a.target = '_blank'; a.rel = 'noopener';
   });
 
-  let last = null;
-  const open = () => {
-    last = document.activeElement;
-    modal.hidden = false;
-    document.body.style.overflow = 'hidden';
-    /* **rAF 는 백그라운드 탭에서 안 돈다.** 링크를 눌러 새 탭으로 열어 두면
-       판이 열린 채 투명하게 남는다 — 타이머로 한 번 더 받쳐 준다 */
-    requestAnimationFrame(() => modal.classList.add('is-open'));
-    setTimeout(() => modal.classList.add('is-open'), 60);
-    const first = $('.evt__cta [data-evt-link]', modal);
-    if (first) setTimeout(() => first.focus({ preventScroll: true }), 260);
-  };
-  const close = () => {
-    modal.classList.remove('is-open');
-    document.body.style.overflow = '';
-    setTimeout(() => { modal.hidden = true; }, 400);
-    if (last) last.focus({ preventScroll: true });
-  };
+  const { open, close } = sheet(modal, '.evt__cta [data-evt-link]');
 
   $$('[data-close-evt]').forEach(b => b.addEventListener('click', close));
   const mute = $('[data-mute-evt]', modal);
@@ -963,19 +984,6 @@ const ART = {
     localStorage.setItem(MUTE, String(Date.now()));
     close();
   });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !modal.hidden) close();
-  });
-  /* 탭이 판 밖으로 새지 않게 가둔다 */
-  modal.addEventListener('keydown', e => {
-    if (e.key !== 'Tab') return;
-    const f = $$('button, a[href]', modal).filter(el => el.offsetParent !== null);
-    if (!f.length) return;
-    const [a, z] = [f[0], f[f.length - 1]];
-    if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
-    else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
-  });
-
   /* ── 남은 날 · 남은 자리 ────────────────────────────────
      숫자는 EVENT 한 곳에서 나온다. 판마다 적으면 반드시 어긋난다. */
   /* i18n.js 는 const 로 선언해서 window.I18N 으로는 안 잡힌다 */
@@ -1024,4 +1032,21 @@ const ART = {
   // 팝업을 닫으면 띠가 올라온다
   $$('[data-close-evt], [data-mute-evt]').forEach(b =>
     b.addEventListener('click', () => setTimeout(showBar, 420)));
+})();
+
+
+/* ── 파티 상세 ─────────────────────────────
+   **섹션에 전부 펼쳐 두면 스크롤로 지나간다.** 카드 한 장만 두고,
+   누른 사람에게만 타임테이블·라인업·협업을 준다.
+
+   숫자와 링크는 위 팝업 블록이 칠한다 — 여기서 다시 세지 않는다. */
+(() => {
+  const modal = $('#party-detail');
+  const card = $('[data-open-party]');
+  if (!modal || !card) return;
+  /* **여기서 예약 버튼에 포커스를 주면 안 된다.** 판이 길어서 버튼이
+     맨 아래에 있고, 열자마자 아래로 끌려가면 위를 못 읽는다 */
+  const { open, close } = sheet(modal, '.modal__x');
+  card.addEventListener('click', open);
+  $$('[data-close-party]').forEach(b => b.addEventListener('click', close));
 })();

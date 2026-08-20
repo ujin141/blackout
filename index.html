@@ -162,73 +162,40 @@
   </div>
 </section>
 
-<!-- ── party ────────────────────────────────────────────────
-     **행사 정보는 여기와 팝업 두 곳에 있다.** 날짜·정원 같은 숫자는
-     main.js 의 EVENT 한 곳에서 나오고(D-day·남은 자리 막대), 나머지 글은
-     i18n.js 의 evt.* 키를 팝업과 같이 쓴다 — 한쪽만 고치면 어긋난다. -->
+<!-- ── party ──────────────────────────────
+     **섹션에 다 펼쳐 두면 스크롤로 지나간다.** 카드 한 장만 두고,
+     누른 사람에게만 상세를 보여 준다 — 상세는 아래 #party-detail 에 있다.
+     숫자(D-day·막대·남은 자리)는 main.js 의 EVENT 한 곳에서 칠해진다. -->
 <section class="section party" id="party">
   <div class="wrap">
     <p class="label" data-reveal><i>02</i> <b data-i18n="party.label">다음 파티</b></p>
 
-    <div class="party__top">
-      <div>
-        <h2 class="display" data-reveal-lines data-i18n="party.title">AFTER SUNSET</h2>
-        <p class="party__kick" data-reveal>
-          <span data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</span>
-          <b class="party__dday" data-evt-dday hidden></b>
-        </p>
-      </div>
-      <a class="party__poster" href="#" data-evt-link data-reveal aria-hidden="true" tabindex="-1">
+    <button class="party__card" type="button" data-open-party data-reveal
+            aria-haspopup="dialog" aria-controls="party-detail">
+      <span class="party__art">
         <img src="assets/img/event/bg.webp" alt="" width="1400" height="897"
              loading="lazy" decoding="async" />
-      </a>
-    </div>
+      </span>
+      <span class="party__info">
+        <span class="party__kick">
+          <span data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</span>
+          <b class="party__dday" data-evt-dday hidden></b>
+        </span>
+        <span class="party__name" data-i18n="party.title">AFTER SUNSET</span>
+        <span class="party__when">
+          <b>2026.08.29</b>
+          <span data-i18n="evt.day">토요일</span>
+          <span data-i18n="party.venueName">어나더 루프탑 라운지</span>
+        </span>
+        <span class="evt__bar"><span style="--fill:36%"></span></span>
+        <span class="party__seat" data-evt-left>80명 중 29명</span>
+        <span class="party__more" data-i18n="party.more">상세 보기</span>
+      </span>
+    </button>
 
-    <ul class="party__facts" data-reveal>
-      <li><b>2026.08.29</b><span data-i18n="evt.day">토요일</span></li>
-      <li><b>19:00 — 24:00</b><span data-i18n="party.hours">오픈 · 종료</span></li>
-      <li><b data-i18n="party.venueName">어나더 루프탑 라운지</b><span data-i18n="party.venueAddr">서울 서초구 양재동 122-6</span></li>
-      <li><b data-i18n="party.capN">80명</b><span data-i18n="party.capS">정원 · 사전예약제</span></li>
-    </ul>
-
-    <div class="party__grid">
-      <div class="party__col">
-        <h3 data-i18n="party.timeK">타임테이블</h3>
-        <ul class="party__time">
-          <li><b>19:00</b><span data-i18n="party.t1">입장 · 해 지기 전엔 물에서</span></li>
-          <li class="is-on"><b>21:30</b><span data-i18n="party.t2">솔로파티 90분 — 혼자 온 사람들끼리</span></li>
-          <li><b>24:00</b><span data-i18n="party.t3">종료</span></li>
-          <li><b data-i18n="party.t4b">AFTER</b><span data-i18n="party.t4">강남 ACE 힙합존 — 밴드 차고 가면 혜택</span></li>
-        </ul>
-      </div>
-
-      <div class="party__col">
-        <h3 data-i18n="party.lineK">라인업</h3>
-        <p class="party__line" data-i18n="party.line">TS · LYNN · V · CHIPS · HEIDY · DEMIC · AROS</p>
-
-        <h3 data-i18n="party.allyK">협업</h3>
-        <ul class="party__ally">
-          <li><b>Z SPOT LOUNGE</b><span data-i18n="party.ally1">강남 · 밴드 착용 시 할인</span></li>
-          <li><b>CLUB ACE</b><span data-i18n="party.ally2">강남 · 테이블 3팀 샴페인</span></li>
-          <li><b>ANOTHER LOUNGE</b><span data-i18n="party.ally3">양재 루프탑 · 행사장</span></li>
-          <li><b>뜬금포차</b><span data-i18n="party.ally4">구의 · 방문 시 서비스</span></li>
-        </ul>
-      </div>
-
-      <div class="party__col party__book">
-        <h3 data-i18n="party.bookK">예약</h3>
-        <div class="evt__bar" role="img" aria-label="예약 현황">
-          <span style="--fill:36%"></span>
-        </div>
-        <p class="party__status">
-          <span class="evt__off" data-i18n="evt.sold">1차 사전예약 마감</span>
-          <b data-i18n="evt.open">2차 예약중</b>
-          <span data-evt-left>80명 중 29명</span>
-        </p>
-        <p class="party__note" data-i18n="party.note">사전예약만 받습니다. 현장 판매는 없습니다.</p>
-        <a class="btn btn--solid btn--lg" href="#" data-evt-link data-i18n="party.cta">예약하기</a>
-        <p class="party__ask" data-i18n="party.ask">테이블 문의는 인스타 DM 으로 받습니다.</p>
-      </div>
+    <div class="party__act" data-reveal>
+      <a class="btn btn--solid btn--lg" href="#" data-evt-link data-i18n="party.cta">예약하기</a>
+      <p class="party__ask" data-i18n="party.ask">테이블 문의는 인스타 DM 으로 받습니다.</p>
     </div>
   </div>
 </section>
@@ -503,6 +470,70 @@
       </div>
 
       <button class="evt__mute" type="button" data-mute-evt data-i18n="evt.mute">오늘 하루 안 보기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── party detail ─────────────────────────
+     파티 카드를 누르면 열린다. 글은 i18n 의 party.* 를 그대로 쓰고,
+     숫자는 팝업과 같은 EVENT 에서 온다 — 한쪽만 고치면 어긋난다. -->
+<div class="modal modal--party" id="party-detail" hidden>
+  <div class="modal__scrim" data-close-party></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+    <button class="modal__x" type="button" data-close-party aria-label="Close">✕</button>
+
+    <p class="party__kick">
+      <span data-i18n="evt.kicker">POOL PARTY × SOLO PARTY</span>
+      <b class="party__dday" data-evt-dday hidden></b>
+    </p>
+    <h2 class="pd__title" id="pdTitle" data-i18n="party.title">AFTER SUNSET</h2>
+
+    <ul class="party__facts">
+      <li><b>2026.08.29</b><span data-i18n="evt.day">토요일</span></li>
+      <li><b>19:00 — 24:00</b><span data-i18n="party.hours">오픈 · 종료</span></li>
+      <li><b data-i18n="party.venueName">어나더 루프탑 라운지</b><span data-i18n="party.venueAddr">서울 서초구 양재동 122-6</span></li>
+      <li><b data-i18n="party.capN">80명</b><span data-i18n="party.capS">정원 · 사전예약제</span></li>
+    </ul>
+
+    <div class="party__grid">
+      <div class="party__col">
+        <h3 data-i18n="party.timeK">타임테이블</h3>
+        <ul class="party__time">
+          <li><b>19:00</b><span data-i18n="party.t1">입장 · 해 지기 전엔 물에서</span></li>
+          <li class="is-on"><b>21:30</b><span data-i18n="party.t2">솔로파티 90분 — 혼자 온 사람들끼리</span></li>
+          <li><b>24:00</b><span data-i18n="party.t3">종료</span></li>
+          <li><b data-i18n="party.t4b">AFTER</b><span data-i18n="party.t4">강남 ACE 힙합존 — 밴드 차고 가면 혜택</span></li>
+        </ul>
+      </div>
+
+      <div class="party__col">
+        <h3 data-i18n="party.lineK">라인업</h3>
+        <p class="party__line" data-i18n="party.line">TS · LYNN · V · CHIPS · HEIDY · DEMIC · AROS</p>
+
+        <h3 data-i18n="party.allyK">협업</h3>
+        <ul class="party__ally">
+          <li><b>Z SPOT LOUNGE</b><span data-i18n="party.ally1">강남 · 밴드 착용 시 할인</span></li>
+          <li><b>CLUB ACE</b><span data-i18n="party.ally2">강남 · 테이블 3팀 샴페인</span></li>
+          <li><b>ANOTHER LOUNGE</b><span data-i18n="party.ally3">양재 루프탑 · 행사장</span></li>
+          <li><b>뜬금포차</b><span data-i18n="party.ally4">구의 · 방문 시 서비스</span></li>
+        </ul>
+      </div>
+
+      <div class="party__col party__book">
+        <h3 data-i18n="party.bookK">예약</h3>
+        <div class="evt__bar" role="img" aria-label="예약 현황">
+          <span style="--fill:36%"></span>
+        </div>
+        <p class="party__status">
+          <span class="evt__off" data-i18n="evt.sold">1차 사전예약 마감</span>
+          <b data-i18n="evt.open">2차 예약중</b>
+          <span data-evt-left>80명 중 29명</span>
+        </p>
+        <p class="party__note" data-i18n="party.note">사전예약만 받습니다. 현장 판매는 없습니다.</p>
+        <a class="btn btn--solid btn--lg" href="#" data-evt-link data-i18n="party.cta">예약하기</a>
+        <p class="party__ask" data-i18n="party.ask">테이블 문의는 인스타 DM 으로 받습니다.</p>
+      </div>
     </div>
   </div>
 </div>

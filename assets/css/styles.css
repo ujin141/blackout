@@ -1682,8 +1682,6 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 /* ══ party ══════════════════════════════════════════════════
    행사 섹션. **팝업과 같은 숫자를 쓴다** — D-day 와 막대는 main.js 의
    EVENT 한 곳에서 칠해지고, 글은 i18n 의 evt.*·party.* 키에서 온다. */
-.party__top { display: grid; grid-template-columns: 1fr minmax(0, 0.9fr);
-              gap: clamp(1.5rem, 4vw, 3.5rem); align-items: end; margin-bottom: 2.5rem; }
 .party__kick { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem;
                margin-top: 1rem; font-family: var(--brand); font-size: var(--t-1);
                letter-spacing: 0.16em; color: var(--w-45); }
@@ -1691,13 +1689,41 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .party__dday { font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.1em;
                color: var(--white); border: 1px solid var(--line);
                border-radius: var(--r-3); padding: 0.2rem 0.65rem; }
-.party__poster { display: block; border: 1px solid var(--line-soft); overflow: hidden;
-                 border-radius: var(--r-1); }
-.party__poster img { width: 100%; height: 100%; max-height: 15rem; object-fit: cover;
-                     object-position: 50% 45%; display: block;
-                     filter: grayscale(0.25) contrast(1.05); }
+/* **카드 한 장만 보여 준다.** 타임테이블·라인업·협업을 섹션에 펼쳐 두면
+   읽는 사람보다 스크롤로 지나가는 사람이 많다 — 누른 사람에게만 준다. */
+.party__card { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+               width: 100%; text-align: left; background: none; padding: 0;
+               border: 1px solid var(--line-soft); border-radius: var(--r-1);
+               overflow: hidden; cursor: pointer;
+               transition: border-color var(--fast), transform var(--fast); }
+.party__card:hover { border-color: var(--line); transform: translateY(-2px); }
+.party__art { display: block; overflow: hidden; background: var(--black); }
+.party__art img { width: 100%; height: 100%; min-height: 15rem; object-fit: cover;
+                  object-position: 50% 45%; display: block;
+                  filter: grayscale(0.25) contrast(1.05);
+                  transition: transform 0.6s var(--ease); }
+.party__card:hover .party__art img { transform: scale(1.03); }
+.party__info { display: grid; align-content: center; gap: 0.5rem;
+               padding: clamp(1.4rem, 3vw, 2.3rem); }
+.party__card .party__kick { margin-top: 0; }
+.party__name { font-family: var(--brand); font-size: clamp(1.6rem, 4.2vw, 2.5rem);
+               letter-spacing: 0.02em; line-height: 1.1; }
+.party__when { display: flex; flex-wrap: wrap; gap: 0.25rem 0.8rem;
+               font-size: var(--t-2); color: var(--w-60); }
+.party__when b { font-family: var(--brand); letter-spacing: 0.04em; color: var(--w-90); }
+.party__card .evt__bar { margin: 0.45rem 0 0; }
+.party__seat { font-size: var(--t-2); color: var(--w-60); }
+/* **누를 수 있다는 게 보여야 한다.** 사진으로만 보이면 아무도 안 누른다 */
+.party__more { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.6rem;
+               font-family: var(--brand); font-size: var(--t-1); letter-spacing: 0.16em;
+               color: var(--white); }
+.party__more::after { content: '92'; transition: transform var(--fast); }
+.party__card:hover .party__more::after { transform: translateX(4px); }
 
-.party__facts { list-style: none; display: grid; gap: 0; margin: 0 0 3rem;
+.party__act { margin-top: 2rem; max-width: 22rem; }
+.party__act .btn { width: 100%; text-align: center; }
+
+.party__facts { list-style: none; display: grid; gap: 0; margin: 0 0 2.6rem;
                 grid-template-columns: repeat(4, minmax(0, 1fr));
                 border-block: 1px solid var(--line-soft); }
 .party__facts li { padding: 1.15rem 1.2rem; border-left: 1px solid var(--line-soft); }
@@ -1736,14 +1762,41 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .party__book .btn { width: 100%; text-align: center; }
 .party__ask { font-size: var(--t-2); color: var(--w-45); margin-top: 0.9rem; line-height: 1.6; }
 
+/* ── 상세 판 ─────────────────────────────────
+   **판 높이는 팝업과 같은 방식으로 잡는다.** 인앱 브라우저에서 vh 를
+   믿으면 아래가 잘린다 — --vvh 는 main.js 가 잰 실제 높이다. */
+.modal--party .modal__panel { width: min(62rem, 100%);
+  max-height: min(88dvh, 88vh, calc(var(--vvh, 100vh) * 0.88));
+  max-height: calc(min(88dvh, 88vh, var(--vvh, 100vh) * 0.88)
+                   - env(safe-area-inset-bottom, 0px)); }
+.modal--party .party__kick { margin-top: 0; margin-bottom: 0.4rem; }
+.pd__title { font-family: var(--brand); font-size: clamp(1.6rem, 4.4vw, 2.3rem);
+             letter-spacing: 0.02em; line-height: 1.1; margin-bottom: 1.5rem; }
+/* 판 안에서는 넷을 한 줄에 두면 글자가 깨진다 — 둘씩 두 줄 */
+.modal--party .party__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.modal--party .party__facts li { padding: 0.95rem 1rem;
+                                 border-top: 1px solid var(--line-soft); }
+.modal--party .party__facts li:nth-child(-n+2) { border-top: 0; }
+.modal--party .party__facts li:nth-child(odd) { border-left: 0; padding-left: 0; }
+.modal--party .party__grid { grid-template-columns: repeat(2, minmax(0, 1fr));
+                             gap: 2rem clamp(1.5rem, 3vw, 2.6rem); }
+/* 예약은 아래 한 줄을 다 쓴다 — 누를 것이 맨 끝에 있어야 한다 */
+.modal--party .party__book { grid-column: 1 / -1; }
+.modal--party .party__book .btn { max-width: 22rem; }
+@media (max-width: 52rem) {
+  .modal--party .party__grid { grid-template-columns: minmax(0, 1fr); }
+  .modal--party .party__book .btn { max-width: none; }
+}
+
 @media (max-width: 62rem) {
   .party__grid { grid-template-columns: minmax(0, 1fr); }
   .party__col h3 + h3 { margin-top: 2rem; }
 }
 @media (max-width: 44rem) {
-  .party__top { grid-template-columns: minmax(0, 1fr); align-items: start; }
-  .party__poster { order: -1; }
-  .party__poster img { max-height: 11rem; }
+  /* 폰에서는 사진 위, 글자 아래 */
+  .party__card { grid-template-columns: minmax(0, 1fr); }
+  .party__art img { min-height: 11rem; max-height: 13rem; }
+  .party__act { max-width: none; }
   /* 넷을 한 줄에 두면 글자가 줄바꿈으로 깨진다 — 둘씩 두 줄 */
   .party__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .party__facts li { padding: 0.95rem 0.9rem; border-top: 1px solid var(--line-soft); }
