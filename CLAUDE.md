@@ -171,6 +171,7 @@ python poster_dj2.py                          # 같은 개인 판 B안 — 색�
 python poster_dj3.py                          # C안 — 크롬 이름·무대 빔 (강남 클럽 게스트 판)
 python poster_dj4.py                          # D안 — 우진 레퍼런스(월디페) 문법. 정사각 + 흰 정보 띠
 python poster_dj5.py                          # E안 — 액자를 뚫고 나온다. 해 + 잔상 + 바닥 반사
+python poster_dj6.py                          # F안 — 네온 간판. 콘크리트 벽 + 젖은 바닥
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서

@@ -115,6 +115,31 @@ def fringe(img, amt):
     img[..., 2] = scale(img[..., 2], -amt)
 
 
+def melt(a_, px, frac=0.36, seed=0, V=1.0):
+    """발치를 **직선으로 자르지 않는다.**
+
+    가로 그라데이션만 주면 자로 자른 것처럼 보인다 — 누끼가 딱 끊긴 느낌이
+    나는 게 이거다. 셋을 같이 한다.
+
+        경계를 흔든다   노이즈를 섞어 사라지는 선이 일직선이 아니게
+        같이 어둡게     사라지는 구간을 어둡게 해야 '잘린' 게 아니라
+                        '어둠 속으로 들어간' 것이 된다
+        가장자리 깃털   알파를 아주 조금 흐려 하드 엣지를 없앤다
+    """
+    n, w = a_.shape
+    fd = max(8, int(n * frac))
+    t = np.linspace(0, 1, fd, dtype=np.float32)[:, None]
+    rng = np.random.default_rng(seed)
+    nz = rng.random((max(2, fd // 12), max(2, w // 12))).astype(np.float32)
+    nz = cv2.resize(cv2.GaussianBlur(nz, (0, 0), 1.6), (w, fd),
+                    interpolation=cv2.INTER_CUBIC)
+    nz = (nz - nz.min()) / (float(np.ptp(nz)) + 1e-6)
+    a_[n - fd:] *= np.clip(1.0 - t ** 1.05 * 1.38 + (nz - 0.5) * 0.98 * t, 0, 1)
+    px[n - fd:] *= (1 - t * 0.74)[..., None]
+    a_ = cv2.GaussianBlur(a_, (0, 0), max(0.8, 1.3 * V))
+    return a_, px
+
+
 def sharpen(a, sigma, amt):
     """언샤프 마스크. 누끼를 키워 얹으면 흐려진다 — 얼굴이 또렷해야 산다."""
     return np.clip(a + (a - cv2.GaussianBlur(a, (0, 0), sigma)) * amt, 0, 1)
@@ -182,10 +207,7 @@ def build(name, W, H, safe=False):
     a_ = al[:n].copy()
     # 누끼 가장자리의 반투명 잔털을 깎는다. 어두운 판에서 회색 테로 보인다
     a_ = np.clip((a_ - 0.07) / 0.93, 0, 1)
-    # **발치는 알파로 녹인다.** 예전엔 합성한 뒤 그 구간을 통째로 어둡게
-    # 눌렀는데, 사람만이 아니라 배경까지 같이 죽어서 아래가 비어 보였다
-    fd = int(n * 0.26)
-    a_[n - fd:] *= np.linspace(1.0, 0.0, fd, dtype=np.float32)[:, None] ** 1.3
+
 
     # 인물 뒤 그림자 — 배경이 밝아서 이게 없으면 사람이 배경에 먹힌다
     back = cv2.GaussianBlur(a_, (0, 0), 26 * V)
@@ -219,8 +241,9 @@ def build(name, W, H, safe=False):
     paint(img, nm, W / 2, ny, color=PAPER, anchor='c')
 
     # 손도 안 댄다 — 대비도 노출도 원본 그대로. 흐린 것만 되살린다
-    px = sharpen(np.clip(fig[..., :3], 0, 1), 2.4 * V, 0.60)
-    img[sl] = img[sl] * (1 - a_[..., None]) + px[:n] * a_[..., None]
+    px = sharpen(np.clip(fig[..., :3], 0, 1), 2.4 * V, 0.60)[:n].copy()
+    a_, px = melt(a_, px, 0.36, len(name) * 31 + 2, V)
+    img[sl] = img[sl] * (1 - a_[..., None]) + px * a_[..., None]
 
     # 발치. 정사각은 흰 띠 바로 위에서 끊고, 스토리는 판 아래 끝에서 녹인다
     # 스토리는 흰 띠 안에서 인물이 끝난다 — 레퍼런스도 띠가 인물을 자른다

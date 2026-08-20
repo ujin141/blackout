@@ -27,7 +27,7 @@ from poster_crew import crop_head
 from fest_kit import justify, night, vignette, rays, specks, haze
 from poster_dj import HUE, LINE
 from poster_dj2 import MATE
-from poster_dj4 import fringe, sharpen, debris, nebula
+from poster_dj4 import fringe, sharpen, debris, nebula, melt
 from fonts import KR, KRB
 from members import get
 import event as EV
@@ -126,8 +126,8 @@ def build(name, W, H, safe=False):
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))
     n = sl[0].stop - sl[0].start
     a_ = np.clip((al[:n].copy() - 0.07) / 0.93, 0, 1)
-    fd = int(n * 0.20)
-    a_[n - fd:] *= np.linspace(1.0, 0.0, fd, dtype=np.float32)[:, None] ** 1.3
+    px = sharpen(np.clip(fig[..., :3], 0, 1), 2.4 * V, 0.60)[:n].copy()
+    a_, px = melt(a_, px, 0.34, len(name) * 31 + 2, V)
 
     d = int(22 * V)
     ghost(img[sl], a_, C, d, 0.30)
@@ -140,8 +140,7 @@ def build(name, W, H, safe=False):
     two = C2[None, None, :] * (1 - lr) + C[None, None, :] * lr
     img[sl] += edge[..., None] * (two * 0.75 + PAPER * 0.25) * 0.80
 
-    px = sharpen(np.clip(fig[..., :3], 0, 1), 2.4 * V, 0.60)
-    img[sl] = img[sl] * (1 - a_[..., None]) + px[:n] * a_[..., None]
+    img[sl] = img[sl] * (1 - a_[..., None]) + px * a_[..., None]
 
     # ── 바닥 반사 ────────────────────────────────────────
     # 액자 아래로 인물이 비친다. **서 있는 바닥이 생긴다**
