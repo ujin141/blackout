@@ -121,19 +121,28 @@ def cell(img, name, x0, y0, w, h, V):
           color=DIM, a=0.85, anchor='c')
 
 
-def build(W, H, story=False):
+def build(W, H, story=False, safe=False):
+    """`safe` 는 인스타 스토리용 — 위아래를 UI 가 먹는 만큼 비운다.
+
+    **9:16 이라고 다 스토리가 아니다.** 그냥 뽑은 판을 스토리에 올리면
+    프로필 줄이 눈썹을, 답장 막대가 계정 아이디를 먹는다 — 재 보니
+    아래 10% 안에 서명이 들어가 있었다. 여기서는 판 전체를 10~86% 안으로
+    몰아 넣는다."""
     V = W / 1080.0
+    # 판이 실제로 쓰는 세로 구간. 아래 계산은 전부 이 두 값에서 나온다
+    y0, y1 = (H * 0.100, H * 0.862) if safe else (0.0, float(H))
+    BH = y1 - y0
     img = sky(W, H, [(0.0, (0.062, 0.064, 0.078)), (0.5, (0.030, 0.031, 0.039)),
                      (1.0, (0.018, 0.019, 0.025))])
     M = int(W * 0.072)
     CW = W - M * 2
 
     # ── 머리 ─────────────────────────────────────────────
-    y = H * (0.062 if story else 0.070)
+    y = y0 + BH * (0.062 if story else 0.070)
     paint(img, tmask('BLACKOUT CREW PRESENTS', BRAND, int(19 * V), 0.42),
           W / 2, y, color=DIM, a=0.85, anchor='c')
 
-    ny = H * (0.130 if story else 0.148)
+    ny = y0 + BH * (0.130 if story else 0.148)
     ns = justify(EV.NAME, CW, 0.08, cap=int(146 * V))
     paint(img, tmask(EV.NAME, BRAND, ns, 0.08), W / 2, ny, color=PAPER, anchor='c')
     paint(img, tmask(EV.FORMAT, BRAND, int(21 * V), 0.32),
@@ -152,8 +161,8 @@ def build(W, H, story=False):
     solo_h = 148 * V
     name_h = (74 if story else 62) * V                # 이름 + 시간
     gap = 15 * V
-    top = H * (0.235 if story else 0.222)
-    gbot = H - foot_h - info_h - solo_h - (42 if story else 30) * V
+    top = y0 + BH * (0.235 if story else 0.222)
+    gbot = y1 - foot_h - info_h - solo_h - (42 if story else 30) * V
 
     n = len(ROWS)
     ch = (gbot - top - gap * 1.5 * (n - 1) - name_h * n) / n
@@ -192,7 +201,7 @@ def build(W, H, story=False):
     # ── 발치 ─────────────────────────────────────────────
     # **비율로 박지 않는다.** 정보가 끝난 자리에서 이어야 판 크기가 달라져도
     # 협업 줄이 잔글씨 위로 올라타지 않는다
-    fy = max(end + 44 * V, H - 58 * V)
+    fy = max(end + 44 * V, y1 - 58 * V)
     paint(img, tmask(EV.PARTNERS_STR, BRAND, int(13 * V), 0.28), W / 2, fy - 32 * V,
           color=DIM, a=0.58, anchor='c')
     sign(img, W / 2, fy, size=int(15 * V), color=PAPER, a=0.86, anchor='c')
@@ -207,3 +216,7 @@ if __name__ == '__main__':
         im = build(w, h, st)
         night(im, f'crew_{k}')
         save(im, f'crew_{k}')
+    # 인스타 스토리에 그대로 올리는 판. 위아래를 UI 만큼 비웠다
+    im = build(1080, 1920, True, safe=True)
+    night(im, 'crew_story_ig')
+    save(im, 'crew_story_ig')
