@@ -117,7 +117,8 @@ python poster_solo.py                         # 풀파티 × 솔로파티 티저
 python poster_ad.py                           # 같은 행사 판매용 포스터 (정보형)
 python poster_loud.py                         # 직설 버전 — 컬러 일러스트
 python poster_photo.py                        # F안 실사 물 사진 — 밤 버전 (CC0)
-python band.py                                # 입장 밴드 인쇄 원고 4종 (GUEST · VIP · VVIP · STAFF)
+python band.py                                # 입장 밴드 앞면 4종 (GUEST · VIP · VVIP · STAFF)
+python band.py back                           # 밴드 뒷면 — 밴드 차고 가는 협업사 세 곳
 python coupon.py                              # 웰컴드링크 쿠폰 앞뒤 + A4 10칸 시트 (90×50mm)
 python poster_ally.py                         # 협업 혜택 판 — ONE BAND / FOUR DOORS
 python qr.py                                  # 예약·게스트 폼 QR (읽히는지 재고 뽑음)

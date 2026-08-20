@@ -95,7 +95,34 @@
       따로 요청하세요 — 채도를 낮춰 뒀으니 박으로 바꿔도 판이 안 흔들립니다.
     · 그라데이션은 넣지 않았습니다. 25mm 폭에서 타이벡 인쇄는 계조가 뭉개집니다.
 
-python band.py  →  out/band/band_{guest,vip,vvip,staff}.png
+**뒷면 (`python band.py back`)**
+
+앞면이 "누구냐" 를 말한다면 뒷면은 **"이 밴드로 뭘 할 수 있나"** 다.
+그날 밤 손님이 밴드를 내려다볼 이유가 거기서 생긴다 —
+2차 갈 데를 정할 때다.
+
+    KEEP IT ON  |  Z SPOT LOUNGE · CLUB ACE · DDEUNGEUM POCHA
+
+행사장(ANOTHER LOUNGE)은 뺐다. 이미 그 안에 있는 사람에게 행사장 이름은
+정보가 아니다 — 앞면에서 날짜·장소를 뺀 것과 같은 이유다.
+
+**계정도 뺐다.** 처음엔 오른쪽 끝에 넣었는데, 그것 하나가 폭의 절반을
+먹어서 가게 이름 셋이 454px 에 밀려 겹쳐 나왔다. 밴드 뒷면을 보고
+팔로우하는 사람은 없지만 "어디 가면 되지" 는 실제로 본다 —
+자리를 그쪽에 준다.
+
+가게 이름은 **영문으로만** 쓴다. BRAND 폰트가 영문 전용이라 한글을 넣으면
+네모로 나온다(실제로 그렇게 나온 적이 있다).
+
+등급 막대는 뒷면에 안 넣는다. 앞면에 이미 네 번 나오고, 뒷면까지 넣으면
+정작 뒷면이 해야 할 말이 자리를 잃는다. 바탕·글자색은 앞면과 같이 간다 —
+같은 밴드의 양면이라 색이 갈리면 다른 물건으로 보인다.
+
+**앞뒤 방향은 인쇄소가 맞춘다.** 밴드는 롤 인쇄라 뒤집는 축이 업체마다
+다르다. 좌우를 뒤집어 달라고 하면 `MIRROR = True` 로 두고 다시 뽑으면 된다.
+
+python band.py       →  out/band/band_{guest,vip,vvip,staff}.png
+python band.py back  →  out/band/back_{guest,vip,vvip,staff}.png
 """
 import os
 import numpy as np
@@ -142,6 +169,13 @@ CY = H / 2                                        # 세로 가운데. 한 줄이
 # 다음 행사에도 쓰는 물건이고, 손님이 차고 다니는 브랜드 접점이다 —
 # 행사명을 박으면 그 행사 기념품이 되고, 크루명을 박으면 크루가 남는다.
 BAND_NAME = 'BLACKOUT'
+
+# 뒷면 문구. `event.py` 의 BAND_PERK('KEEP YOUR ENTRY BAND ON')는 스토리·포스터용
+# 이라 25mm 띠에 넣기엔 길다 — 여기서는 세 낱말로 줄인다.
+BACK_HEAD = 'KEEP IT ON'
+# 밴드 혜택이 있는 곳만. 행사장은 뺀다(이미 그 안에 있다)
+BACK_PLACES = [en for en, ko, _, _ in EV.ALLIES if en != 'ANOTHER LOUNGE']
+MIRROR = False                                    # 인쇄소가 좌우 반전을 요구하면 True
 
 INK   = np.array([0.05, 0.05, 0.06], np.float32)
 PAPER = np.array([0.96, 0.96, 0.95], np.float32)
@@ -282,19 +316,55 @@ def draw_unit(u, bg, fg, word, n):
     paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
 
 
+def draw_back(u, bg, fg):
+    """뒷면 한 덩어리. **앞면과 같은 세로 기준(CY)에 한 줄로 앉힌다.**
+
+    셋을 나란히 두되 가운데(가게 이름)가 제일 크다 — 뒷면을 보는 이유가
+    그것뿐이라 나머지는 조용해야 한다."""
+    u[:] = bg
+    x = U * 6
+
+    # 왼쪽 — 왜 차고 있어야 하는지. 제일 작게
+    hs = step(0)
+    hm = tmask_bl(BACK_HEAD, BRAND, hs, track(hs))
+    paint_bl(u, hm, x, CY + hm[0].shape[0] / 2, color=fg, a=0.72)
+    x += hm[0].shape[1] + U * 2
+
+    # 가르는 선 — 고정 좌표로 박지 않는다(앞면 주석 7번과 같은 이유)
+    box(u, x, CY - U * 1.6, x + HAIR, CY + U * 1.6, fg, 0.35)
+    x += HAIR + U * 2
+
+    # 가운데 — 밴드가 열어 주는 문들. 뒷면의 주인공이라 남는 폭을 다 준다.
+    # **크기를 눈대중으로 박지 않는다.** 폭에 맞춰 역산해야 이름이 길어져도
+    # 안 넘친다 — 처음엔 30px 로 박아서 1129px 가 1031px 자리에 겹쳤다
+    line = '   ·   '.join(BACK_PLACES)
+    x1 = UNIT - U * 5
+    avail = x1 - x
+    ps = min(step(2), fit(line, BRAND, avail, 0.0))
+    pm = tmask_bl(line, BRAND, ps, spread(line, ps, avail, cap=0.30))
+    paint_bl(u, pm, x, CY + pm[0].shape[0] / 2, color=fg)
+    assert pm[0].shape[1] <= avail + 2, (
+        f'뒷면 가게 이름이 {pm[0].shape[1]}px 인데 자리는 {avail}px 다 — 겹친다')
+
+
 NAME_TRACK = None                                 # 첫 그리기 전에 채운다
 
 
-def build(word, n, bg, fg):
+def build(word, n, bg, fg, back=False):
     img = np.zeros((H, W, 3), np.float32)
     u = np.zeros((H, UNIT, 3), np.float32)
-    draw_unit(u, bg, fg, word, n)
+    if back:
+        draw_back(u, bg, fg)
+    else:
+        draw_unit(u, bg, fg, word, n)
     img[:, :UNIT] = u
     img[:, UNIT:UNIT * 2] = u
     img[:, UNIT * 2:] = bg          # 나머지는 탭까지 바탕으로
 
     box(img, W - TAB, 0, W, H, bg)         # 접착 탭은 바탕만
     grain(img, 0.006, 2)
+    if back and MIRROR:
+        img = img[:, ::-1]                 # 인쇄소가 좌우 반전을 요구할 때만
     return np.clip(img, 0, 1)
 
 
@@ -306,6 +376,11 @@ def save(img, name):
 
 
 if __name__ == '__main__':
+    import sys
+    back = 'back' in sys.argv[1:]
     NAME_TRACK = name_track()
     for word, n, bg, fg in TIERS:
-        save(build(word, n, bg, fg), f'band_{word.lower()}')
+        if back:
+            save(build(word, n, bg, fg, back=True), f'back_{word.lower()}')
+        else:
+            save(build(word, n, bg, fg), f'band_{word.lower()}')
