@@ -44,3 +44,6 @@ DJ 1ucky/
 
 # DJ bei 원본
 DJ bei/
+
+# 인쇄용 CMYK TIFF. 용량이 크고 PNG 에서 언제든 다시 뽑는다
+video/out/*_cmyk/
