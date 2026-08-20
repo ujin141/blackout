@@ -1,7 +1,7 @@
 """
 입장 밴드(밴딩) 인쇄용 원고 — GUEST · VIP · VVIP · STAFF 4종.
 
-    크기   3000 × 300 px = 254 × 25 mm @300dpi (타이벡 밴드 표준)
+    크기   `BAND_MM` 에서 뽑는다. 지금은 250 × 19 mm @300dpi = 2953 × 224 px
     출력   out/band/band_{guest,vip,vvip,staff}.png
 
 밴드는 포스터가 아닙니다. 25mm 짜리 띠에서 지켜야 하는 게 따로 있습니다.
@@ -73,7 +73,13 @@
    `U` 하나만 바꾸면 판 전체의 숨이 같이 바뀝니다.
 
 **5. 재단 여유(±1mm)를 먹고 들어간다**
-   위아래 4mm(=48px, `SAFE`)는 비웁니다. 여기 글자를 걸면 잘려 나옵니다.
+   위아래 2mm(`SAFE`)는 비웁니다. 여기 글자를 걸면 잘려 나옵니다.
+   **이 값은 비율로 줄이지 않습니다** — 재단 오차는 띠 폭이 아니라 커터
+   정밀도에서 오기 때문에, 19mm 든 25mm 든 같은 mm 를 비워야 합니다.
+
+   **도련(bleed)은 기본이 0 입니다.** 타이벡 밴드는 롤 인쇄라 업체가 자기
+   사양으로 잡는 경우가 많습니다. 요구하면 `BLEED_MM` 에 1~3 을 넣으세요 —
+   네 변이 전부 단색이라 가장자리를 늘리기만 하면 됩니다.
 
 **6. 베이스라인을 공유한다**
    왼쪽 이름 블록과 오른쪽 날짜 블록은 글자 크기가 다릅니다. 각각 가운데를
@@ -133,20 +139,38 @@ import event as EV
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'band')
 os.makedirs(OUT, exist_ok=True)
 
-W, H = 3000, 300                       # 254 × 25 mm @300dpi
-SAFE = 48                              # 재단 여유 4mm. 이 안쪽에만 그린다
+# ── 크기 ──────────────────────────────────────────────────
+# **밀리미터에서 뽑아 쓴다.** 예전엔 3000×300px 를 박아 뒀는데, 인쇄소가
+# 250×19mm 를 요구하자 여백·글자 크기까지 전부 손으로 다시 잡아야 했다.
+# 여기 두 줄만 고치면 판 전체가 따라온다.
+DPI = 300
+BAND_MM = (250.0, 19.0)                # 완성 크기 (인쇄소 사양)
+BLEED_MM = 0.0                         # 도련. 업체가 요구하면 1~3 을 넣는다
+
+
+def mm(v):
+    return int(round(v / 25.4 * DPI))
+
+
+W, H = mm(BAND_MM[0]), mm(BAND_MM[1])
+BLEED = mm(BLEED_MM)
+# **판은 높이 300px 에서 잡혀 있었다.** 그때 고른 여백·글자 크기를 그대로
+# 쓰되 높이 비율만큼 줄인다 — 비율을 안 맞추면 19mm 띠에서 글자만 커진다
+S = H / 300.0
+SAFE = mm(2.0)                         # 재단 여유. **재단 오차는 띠 폭과 무관하다** —
+                                       # 커터 정밀도(±1mm)에서 오므로 비율로 줄이지 않는다
 TAB = int(W * 0.035)                   # 접착 탭 — 겹쳐 붙는 자리
 # 덩어리 폭은 **탭을 뺀 폭**에서 나눈다. 전체 폭으로 나눈 뒤 탭을 덧칠하면
 # 두 번째 덩어리의 오른쪽 글자가 잘려 나간다 — 실제로 그렇게 잘렸다.
 PRINT = W - TAB
 UNIT = PRINT // 2
-HAIR = 3                               # 최소 획 3px = 0.25mm. 더 얇으면 인쇄에서 사라진다
+HAIR = max(3, mm(0.25))                # 최소 획 0.25mm. 더 얇으면 인쇄에서 사라진다
 
 # 두 줄의 베이스라인. 형식·시간을 빼면서 줄이 하나 줄었고, 그만큼 이름을 키웠다.
 # ── 타이포 체계 ───────────────────────────────────────────
 # 크기를 눈대중으로 고르면 넷이 서로 아무 관계가 없어 보인다.
 # **하나의 기준(BASE)과 비율(RATIO)에서 전부 뽑는다.**
-BASE, RATIO = 18, 1.30
+BASE, RATIO = 18 * S, 1.30
 
 
 def step(n):
@@ -162,7 +186,16 @@ def track(size):
     return round(0.34 - size * 0.0040, 3)         # 18→0.268 · 30→0.220 · 51→0.136
 
 
-U = 16                                            # 여백 한 단위. 이것만 바꾸면 판 전체 숨이 같이 바뀐다
+U = max(1, int(round(16 * S)))                    # 여백 한 단위. 높이에 따라 같이 줄어든다
+
+
+def logo_gap():
+    """로고와 이름 사이. **U 배수로 두면 안 된다.**
+
+    이름 자간이 벌어질수록 낱자 사이가 넓어지는데, 로고 뒤 간격만 U*3 으로
+    고정하면 로고가 첫 글자에 붙어 버린다 — 250×19mm 에서 U 가 12 로
+    줄자 실제로 붙었다. **낱자 사이보다 넓어야** 로고가 낱자로 안 읽힌다."""
+    return max(U * 3, int(NAME_TRACK * NAME_SIZE * 1.25))
 CY = H / 2                                        # 세로 가운데. 한 줄이 된 뒤로 모든 게 여기에 맞는다
 
 # **행사 이름이 아니라 크루 이름을 넣는다.** 밴드는 그날 하루가 아니라
@@ -209,17 +242,32 @@ def chip_width(word, n):
     return U * 4 + n * bw + (n - 1) * gap + int(U * 1.5) + wm[0].shape[1]
 
 
-def name_track():
-    """네 등급이 **같이 쓰는** 자간.
+def name_fit():
+    """이름 크기와 자간을 **한 번에** 정한다.
+
+    남는 폭을 자간만으로 채우려다 상한(1.05)에 걸려 265px 가 그대로 빈 적이
+    있다. **크기를 한 단 올리고 자간을 다시 잡으면** 둘 다 자연스럽게 맞는다 —
+    자간만 벌리면 낱자 나열로 읽히고, 크기만 키우면 25mm 띠에서 획이 뭉갠다."""
+    avail = _name_avail()
+    for n in (5, 4, 3):
+        size = step(n)
+        t = spread(BAND_NAME, size, avail, cap=1.6)
+        if tmask_bl(BAND_NAME, BRAND, size, t)[0].shape[1] <= avail:
+            return size, t
+    return step(3), 0.0
+
+
+def _name_avail():
+    """네 등급이 **같이 쓰는** 폭.
 
     등급마다 남는 폭이 달라서(칩 낱말 길이가 다르다) 각자 채우게 두면
     VIP 는 1.02, STAFF 는 0.67 이 나왔다 — 자간이 그만큼 다르면 네 종이
     다른 판으로 보인다. 막대 자리를 4개분으로 고정한 것과 같은 이유로,
     **제일 좁은 등급에 맞춰 하나로 묶는다.**"""
     x = U * 6 + 4 * (U - 6) + 3 * (U - 6) + U * 2
-    x += logo(U * 6).shape[1] + U * 3
-    avail = min(UNIT - U * 5 - chip_width(w, n) - U * 6 - x for w, n, _, _ in TIERS)
-    return spread(BAND_NAME, step(4), avail)
+    # 자간이 아직 없으니 상한(1.6)으로 잡아 둔다 — 실제보다 넓게 잡는 쪽이 안전하다
+    x += logo(U * 6).shape[1] + max(U * 3, int(1.6 * step(5) * 1.25))
+    return min(UNIT - U * 5 - chip_width(w, n) - U * 6 - x for w, n, _, _ in TIERS)
 
 
 def tier_chip(u, word, n, bg, fg):
@@ -296,7 +344,7 @@ def draw_unit(u, bg, fg, word, n):
     lg = logo(U * 6)
     # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다. 조금 올린다
     paint(u, lg, x, CY - U * 0.15, color=fg, a=0.95)
-    x += lg.shape[1] + U * 3
+    x += lg.shape[1] + logo_gap()
 
     # 등급 낱말 길이가 달라(GUEST · VIP · VVIP · STAFF) 칩 폭이 등급마다 다르다.
     # 이름을 고정 크기로 두면 칩이 넓은 등급에서 겹친다 —
@@ -306,7 +354,7 @@ def draw_unit(u, bg, fg, word, n):
     # **남는 폭은 자간으로 채운다.** 크기로 채우면 25mm 띠에서 획이 뭉개지고,
     # 그대로 두면 이름과 칩 사이가 휑하게 빈다 — 브랜드 톤이 '여백 넓게' 라
     # 늘려 쓴 글자가 오히려 판에 맞는다.
-    name = tmask_bl(BAND_NAME, BRAND, step(4), NAME_TRACK)
+    name = tmask_bl(BAND_NAME, BRAND, NAME_SIZE, NAME_TRACK)
     # 대문자라 마스크 높이 = 캡 높이. 절반을 내리면 광학 중심에 앉는다
     paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
 
@@ -324,15 +372,19 @@ def draw_back(u, bg, fg, n):
 
     lg = logo(U * 6)
     paint(u, lg, x, CY - U * 0.15, color=fg, a=0.95)
-    x += lg.shape[1] + U * 3
+    x += lg.shape[1] + logo_gap()
 
     # **자간도 앞면과 같은 값(NAME_TRACK)을 쓴다.** 뒷면만 다시 계산하면
     # 이름 끝나는 자리가 달라져서 양면이 안 맞는다
-    name = tmask_bl(BAND_NAME, BRAND, step(4), NAME_TRACK)
+    name = tmask_bl(BAND_NAME, BRAND, NAME_SIZE, NAME_TRACK)
     paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
 
 
-NAME_TRACK = None                                 # 첫 그리기 전에 채운다
+# **띠가 길어지면 이름도 커져야 한다.** 250×19mm 는 비율이 13:1 이라
+# 254×25mm(10:1)보다 가로가 더 길다 — 높이에 맞춰 줄인 글자를 그대로 쓰면
+# 이름과 칩 사이에 28mm 짜리 구멍이 생긴다. 한 단 키워서 채운다.
+NAME_SIZE = None                                  # 첫 그리기 전에 채운다
+NAME_TRACK = None
 
 
 def build(word, n, bg, fg, back=False):
@@ -348,6 +400,10 @@ def build(word, n, bg, fg, back=False):
 
     box(img, W - TAB, 0, W, H, bg)         # 접착 탭은 바탕만
     grain(img, 0.006, 2)
+    if BLEED:
+        # **도련은 바탕을 바깥으로 늘리는 것뿐이다.** 네 변이 전부 단색이라
+        # 가장자리 줄을 복사해 늘리면 된다 — 다시 그릴 필요가 없다
+        img = np.pad(img, ((BLEED, BLEED), (BLEED, BLEED), (0, 0)), mode='edge')
     if back and MIRROR:
         img = img[:, ::-1]                 # 인쇄소가 좌우 반전을 요구할 때만
     return np.clip(img, 0, 1)
@@ -356,14 +412,15 @@ def build(word, n, bg, fg, back=False):
 def save(img, name):
     p = os.path.join(OUT, f'{name}.png')
     Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
-    lum = float((img @ np.float32([0.299, 0.587, 0.114])).mean())
-    print(f'{p}  {W}×{H}px ≈254×25mm@300dpi  평균밝기 {lum:.2f}')
+    h, w = img.shape[:2]
+    note = f'  (도련 {BLEED_MM:.0f}mm 포함)' if BLEED else ''
+    print(f'{p}  {w}×{h}px = {w/DPI*25.4:.1f}×{h/DPI*25.4:.1f}mm @{DPI}dpi{note}')
 
 
 if __name__ == '__main__':
     import sys
     back = 'back' in sys.argv[1:]
-    NAME_TRACK = name_track()
+    NAME_SIZE, NAME_TRACK = name_fit()
     for word, n, bg, fg in TIERS:
         if back:
             save(build(word, n, bg, fg, back=True), f'back_{word.lower()}')
