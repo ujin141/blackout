@@ -97,26 +97,18 @@
 
 **뒷면 (`python band.py back`)**
 
-앞면이 "누구냐" 를 말한다면 뒷면은 **"이 밴드로 뭘 할 수 있나"** 다.
-그날 밤 손님이 밴드를 내려다볼 이유가 거기서 생긴다 —
-2차 갈 데를 정할 때다.
+**크루 이름 하나뿐이다.** 로고와 BLACKOUT 을 가운데에 넓게 벌려 놓는다.
 
-    KEEP IT ON  |  Z SPOT LOUNGE · CLUB ACE · DDEUNGEUM POCHA
+처음엔 협업사 세 곳(Z SPOT · CLUB ACE · DDEUNGEUM POCHA)을 넣었다가 뺐다.
+**협업사는 행사마다 바뀐다** — 그걸 박으면 이 밴드는 8월 29일 하루짜리가
+되고, 다음 행사에는 다시 찍어야 한다. 앞면에서 행사 이름을 빼고 크루
+이름을 남긴 것과 같은 판단이다(위 4번).
 
-행사장(ANOTHER LOUNGE)은 뺐다. 이미 그 안에 있는 사람에게 행사장 이름은
-정보가 아니다 — 앞면에서 날짜·장소를 뺀 것과 같은 이유다.
+등급 막대·칩도 안 넣는다. 앞면에 이미 네 번 나온다. 뒷면은 **조용한 면**이라
+아무 정보도 없는 게 맞다 — 손목 안쪽이라 어차피 스치듯 보인다.
 
-**계정도 뺐다.** 처음엔 오른쪽 끝에 넣었는데, 그것 하나가 폭의 절반을
-먹어서 가게 이름 셋이 454px 에 밀려 겹쳐 나왔다. 밴드 뒷면을 보고
-팔로우하는 사람은 없지만 "어디 가면 되지" 는 실제로 본다 —
-자리를 그쪽에 준다.
-
-가게 이름은 **영문으로만** 쓴다. BRAND 폰트가 영문 전용이라 한글을 넣으면
-네모로 나온다(실제로 그렇게 나온 적이 있다).
-
-등급 막대는 뒷면에 안 넣는다. 앞면에 이미 네 번 나오고, 뒷면까지 넣으면
-정작 뒷면이 해야 할 말이 자리를 잃는다. 바탕·글자색은 앞면과 같이 간다 —
-같은 밴드의 양면이라 색이 갈리면 다른 물건으로 보인다.
+바탕·글자색은 앞면과 같이 간다. 같은 밴드의 양면이라 색이 갈리면
+다른 물건으로 보인다.
 
 **앞뒤 방향은 인쇄소가 맞춘다.** 밴드는 롤 인쇄라 뒤집는 축이 업체마다
 다르다. 좌우를 뒤집어 달라고 하면 `MIRROR = True` 로 두고 다시 뽑으면 된다.
@@ -170,11 +162,6 @@ CY = H / 2                                        # 세로 가운데. 한 줄이
 # 행사명을 박으면 그 행사 기념품이 되고, 크루명을 박으면 크루가 남는다.
 BAND_NAME = 'BLACKOUT'
 
-# 뒷면 문구. `event.py` 의 BAND_PERK('KEEP YOUR ENTRY BAND ON')는 스토리·포스터용
-# 이라 25mm 띠에 넣기엔 길다 — 여기서는 세 낱말로 줄인다.
-BACK_HEAD = 'KEEP IT ON'
-# 밴드 혜택이 있는 곳만. 행사장은 뺀다(이미 그 안에 있다)
-BACK_PLACES = [en for en, ko, _, _ in EV.ALLIES if en != 'ANOTHER LOUNGE']
 MIRROR = False                                    # 인쇄소가 좌우 반전을 요구하면 True
 
 INK   = np.array([0.05, 0.05, 0.06], np.float32)
@@ -317,37 +304,33 @@ def draw_unit(u, bg, fg, word, n):
 
 
 def draw_back(u, bg, fg):
-    """뒷면 한 덩어리. **앞면과 같은 세로 기준(CY)에 한 줄로 앉힌다.**
+    """뒷면 한 덩어리. **로고와 크루 이름뿐이다.**
 
-    셋을 나란히 두되 가운데(가게 이름)가 제일 크다 — 뒷면을 보는 이유가
-    그것뿐이라 나머지는 조용해야 한다."""
+    앞면은 왼쪽에서 시작해 오른쪽 칩으로 끝나는 판이라 왼쪽 정렬이 맞다.
+    뒷면은 얹을 게 하나뿐이라 **덩어리째 가운데**에 둔다 — 한 덩어리를
+    왼쪽에 붙여 두면 오른쪽 절반이 통째로 비어 잘못 인쇄된 것처럼 보인다."""
     u[:] = bg
-    x = U * 6
 
-    # 왼쪽 — 왜 차고 있어야 하는지. 제일 작게
-    hs = step(0)
-    hm = tmask_bl(BACK_HEAD, BRAND, hs, track(hs))
-    paint_bl(u, hm, x, CY + hm[0].shape[0] / 2, color=fg, a=0.72)
-    x += hm[0].shape[1] + U * 2
+    lg = logo(U * 6)
+    # 앞면(step(4))보다 한 단 작게. 뒷면은 조용한 면이라 앞면과 같은 크기면
+    # 어느 쪽이 앞인지 모르게 된다
+    ns = step(3)
+    name = tmask_bl(BAND_NAME, BRAND, ns, BACK_TRACK)
+    gap = U * 3
+    total = lg.shape[1] + gap + name[0].shape[1]
+    x = (UNIT - total) / 2
 
-    # 가르는 선 — 고정 좌표로 박지 않는다(앞면 주석 7번과 같은 이유)
-    box(u, x, CY - U * 1.6, x + HAIR, CY + U * 1.6, fg, 0.35)
-    x += HAIR + U * 2
-
-    # 가운데 — 밴드가 열어 주는 문들. 뒷면의 주인공이라 남는 폭을 다 준다.
-    # **크기를 눈대중으로 박지 않는다.** 폭에 맞춰 역산해야 이름이 길어져도
-    # 안 넘친다 — 처음엔 30px 로 박아서 1129px 가 1031px 자리에 겹쳤다
-    line = '   ·   '.join(BACK_PLACES)
-    x1 = UNIT - U * 5
-    avail = x1 - x
-    ps = min(step(2), fit(line, BRAND, avail, 0.0))
-    pm = tmask_bl(line, BRAND, ps, spread(line, ps, avail, cap=0.30))
-    paint_bl(u, pm, x, CY + pm[0].shape[0] / 2, color=fg)
-    assert pm[0].shape[1] <= avail + 2, (
-        f'뒷면 가게 이름이 {pm[0].shape[1]}px 인데 자리는 {avail}px 다 — 겹친다')
+    # 엠블럼은 좌우가 비대칭이라 상자 가운데로 맞추면 살짝 처져 보인다
+    paint(u, lg, x, CY - U * 0.15, color=fg, a=0.95)
+    x += lg.shape[1] + gap
+    # 대문자라 마스크 높이 = 캡 높이. 절반을 내리면 광학 중심에 앉는다
+    paint_bl(u, name, x, CY + name[0].shape[0] / 2, color=fg)
 
 
 NAME_TRACK = None                                 # 첫 그리기 전에 채운다
+# 뒷면 자간. 앞면은 칩까지 남는 폭을 채우느라 역산하지만, 뒷면은 채울
+# 상대가 없어서 값을 하나 준다 — 앞면보다 넓게 벌려야 조용한 면으로 읽힌다
+BACK_TRACK = 0.62
 
 
 def build(word, n, bg, fg, back=False):
