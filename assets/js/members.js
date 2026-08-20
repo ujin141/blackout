@@ -207,7 +207,7 @@ const MEMBERS = [
       ko: ['떡볶이 페스티벌', 'SCR', 'MUSHROOM', '춘희', '스타디움', 'XIMXIM'],
       en: ['Tteokbokki Festival', 'SCR', 'Mushroom', 'Chunhee', 'Stadium', 'Ximxim']
     },
-    instagram: '',
+    instagram: 'dj_bei_',
     soundcloud: '',
     cutout: 'assets/img/members/bei-cutout.webp',
     photo: ''
