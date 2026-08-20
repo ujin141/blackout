@@ -82,6 +82,10 @@ TERMS = [('WHO',   '팔로우 화면을 보여주신 분'),
          # 다투면 결국 한 잔 더 내주게 된다
          ('LOST',  '분실 시 사용 불가 · 재발급 없음')]
 STUB_WORD = 'DRINK'
+# 뒷면. **행사와 무관한 것만 적는다** — 다음 행사에도 그대로 쓴다
+SLOGAN = ['WHERE THE LIGHTS FADE,', 'THE MUSIC TAKES OVER.']
+SITE = 'BLACKOUTSOUND.COM'
+QR_WHY = '다음 파티 먼저 올라옵니다'
 
 _QR = None
 
@@ -154,39 +158,13 @@ def front():
     ly = top
     lstep = (bottom - U * 2.2 - top) / max(len(TERMS) - 1, 1)
     lx = x + U * 4.6                                   # 라벨 칸
-    # **조건 값이 짧아서 오른쪽 절반이 통째로 빈다.** 148mm 로 넓히자
-    # 70mm 가 백지로 남았다 — 거기에 교환 확인란을 세운다(아래 stamp).
-    # 조건 줄은 그 앞에서 끊는다
-    tw = int(U * 12.5)                                 # 확인란이 먹는 폭
-    tr = right - tw - U * 2.4                          # 조건 줄이 끝나는 자리
     for i, (k, v) in enumerate(TERMS):
         if i:                                          # 줄 사이 아주 옅은 괘선
-            rule(img, ly - U * 1.9, x, tr, INK, 0.07, HAIR)
+            rule(img, ly - U * 1.9, x, right, INK, 0.07, HAIR)
         paint_bl(img, tmask_bl(k, BRAND, int(U * 0.66), 0.22), x, ly,
                  color=INK, a=0.38)
         paint_bl(img, tmask_bl(v, KR, int(U * 0.92), 0.01), lx, ly, color=INK, a=0.72)
         ly += lstep
-
-    # ── 교환 확인란 ───────────────────────────────────────
-    # **쿠폰은 한 번 쓰면 못 쓰게 만들어야 한다.** 뜯는 것만으로는 부족해서
-    # 바텐더가 표시할 자리를 크게 둔다 — 작으면 아무 데나 긋고, 그러면
-    # 다음 사람이 다시 내밀었을 때 썼는지 알 수가 없다
-    sx = tr + U * 2.4
-    box(img, sx - U * 1.2, top - U * 2.0, sx - U * 1.2 + HAIR, bottom - U * 0.4,
-        INK, 0.12)                                     # 조건과 가르는 세로선
-    paint_bl(img, tmask_bl('REDEEMED', BRAND, int(U * 0.66), 0.22), sx, top,
-             color=INK, a=0.38)
-    # 빈 사각. 테두리만 — 채우면 볼펜이 안 먹는다
-    by0, by1 = top + U * 1.2, bottom - U * 4.6
-    for yy in (by0, by1):
-        box(img, sx, yy, right, yy + HAIR, INK, 0.22)
-    for xx in (sx, right - HAIR):
-        box(img, xx, by0, xx + HAIR, by1, INK, 0.22)
-    # 날짜·서명 줄
-    dy = bottom - U * 1.6
-    box(img, sx, dy, right, dy + HAIR, INK, 0.22)
-    paint_bl(img, tmask_bl('DATE / STAFF', BRAND, int(U * 0.58), 0.22), sx,
-             dy + U * 1.5, color=INK, a=0.30)
 
     # ── 발치 ──────────────────────────────────────────────
     fy = H - U * 2.6
@@ -195,7 +173,11 @@ def front():
     # 남는 쿠폰이 다음 행사로 넘어가야 인쇄가 안 아깝다
     paint_bl(img, tmask_bl('BLACKOUT', BRAND, int(U * 0.82), 0.24),
              x, fy, color=INK, a=0.55)
-    # 발치의 작은 CHECK 는 뺐다 — 오른쪽에 큰 확인란이 생겨서 두 번 묻는 꼴이었다
+    # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
+    bw = int(U * 5.0)
+    box(img, right - bw, fy - U * 1.4, right, fy - U * 1.4 + HAIR, INK, 0.35)
+    paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 0.62), 0.24), right - bw, fy,
+             color=INK, a=0.38)
 
     grain(img, 0.004, 11)
     return np.clip(img, 0, 1)
@@ -209,19 +191,35 @@ def back():
     물건이지만 원고는 아니다** — 행사 이름도 날짜도 빼면 다음에도 그대로
     쓰고, 바뀌는 건 앞면 조건 한 줄뿐이다.
 
-    남긴 것 — 로고, 이름, 계정 QR. 셋뿐이다."""
+    남긴 것 — 로고, 이름, 계정 QR. 셋뿐이었는데 148mm 로 넓히자 왼쪽이
+    통째로 비었다. **QR 만 있고 왜 찍어야 하는지가 없던 것도 문제였다** —
+    들고 있는 사람이 이유를 모르면 안 찍는다. 슬로건과 주소로 왼쪽을 채우고,
+    QR 밑에 찍을 이유를 한 줄 붙인다. 셋 다 행사와 무관해서 다음에도 쓴다."""
     img = np.repeat(np.repeat(INK[None, None, :], H, 0), W, 1).copy()
 
-    # 왼쪽 — 로고와 이름. 세로 가운데
+    # 왼쪽 — 로고와 이름. 가운데보다 조금 위에 두고 아래를 슬로건에 내준다
     x = U * 3.2
+    cy = H * 0.34
     lg = logo(int(U * 4.6))
-    paint(img, lg, x, H * 0.42, color=PAPER, a=0.95)
+    paint(img, lg, x, cy, color=PAPER, a=0.95)
     nx = x + lg.shape[1] + U * 2.2
     ns = min(int(U * 2.3), fit('BLACKOUT', BRAND, W * 0.44, 0.16))
     nm = tmask_bl('BLACKOUT', BRAND, ns, 0.16)
-    paint_bl(img, nm, nx, H * 0.42 + nm[0].shape[0] / 2, color=PAPER)
+    paint_bl(img, nm, nx, cy + nm[0].shape[0] / 2, color=PAPER)
     paint_bl(img, tmask_bl('SEOUL  ·  DJ CREW', BRAND, int(U * 0.78), 0.34),
-             nx, H * 0.42 + nm[0].shape[0] / 2 + U * 2.1, color=PAPER, a=0.45)
+             nx, cy + nm[0].shape[0] / 2 + U * 2.1, color=PAPER, a=0.45)
+
+    # 슬로건 두 줄. **한 줄로 붙이면 글자가 반으로 준다** — 148mm 라도
+    # QR 자리를 빼면 왼쪽은 90mm 뿐이다
+    sy = H * 0.62
+    for i, line in enumerate(SLOGAN):
+        ss = min(int(U * 1.05), fit(line, BRAND, W * 0.46, 0.22))
+        paint_bl(img, tmask_bl(line, BRAND, ss, 0.22), x, sy + i * U * 2.2,
+                 color=PAPER, a=0.62)
+
+    # 발치 — 주소. QR 을 안 찍는 사람도 찾아올 데가 있어야 한다
+    paint_bl(img, tmask_bl(SITE, BRAND, int(U * 0.82), 0.24), x, H - U * 2.4,
+             color=PAPER, a=0.42)
 
     # 오른쪽 — 계정 QR. 세로선으로 두 덩어리를 가른다
     # 17mm. 모듈 0.46mm 라 어두운 실내에서도 잡힌다 — 더 줄이면 안 읽힌다
@@ -234,8 +232,12 @@ def back():
         PAPER, 0.96)
     img[qy:qy + qs, qx:qx + qs] = code(qs)
     hs = min(int(U * 0.76), fit(EV.HANDLE, BRAND, qs + U * 0.8, 0.06))
-    paint_bl(img, tmask_bl(EV.HANDLE, BRAND, hs, 0.06), qx, qy + qs + U * 2.2,
+    paint_bl(img, tmask_bl(EV.HANDLE, BRAND, hs, 0.06), qx, qy + qs + U * 1.9,
              color=PAPER, a=0.88)
+    # **찍을 이유가 없으면 안 찍는다.** QR 만 두면 그냥 무늬다
+    ws = min(int(U * 0.78), fit(QR_WHY, KR, qs + U * 1.1, 0.01))
+    paint_bl(img, tmask_bl(QR_WHY, KR, ws, 0.01), qx, qy + qs + U * 3.5,
+             color=PAPER, a=0.50)
 
     grain(img, 0.004, 13)
     return np.clip(img, 0, 1)
