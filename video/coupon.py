@@ -1,4 +1,4 @@
-"""웰컴드링크 쿠폰 — 90 × 50 mm 앞뒤.
+"""웰컴드링크 쿠폰 — 앞뒤. 크기는 `COUPON_MM` 에서 (지금 148 × 68 mm).
 
     coupon_front.png       앞면. 무엇과 바꿔 주는지
     coupon_back.png        뒷면. 그날 밤이 여기서 안 끝난다는 것
@@ -45,10 +45,24 @@ import event as EV
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'coupon')
 os.makedirs(OUT, exist_ok=True)
 
-W, H = 1063, 591                       # 90 × 50 mm @300dpi
-U = 18                                 # 여백 한 단위
-STUB = int(W * 0.235)                  # 뜯는 쪽
-HAIR = 3                               # 최소 획 0.25mm
+# ── 크기 ──────────────────────────────────────────────────
+# **밀리미터에서 뽑아 쓴다.** 예전엔 1063×591px 를 박아 뒀는데 인쇄소가
+# 148×68mm 를 요구하자 여백·글자 크기를 손으로 다시 잡아야 했다.
+# 여기 두 줄만 고치면 판 전체가 따라온다 — 판 안의 값이 전부 U 배수다.
+DPI = 300
+COUPON_MM = (148.0, 68.0)              # 인쇄소 사양
+
+
+def mm(v):
+    return int(round(v / 25.4 * DPI))
+
+
+W, H = mm(COUPON_MM[0]), mm(COUPON_MM[1])
+# 판은 높이 591px(50mm)에서 잡혀 있었다. 그때 고른 비율을 그대로 쓴다
+S = H / 591.0
+U = max(1, int(round(18 * S)))          # 여백 한 단위
+STUB = int(W * 0.235)                   # 뜯는 쪽
+HAIR = max(3, mm(0.25))                 # 최소 획 0.25mm
 
 INK = np.float32([0.05, 0.05, 0.06])
 PAPER = np.float32([0.96, 0.96, 0.95])
@@ -129,8 +143,13 @@ def front():
     paint_bl(img, tmask_bl(GIVE, BRAND, gs, 0.05), x, U * 7.2, color=INK)
     rule(img, U * 9.4, x, right, INK, 0.28, HAIR)
 
-    # ── 조건 세 줄. **여백은 늘려서 메우는 게 아니라 정보로 채운다** ──
-    ly = U * 12.4
+    # ── 조건 네 줄 ────────────────────────────────────────
+    # **줄 간격을 상수로 박지 않는다.** U*3.2 로 고정해 뒀더니 90×50 에서는
+    # 딱 맞았는데 148×68 로 넓히자 마지막 줄과 발치 사이에 18mm 가 비었다.
+    # 머리와 발치 사이를 네 줄이 나눠 갖게 한다.
+    top, bottom = U * 12.4, H - U * 2.6 - U * 2.0      # 첫 줄 · 발치 괘선
+    ly = top
+    lstep = (bottom - U * 2.2 - top) / max(len(TERMS) - 1, 1)
     lx = x + U * 4.6                                   # 라벨 칸
     for i, (k, v) in enumerate(TERMS):
         if i:                                          # 줄 사이 아주 옅은 괘선
@@ -138,7 +157,7 @@ def front():
         paint_bl(img, tmask_bl(k, BRAND, int(U * 0.66), 0.22), x, ly,
                  color=INK, a=0.38)
         paint_bl(img, tmask_bl(v, KR, int(U * 0.92), 0.01), lx, ly, color=INK, a=0.72)
-        ly += U * 3.2
+        ly += lstep
 
     # ── 발치 ──────────────────────────────────────────────
     fy = H - U * 2.6
@@ -198,15 +217,22 @@ def back():
 
 
 def sheet(tile, mirror=False):
-    """A4 300dpi 에 10칸.
+    """A4 300dpi 에 들어가는 만큼.
+
+    **칸 수를 박아 두지 않는다.** 90×50mm 는 2×5 로 열 칸이 들어갔지만
+    148×68mm 는 1×4 다 — 크기를 바꿀 때마다 이 함수를 고치게 하지 않는다.
 
     `mirror` 는 뒷면용. **장변 제본으로 뒤집어 찍으면 종이가 좌우로 돌아간다** —
     뒷면을 같은 순서로 앉히면 1번 앞면 뒤에 2번 뒷면이 찍힌다.
     열 순서를 뒤집어야 짝이 맞는다.
 
     재단 표시는 칸 바깥에만 둔다 — 안쪽에 그으면 잘린 쿠폰마다 선이 남는다."""
-    A4W, A4H = 2480, 3508
-    cols, rows = 2, 5
+    A4W, A4H = mm(210), mm(297)
+    MARK = mm(2.5)                                   # 재단 표시가 먹는 자리
+    # 재단 표시는 칸 **사이** 여백을 나눠 쓴다 — 칸마다 양쪽으로 잡으면
+    # 실제로는 들어가는데 한 줄이 덜 들어간다(148×68 에서 4칸이 3칸이 됐다)
+    cols = max(1, (A4W - MARK) // (W + MARK))
+    rows = max(1, (A4H - MARK) // (H + MARK))
     mx = (A4W - cols * W) // (cols + 1)
     my = (A4H - rows * H) // (rows + 1)
     s = np.ones((A4H, A4W, 3), np.float32)
@@ -217,12 +243,12 @@ def sheet(tile, mirror=False):
         x, y = mx + c * (W + mx), my + r * (H + my)
         s[y:y + H, x:x + W] = tile
         for xx in (x, x + W):
-            box(s, xx - HAIR / 2, y - 26, xx + HAIR / 2, y - 8, INK, 0.5)
-            box(s, xx - HAIR / 2, y + H + 8, xx + HAIR / 2, y + H + 26, INK, 0.5)
+            box(s, xx - HAIR / 2, y - MARK, xx + HAIR / 2, y - MARK / 3, INK, 0.5)
+            box(s, xx - HAIR / 2, y + H + MARK / 3, xx + HAIR / 2, y + H + MARK, INK, 0.5)
         for yy in (y, y + H):
-            box(s, x - 26, yy - HAIR / 2, x - 8, yy + HAIR / 2, INK, 0.5)
-            box(s, x + W + 8, yy - HAIR / 2, x + W + 26, yy + HAIR / 2, INK, 0.5)
-    return s
+            box(s, x - MARK, yy - HAIR / 2, x - MARK / 3, yy + HAIR / 2, INK, 0.5)
+            box(s, x + W + MARK / 3, yy - HAIR / 2, x + W + MARK, yy + HAIR / 2, INK, 0.5)
+    return s, cols * rows
 
 
 def save(a, name, note=''):
@@ -233,10 +259,13 @@ def save(a, name, note=''):
 
 if __name__ == '__main__':
     f, b = front(), back()
-    save(f, 'coupon_front', '  = 90×50mm@300dpi')
-    save(b, 'coupon_back', '  = 90×50mm@300dpi')
-    save(sheet(f), 'coupon_sheet_front', '  A4 · 10칸')
-    save(sheet(b, mirror=True), 'coupon_sheet_back', '  A4 · 10칸 · 좌우 뒤집힘')
+    note = f'  = {COUPON_MM[0]:.0f}×{COUPON_MM[1]:.0f}mm@{DPI}dpi'
+    save(f, 'COUPON_FRONT', note)
+    save(b, 'COUPON_BACK', note)
+    sf, n = sheet(f)
+    save(sf, 'COUPON_SHEET_FRONT', f'  A4 · {n}칸')
+    sb, _ = sheet(b, mirror=True)
+    save(sb, 'COUPON_SHEET_BACK', f'  A4 · {n}칸 · 좌우 뒤집힘')
 
     # **뽑았다고 읽히는 게 아니다** — 뒷면 QR 을 재 본다.
     # 카드를 통째로 줄여서 재면 안 된다(QR 도 같이 줄어 실제보다 가혹하다) —
