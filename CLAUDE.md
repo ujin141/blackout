@@ -163,6 +163,7 @@ python poster_ko.py                           # AE안 한글 헤드라인이 제
 python poster_night.py                        # AF안 장면 + 한글 헤드라인 (그린 그림)
 python poster_deck.py                         # AG안 장면 위 / 정보판 아래
 python poster_dive.py                         # AH안 장면 전면 + 행사명 한 줄
+python poster_crew.py                         # AI안 DJ 얼굴 판 — 누끼 일곱을 칸에 넣는다
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
