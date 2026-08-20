@@ -45,23 +45,32 @@ SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
 SIZES = {'sq': (1080, 1080), 'story': (1080, 1920)}
 
 
-def nebula(W, H, cx, cy, c1, c2, seed):
+def nebula(W, H, cx, cy, c1, c2, seed, spread=0.70):
     """인물 뒤 성운. **노이즈 한 겹으로는 구름이 안 된다** — 큰 덩어리와
-    잔결을 따로 만들어 겹쳐야 깊이가 생긴다."""
+    잔결을 따로 만들어 겹쳐야 깊이가 생긴다.
+
+    색은 **세 단계로 간다.** 옅은 데는 짝색, 짙어지면 자기 색, 제일 밝은
+    심지만 흰빛 — 한 색으로 밝기만 올리면 물감 뿌린 판이 되고 빛이 안 된다.
+    구름 결도 두 겹이 아니라 세 겹이라야 가까운 결과 먼 결이 갈린다."""
     rng = np.random.default_rng(seed)
     def layer(s, sig):
         n = rng.standard_normal((max(2, int(H * s)), max(2, int(W * s)))).astype(np.float32)
         n = cv2.resize(n, (W, H), interpolation=cv2.INTER_CUBIC)
         return cv2.GaussianBlur(n, (0, 0), sig)
-    f = layer(0.045, W * 0.018) + layer(0.11, W * 0.007) * 0.55
+    f = layer(0.035, W * 0.022) + layer(0.09, W * 0.008) * 0.55         + layer(0.20, W * 0.0032) * 0.26
     f = (f - f.min()) / (f.max() - f.min() + 1e-6)
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-    r = np.sqrt(((xx - cx) / (W * 0.66)) ** 2 + ((yy - cy) / (H * 0.66)) ** 2)
+    r = np.sqrt(((xx - cx) / (W * spread)) ** 2 + ((yy - cy) / (H * spread)) ** 2)
     m = np.clip(1 - r, 0, 1) ** 1.5
     # **문턱을 높게 잡아야 구름이 된다.** 낮으면 판 전체가 뿌옇게 뜨고
     # 인물이 안개 속에 선 꼴이 된다 — 검은 데가 넓어야 밝은 데가 산다
-    v = np.clip(f * 2.0 - 0.72, 0, 1) * m
-    return v[..., None] * c1 * 0.70 + (v ** 2.0)[..., None] * c2 * 1.25
+    # 0.70 이면 구름이 판을 다 덮어서 인물이 묻힌다. 문턱을 올릴수록
+    # 검은 데가 넓어지고 남은 구름이 또렷해진다
+    v = np.clip(f * 2.25 - 0.92, 0, 1) * m
+    hot = np.float32([1.0, 1.0, 1.0])
+    return (v[..., None] * c2 * 0.62
+            + (v ** 1.9)[..., None] * c1 * 1.15
+            + (v ** 4.5)[..., None] * hot * 0.85)
 
 
 def debris(img, n, cx, cy, color, seed, rmin, rmax):
@@ -81,9 +90,15 @@ def debris(img, n, cx, cy, color, seed, rmin, rmax):
                         y + np.sin(a) * size * rng.uniform(0.55, 1.0, k)], 1).astype(np.int32)
         lay = np.zeros((H, W), np.float32)
         cv2.fillPoly(lay, [pts], 1.0)
+        # **테두리에 빛을 물린다.** 면만 칠하면 종잇조각이고, 가장자리가
+        # 밝아야 뒤에서 빛을 받는 돌조각으로 읽힌다
+        lit = np.zeros((H, W), np.float32)
+        cv2.polylines(lit, [pts], True, 1.0, max(1, int(size * 0.10)))
         blur = max(0.8, size * (0.05 + d * 0.22))
         lay = cv2.GaussianBlur(lay, (0, 0), blur)
-        img += lay[..., None] * color * rng.uniform(0.14, 0.42)
+        lit = cv2.GaussianBlur(lit, (0, 0), blur * 0.6)
+        img += lay[..., None] * color * rng.uniform(0.10, 0.30)
+        img += lit[..., None] * (color * 0.35 + 0.65) * rng.uniform(0.16, 0.42)
 
 
 def chip(img, text, x, y, h, font, size, fg, bg, V, pad=None, track=0.10):
@@ -114,19 +129,27 @@ def build(name, W, H, safe=False):
                               H, 0), W, 1).copy()
 
     # ── 배경 ─────────────────────────────────────────────
-    cx, cy = W * 0.50, y0 + BH * 0.36
-    img += nebula(W, H, cx, cy, C2 * 0.55 + C * 0.45, C, seed=len(name) * 13 + 4)
-    rays(img, cx, cy, 26, int(40 * V), int(BH * 0.80), C * 0.6 + PAPER * 0.4, 0.055,
-         phase=0.11, duty=0.34)
+    # **스토리는 구름을 판 전체에 깐다.** 안전영역 안에만 두면 흰 띠
+    # 아래가 까맣게 비어서, 인물을 아무리 키워도 여백으로 읽힌다
+    cx = W * 0.50
+    cy = (H * 0.44) if safe else (y0 + BH * 0.36)
+    img += nebula(W, H, cx, cy, C2 * 0.55 + C * 0.45, C,
+                  seed=len(name) * 13 + 4, spread=0.98 if safe else 0.70)
+    rays(img, cx, cy, 26, int(40 * V), int((H if safe else BH) * 0.80),
+         C * 0.6 + PAPER * 0.4, 0.055, phase=0.11, duty=0.34)
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     img += np.exp(-(((xx - cx) / (W * 0.30)) ** 2
                     + ((yy - cy) / (BH * 0.20)) ** 2))[..., None] * (C * 0.7 + PAPER * 0.3) * 0.16
-    debris(img, 34, cx, cy, PAPER * 0.40 + C * 0.60, len(name) * 7 + 1,
-           9 * V, 44 * V)
+    debris(img, 40 if safe else 34, cx, cy, PAPER * 0.40 + C * 0.60,
+           len(name) * 7 + 1, 9 * V, 44 * V)
 
     # ── 사람 ─────────────────────────────────────────────
-    hero_h = int(BH * (0.815 if tall else 0.760))
-    top = int(y0 + BH * 0.105)
+    # **스토리는 판이 프레임을 꽉 채워야 한다.** 안전영역 안에서만 그렸더니
+    # 위아래에 검은 띠가 남았다(우진 지적 두 번). 그림은 가장자리까지 가고,
+    # UI 를 피하는 건 글자뿐이다 — 인물도 흰 띠 아래로 이어진다
+    # 0.86 은 너무 컸다 — 정수리가 프레임에 붙고 배경이 인물에 다 가려졌다
+    hero_h = int((H * 0.775) if safe else (BH * 0.760))
+    top = int((H * 0.072) if safe else (y0 + BH * 0.105))
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))
@@ -135,28 +158,37 @@ def build(name, W, H, safe=False):
 
     # 인물 뒤 그림자 — 배경이 밝아서 이게 없으면 사람이 배경에 먹힌다
     back = cv2.GaussianBlur(a_, (0, 0), 26 * V)
-    img[sl] *= (1 - back[..., None] * 0.74)
+    img[sl] *= (1 - back[..., None] * 0.84)
 
+    # 테두리 빛. **좌우를 다른 색으로 나눈다** — 한 색이면 윤곽선이고,
+    # 두 색이면 양쪽에서 조명 두 대가 때리는 것이 된다.
+    # 0.85 로 또렷하게 줬더니 오려 붙인 스티커로 보였다 — 빛은 번져야 빛이다
     k = np.ones((max(3, int(6 * V)),) * 2, np.uint8)
-    edge = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0), 5 * V)
-    # 0.85 로 뒀더니 테두리가 또렷해서 오려 붙인 스티커로 보였다.
-    # 빛은 번져야 빛이다
-    edge = cv2.GaussianBlur(edge, (0, 0), 6 * V)
-    img[sl] += (edge / max(edge.max(), 1e-6))[..., None] * (C * 0.5 + PAPER * 0.5) * 0.60
+    edge = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0), 6 * V)
+    edge = edge / max(edge.max(), 1e-6)
+    lr = np.linspace(0, 1, W, dtype=np.float32)[None, :, None] ** 0.8
+    two = C2[None, None, :] * (1 - lr) + C[None, None, :] * lr
+    img[sl] += edge[..., None] * (two * 0.62 + PAPER * 0.38) * 0.62
 
     g = (fig[..., 0] * .299 + fig[..., 1] * .587 + fig[..., 2] * .114)
     g = np.clip((g - 0.5) * 1.36 + 0.5, 0, 1)
     g = np.where(g > 0.74, 0.74 + (g - 0.74) * 0.46, g)[..., None]
-    px = (np.repeat(g, 3, 2) * (1 - 0.14 * (1 - g)) + C * (1 - g) * 0.14) * 0.94
+    # 그늘에 드는 색도 위아래로 갈린다. 위는 자기 색, 아래는 짝색 —
+    # 단색으로 물들이면 사람이 색판이 되고, 갈리면 조명 두 대가 된다
+    vy = np.linspace(0, 1, g.shape[0], dtype=np.float32)[:, None, None]
+    tint = C[None, None, :] * (1 - vy) + C2[None, None, :] * vy
+    px = (np.repeat(g, 3, 2) * (1 - 0.17 * (1 - g)) + tint * (1 - g) * 0.17) * 0.94
     img[sl] = img[sl] * (1 - a_[..., None]) + px[:n] * a_[..., None]
 
-    # 발치를 흰 띠 바로 위에서 끊는다
-    cut = int(bar_y - bar_h * 0.5 - 26 * V)
-    fade = int(BH * 0.13)
+    # 발치. 정사각은 흰 띠 바로 위에서 끊고, 스토리는 판 아래 끝에서 녹인다
+    # 스토리는 흰 띠 안에서 인물이 끝난다 — 레퍼런스도 띠가 인물을 자른다
+    cut = int(bar_y + bar_h * 0.2) if safe else int(bar_y - bar_h * 0.5 - 26 * V)
+    fade = int((H * 0.14) if safe else (BH * 0.13))
     if cut - fade > 0:
         t = np.linspace(0, 1, fade, dtype=np.float32)[:, None, None] ** 1.4
-        img[cut - fade:cut] *= (1 - t * 0.96)
-    img[cut:int(y1)] *= 0.42
+        img[cut - fade:cut] *= (1 - t * (0.80 if safe else 0.96))
+    if not safe:
+        img[cut:int(y1)] *= 0.42
 
     # ── 이름 ─────────────────────────────────────────────
     # **가슴께에 얹는다.** 판 가운데에 두면 얼굴을 가리고, 아래로 내리면
@@ -196,7 +228,9 @@ def build(name, W, H, safe=False):
 
     # ── 잔글씨 줄 ────────────────────────────────────────
     fy = y1 - fine_h / 2
-    box(img, 0, y1 - fine_h, W, y1, INK * 0.5)
+    # 스토리에서는 반투명으로 깐다 — 아래로 그림이 비쳐야 띠가 판의
+    # 끝이 아니라 판 위에 얹힌 줄로 읽힌다
+    box(img, 0, y1 - fine_h, W, y1, INK * 0.5, 1.0 if not safe else 0.80)
     left = f'19+  {EV.AGE}'
     paint(img, tmask(left, KR, int(15 * V), 0.02), M, fy, color=DIM, a=0.92, anchor='l')
     paint(img, tmask(f'{EV.ENTRY}   ·   {EV.HANDLE}', KR, int(15 * V), 0.02),
@@ -216,23 +250,20 @@ def build(name, W, H, safe=False):
               sy + 36 * V, color=PAPER, a=0.84, anchor='c')
 
     if safe:
-        # **검게 잘라내지 않는다.** 그냥 0 으로 만들었더니 위아래에 까만 띠가
-        # 남아서 판이 덜 끝난 것처럼 보였다(우진 지적).
-        # 위는 배경을 가장자리까지 흘리면서 밝기만 죽이고,
-        # 아래는 잔글씨 띠를 판 끝까지 늘여서 발치로 만든다
-        t = np.linspace(0.18, 1.0, int(y0), dtype=np.float32)[:, None, None]
-        img[:int(y0)] *= t
-        # 발치를 단색으로 채웠더니 그래도 '검은 여백' 으로 보였다.
-        # 자기 색이 옅게 번지는 무대 바닥 반사를 깔아서, 비어 있는 게 아니라
-        # 판이 거기까지 이어지는 것으로 만든다
-        foot = img[int(y1):]
-        gr = np.linspace(0, 1, foot.shape[0], dtype=np.float32)[:, None, None]
-        foot[:] = INK * 0.5 + C * 0.16 * (1 - (2 * gr - 1) ** 2) ** 1.4
-        rule(img, int(y1), 0, W, C, 0.55, max(1, int(2 * V)))
+        # 흰 띠 아래로 흐르는 바닥 반사. 구름만으로는 발치가 심심하다
+        gy = np.arange(H, dtype=np.float32)
+        gx = np.arange(W, dtype=np.float32)
+        spill = (np.exp(-((gy - H * 0.955) / (H * 0.085)) ** 2)[:, None]
+                 * np.exp(-((gx - W * 0.5) / (W * 0.62)) ** 2)[None, :])
+        img += spill[..., None] * C * 0.22
+        # **아무것도 덮지 않는다.** 처음엔 0 으로 잘라냈고, 다음엔 단색으로
+        # 채웠는데 둘 다 '검은 여백' 으로 보였다. 그림이 끝까지 가면
+        # 여백이라는 게 아예 없다 — 글자만 UI 를 피해 앉아 있으면 된다.
+        rule(img, int(y1), 0, W, C, 0.50, max(1, int(2 * V)))
 
     specks(img, 120, int(y0), int(cut), PAPER, 0.20, seed=len(name) * 5 + 9, rmax=2.6)
     bloom(img, 0.82, 16 * V, 0.22, PAPER)
-    vignette(img, 0.34, 2.2)
+    vignette(img, 0.46, 2.0)
     grain(img, 0.005, 13)
     return np.clip(img, 0, 1)
 
