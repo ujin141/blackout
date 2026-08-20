@@ -154,13 +154,39 @@ def front():
     ly = top
     lstep = (bottom - U * 2.2 - top) / max(len(TERMS) - 1, 1)
     lx = x + U * 4.6                                   # 라벨 칸
+    # **조건 값이 짧아서 오른쪽 절반이 통째로 빈다.** 148mm 로 넓히자
+    # 70mm 가 백지로 남았다 — 거기에 교환 확인란을 세운다(아래 stamp).
+    # 조건 줄은 그 앞에서 끊는다
+    tw = int(U * 12.5)                                 # 확인란이 먹는 폭
+    tr = right - tw - U * 2.4                          # 조건 줄이 끝나는 자리
     for i, (k, v) in enumerate(TERMS):
         if i:                                          # 줄 사이 아주 옅은 괘선
-            rule(img, ly - U * 1.9, x, right, INK, 0.07, HAIR)
+            rule(img, ly - U * 1.9, x, tr, INK, 0.07, HAIR)
         paint_bl(img, tmask_bl(k, BRAND, int(U * 0.66), 0.22), x, ly,
                  color=INK, a=0.38)
         paint_bl(img, tmask_bl(v, KR, int(U * 0.92), 0.01), lx, ly, color=INK, a=0.72)
         ly += lstep
+
+    # ── 교환 확인란 ───────────────────────────────────────
+    # **쿠폰은 한 번 쓰면 못 쓰게 만들어야 한다.** 뜯는 것만으로는 부족해서
+    # 바텐더가 표시할 자리를 크게 둔다 — 작으면 아무 데나 긋고, 그러면
+    # 다음 사람이 다시 내밀었을 때 썼는지 알 수가 없다
+    sx = tr + U * 2.4
+    box(img, sx - U * 1.2, top - U * 2.0, sx - U * 1.2 + HAIR, bottom - U * 0.4,
+        INK, 0.12)                                     # 조건과 가르는 세로선
+    paint_bl(img, tmask_bl('REDEEMED', BRAND, int(U * 0.66), 0.22), sx, top,
+             color=INK, a=0.38)
+    # 빈 사각. 테두리만 — 채우면 볼펜이 안 먹는다
+    by0, by1 = top + U * 1.2, bottom - U * 4.6
+    for yy in (by0, by1):
+        box(img, sx, yy, right, yy + HAIR, INK, 0.22)
+    for xx in (sx, right - HAIR):
+        box(img, xx, by0, xx + HAIR, by1, INK, 0.22)
+    # 날짜·서명 줄
+    dy = bottom - U * 1.6
+    box(img, sx, dy, right, dy + HAIR, INK, 0.22)
+    paint_bl(img, tmask_bl('DATE / STAFF', BRAND, int(U * 0.58), 0.22), sx,
+             dy + U * 1.5, color=INK, a=0.30)
 
     # ── 발치 ──────────────────────────────────────────────
     fy = H - U * 2.6
@@ -169,11 +195,7 @@ def front():
     # 남는 쿠폰이 다음 행사로 넘어가야 인쇄가 안 아깝다
     paint_bl(img, tmask_bl('BLACKOUT', BRAND, int(U * 0.82), 0.24),
              x, fy, color=INK, a=0.55)
-    # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
-    bw = int(U * 5.0)
-    box(img, right - bw, fy - U * 1.4, right, fy - U * 1.4 + HAIR, INK, 0.35)
-    paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 0.62), 0.24), right - bw, fy,
-             color=INK, a=0.38)
+    # 발치의 작은 CHECK 는 뺐다 — 오른쪽에 큰 확인란이 생겨서 두 번 묻는 꼴이었다
 
     grain(img, 0.004, 11)
     return np.clip(img, 0, 1)
