@@ -28,7 +28,7 @@ import cv2
 from poster_kit import (BRAND, tmask, paint, fit, rule, box, glow, grain,
                         save, sign, bloom)
 from poster_crew import crop_head
-from fest_kit import justify, night, vignette, rays, specks
+from fest_kit import justify, night, vignette, rays, specks, haze
 from fonts import KR, KRB
 from members import get
 from poster_dj import HUE, LINE
@@ -101,6 +101,25 @@ def debris(img, n, cx, cy, color, seed, rmin, rmax):
         img += lit[..., None] * (color * 0.35 + 0.65) * rng.uniform(0.16, 0.42)
 
 
+def fringe(img, amt):
+    """색수차 — 빨강과 파랑을 아주 조금 다른 배율로 민다.
+
+    **이게 있고 없고가 '렌즈로 찍은 것' 과 '컴퓨터로 그린 것' 을 가른다.**
+    양은 눈에 안 보일 만큼만. 보이면 그냥 인쇄 사고다."""
+    H, W = img.shape[:2]
+    def scale(ch, k):
+        M = cv2.getRotationMatrix2D((W / 2, H / 2), 0, 1 + k)
+        return cv2.warpAffine(ch, M, (W, H), flags=cv2.INTER_LINEAR,
+                              borderMode=cv2.BORDER_REPLICATE)
+    img[..., 0] = scale(img[..., 0], amt)
+    img[..., 2] = scale(img[..., 2], -amt)
+
+
+def sharpen(a, sigma, amt):
+    """언샤프 마스크. 누끼를 키워 얹으면 흐려진다 — 얼굴이 또렷해야 산다."""
+    return np.clip(a + (a - cv2.GaussianBlur(a, (0, 0), sigma)) * amt, 0, 1)
+
+
 def chip(img, text, x, y, h, font, size, fg, bg, V, pad=None, track=0.10):
     """정보 띠 안의 칸 하나. 돌려주는 값은 오른쪽 끝 x."""
     m = tmask(text, font, size, track)
@@ -139,22 +158,34 @@ def build(name, W, H, safe=False):
          C * 0.6 + PAPER * 0.4, 0.055, phase=0.11, duty=0.34)
     yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
     img += np.exp(-(((xx - cx) / (W * 0.30)) ** 2
-                    + ((yy - cy) / (BH * 0.20)) ** 2))[..., None] * (C * 0.7 + PAPER * 0.3) * 0.16
+                    + ((yy - cy) / (BH * 0.20)) ** 2))[..., None] * (C * 0.7 + PAPER * 0.3) * 0.13
     debris(img, 40 if safe else 34, cx, cy, PAPER * 0.40 + C * 0.60,
            len(name) * 7 + 1, 9 * V, 44 * V)
+    # 무대 연기. 빔이 공기를 통과하는 게 보여야 무대가 된다
+    haze(img, int(H * 0.30), int(H * 0.92), C * 0.75 + PAPER * 0.25, 0.085,
+         seed=len(name) * 3 + 6)
 
     # ── 사람 ─────────────────────────────────────────────
     # **스토리는 판이 프레임을 꽉 채워야 한다.** 안전영역 안에서만 그렸더니
     # 위아래에 검은 띠가 남았다(우진 지적 두 번). 그림은 가장자리까지 가고,
     # UI 를 피하는 건 글자뿐이다 — 인물도 흰 띠 아래로 이어진다
-    # 0.86 은 너무 컸다 — 정수리가 프레임에 붙고 배경이 인물에 다 가려졌다
-    hero_h = int((H * 0.775) if safe else (BH * 0.760))
-    top = int((H * 0.072) if safe else (y0 + BH * 0.105))
+    # **인물 자리는 판 세로(H) 기준으로 잡는다.** 안전영역(BH) 기준으로 잡으면
+    # 정사각과 스토리에서 구도가 달라진다 — 같은 비율을 쓰면 두 판이 한 세트로
+    # 보인다. 0.86 까지 키웠을 땐 정수리가 프레임에 붙고 배경이 다 가려졌다.
+    # 레퍼런스도 인물은 판의 절반 남짓이고 위아래로 배경이 넉넉하다
+    hero_h = int(H * 0.735)
+    top = int(H * 0.085)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))
     n = sl[0].stop - sl[0].start
-    a_ = al[:n]
+    a_ = al[:n].copy()
+    # 누끼 가장자리의 반투명 잔털을 깎는다. 어두운 판에서 회색 테로 보인다
+    a_ = np.clip((a_ - 0.07) / 0.93, 0, 1)
+    # **발치는 알파로 녹인다.** 예전엔 합성한 뒤 그 구간을 통째로 어둡게
+    # 눌렀는데, 사람만이 아니라 배경까지 같이 죽어서 아래가 비어 보였다
+    fd = int(n * 0.26)
+    a_[n - fd:] *= np.linspace(1.0, 0.0, fd, dtype=np.float32)[:, None] ** 1.3
 
     # 인물 뒤 그림자 — 배경이 밝아서 이게 없으면 사람이 배경에 먹힌다
     back = cv2.GaussianBlur(a_, (0, 0), 26 * V)
@@ -168,16 +199,27 @@ def build(name, W, H, safe=False):
     edge = edge / max(edge.max(), 1e-6)
     lr = np.linspace(0, 1, W, dtype=np.float32)[None, :, None] ** 0.8
     two = C2[None, None, :] * (1 - lr) + C[None, None, :] * lr
-    img[sl] += edge[..., None] * (two * 0.62 + PAPER * 0.38) * 0.62
+    img[sl] += edge[..., None] * (two * 0.72 + PAPER * 0.28) * 0.72
 
-    g = (fig[..., 0] * .299 + fig[..., 1] * .587 + fig[..., 2] * .114)
-    g = np.clip((g - 0.5) * 1.36 + 0.5, 0, 1)
-    g = np.where(g > 0.74, 0.74 + (g - 0.74) * 0.46, g)[..., None]
-    # 그늘에 드는 색도 위아래로 갈린다. 위는 자기 색, 아래는 짝색 —
-    # 단색으로 물들이면 사람이 색판이 되고, 갈리면 조명 두 대가 된다
-    vy = np.linspace(0, 1, g.shape[0], dtype=np.float32)[:, None, None]
-    tint = C[None, None, :] * (1 - vy) + C2[None, None, :] * vy
-    px = (np.repeat(g, 3, 2) * (1 - 0.17 * (1 - g)) + tint * (1 - g) * 0.17) * 0.94
+    # **사진은 사진 그대로 둔다.** 흑백으로 바꾸고 색을 덮으면 판의 색과
+    # 사람이 한 덩어리가 되어서, 누가 서 있는지가 아니라 무슨 색인지가
+    # 먼저 읽힌다. 사람은 실사로 두고 **테두리만** 판의 색을 준다.
+    # ── 이름 (인물 뒤) ───────────────────────────────────
+    # **이름을 사람 뒤로 넘긴다.** 위에만 얹으면 스티커고, 뒤로 넘기면
+    # 사람이 글자 앞으로 걸어 나온 것이 된다 — 이 한 겹이 제일 크게 먹는다.
+    # 0.655 는 인물 가슴께다. 0.60 에 뒀더니 흰 띠까지 아래가 뻥 뚫렸다
+    ny = H * 0.655
+    ns = justify(name, W * 0.86, 0.01, cap=int(215 * V))
+    nm = tmask(name, BRAND, ns, 0.01)
+    nm = cv2.dilate(nm, cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE, (max(2, int(ns * 0.026)),) * 2))
+    sh = cv2.GaussianBlur(nm.astype(np.float32) / 255.0, (0, 0), 12 * V)
+    paint(img, (sh * 255).astype(np.uint8), W / 2, ny + 9 * V,
+          color=np.float32([0, 0, 0]), a=0.62, anchor='c')
+    paint(img, nm, W / 2, ny, color=PAPER, anchor='c')
+
+    # 손도 안 댄다 — 대비도 노출도 원본 그대로. 흐린 것만 되살린다
+    px = sharpen(np.clip(fig[..., :3], 0, 1), 2.4 * V, 0.60)
     img[sl] = img[sl] * (1 - a_[..., None]) + px[:n] * a_[..., None]
 
     # 발치. 정사각은 흰 띠 바로 위에서 끊고, 스토리는 판 아래 끝에서 녹인다
@@ -193,16 +235,11 @@ def build(name, W, H, safe=False):
     # ── 이름 ─────────────────────────────────────────────
     # **가슴께에 얹는다.** 판 가운데에 두면 얼굴을 가리고, 아래로 내리면
     # 흰 띠에 붙는다 — 레퍼런스는 전부 가슴 위다
-    ny = y0 + BH * (0.650 if tall else 0.615)
-    ns = justify(name, W * 0.80, 0.01, cap=int(190 * V))
-    m = tmask(name, BRAND, ns, 0.01)
-    m = cv2.dilate(m, cv2.getStructuringElement(
-        cv2.MORPH_ELLIPSE, (max(2, int(ns * 0.026)),) * 2))
-    # 글자 뒤 그림자. 배경이 화려해서 이게 없으면 흰 글자가 배경에 붙는다
-    sh = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 10 * V)
-    paint(img, (sh * 255).astype(np.uint8), W / 2, ny + 8 * V,
-          color=np.float32([0, 0, 0]), a=0.55, anchor='c')
-    paint(img, m, W / 2, ny, color=PAPER, anchor='c')
+    # 이름은 인물보다 **먼저** 그렸다(아래 참고). 여기서는 인물 위로
+    # 아주 옅게 한 번 더 얹어, 글자가 사람을 투과하는 것처럼 보이게 한다
+    # 0.26 은 너무 옅었다 — DEMIC 은 가운데가 몸에 먹혀 D…MIC 으로 읽혔다.
+    # 이름이 안 읽히면 뒤로 넘긴 의미가 없다
+    paint(img, nm, W / 2, ny, color=PAPER, a=0.46, anchor='c')
 
     # ── 머리 ─────────────────────────────────────────────
     s, e = SET_AT[name]
@@ -241,7 +278,7 @@ def build(name, W, H, safe=False):
     ig = get(name)['instagram']
     # **이름 바로 밑에 붙인다.** 아래로 내리면 인물 발치가 어두워지는
     # 구간에 들어가서, 흰 글자인데도 회색으로 읽힌다
-    sy = ny + ns * 0.56
+    sy = ny + ns * 0.55
     paint(img, tmask(LINE[name], KRB, int(29 * V), 0.01), W / 2, sy, color=PAPER,
           anchor='c')
     bits = [b for b in ('  /  '.join(gs), '@' + ig if ig else '') if b]
@@ -261,8 +298,9 @@ def build(name, W, H, safe=False):
         # 여백이라는 게 아예 없다 — 글자만 UI 를 피해 앉아 있으면 된다.
         rule(img, int(y1), 0, W, C, 0.50, max(1, int(2 * V)))
 
-    specks(img, 120, int(y0), int(cut), PAPER, 0.20, seed=len(name) * 5 + 9, rmax=2.6)
+    specks(img, 140, 0, int(y1), PAPER, 0.20, seed=len(name) * 5 + 9, rmax=2.6)
     bloom(img, 0.82, 16 * V, 0.22, PAPER)
+    fringe(img, 0.0016)
     vignette(img, 0.46, 2.0)
     grain(img, 0.005, 13)
     return np.clip(img, 0, 1)
