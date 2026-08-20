@@ -167,6 +167,7 @@ python poster_dive.py                         # AH안 장면 전면 + 행사명 
 python poster_crew.py                         # AI안 DJ 얼굴 판 — 누끼 일곱을 칸에 넣는다
 python poster_dj.py                           # DJ 한 명짜리 판 일곱 장 (사람마다 색이 다르다)
 python poster_dj.py lynn heidy                # 골라서
+python poster_dj2.py                          # 같은 개인 판 B안 — 색분해·대각 띠·세로 이름
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
