@@ -36,6 +36,7 @@ python coupon.py  →  out/coupon/
 """
 import os
 import numpy as np
+import cv2
 from PIL import Image
 from poster_kit import BRAND, tmask, tmask_bl, fit, paint, paint_bl, rule, box, logo, grain
 from fonts import KR, KRB
@@ -43,21 +44,37 @@ import qr
 import event as EV
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'coupon')
+# **확인용 파일은 다른 폴더에 둔다.** 같은 폴더에 두면 인쇄 패키지를 만들 때
+# 같이 딸려 가고, 인쇄소가 칼선 표시를 그대로 찍는다
+GUIDE_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'coupon_guide')
 os.makedirs(OUT, exist_ok=True)
+os.makedirs(GUIDE_OUT, exist_ok=True)
 
 # ── 크기 ──────────────────────────────────────────────────
 # **밀리미터에서 뽑아 쓴다.** 예전엔 1063×591px 를 박아 뒀는데 인쇄소가
 # 148×68mm 를 요구하자 여백·글자 크기를 손으로 다시 잡아야 했다.
 # 여기 두 줄만 고치면 판 전체가 따라온다 — 판 안의 값이 전부 U 배수다.
 DPI = 300
-COUPON_MM = (148.0, 68.0)              # 인쇄소 사양
+# **칼선과 편집사이즈는 다른 값이다.** 인쇄소(애즈랜드)가 반려한 이유가
+# 이거였다 — 주문은 90×50mm 인데 파일이 그 크기 딱 맞게 와서, 칼선이
+# 밀리면 가장자리가 잘린다. 편집사이즈(150×70)까지 배경을 채워 달라는 것.
+#
+#   CUT   실제로 잘려 나오는 크기. 디자인은 여기 안에서 끝난다
+#   ART   인쇄소에 넘기는 파일 크기. 칼선 바깥은 배경만 이어진다
+#   SAFE  칼선에서 이만큼 안쪽에 글자를 둔다. 밀림 대비
+CUT_MM = (90.0, 50.0)                  # 주문 사이즈 = 칼선
+ART_MM = (150.0, 70.0)                 # 편집 사이즈 = 파일 크기
+SAFE_MM = 2.0                          # 칼선에서 안으로
 
 
 def mm(v):
     return int(round(v / 25.4 * DPI))
 
 
-W, H = mm(COUPON_MM[0]), mm(COUPON_MM[1])
+COUPON_MM = CUT_MM                     # 사양서·다른 스크립트가 이 이름을 쓴다
+W, H = mm(CUT_MM[0]), mm(CUT_MM[1])
+AW, AH = mm(ART_MM[0]), mm(ART_MM[1])
+SAFE = mm(SAFE_MM)
 # 판은 높이 591px(50mm)에서 잡혀 있었다. 그때 고른 비율을 그대로 쓴다
 S = H / 591.0
 U = max(1, int(round(18 * S)))          # 여백 한 단위
@@ -107,8 +124,10 @@ def code(px):
 def perf(img, x):
     """미싱 자리. **점선으로 그린다** — 실선이면 재단선으로 오해받는다."""
     d, gap = 10, 12
-    y = U
-    while y < H - U:
+    # **안전선 안에서 시작하고 끝낸다.** U(1.5mm) 부터 그었더니 칼선
+    # 안전영역(2mm) 을 6px 넘어서 검사에 걸렸다
+    y = SAFE
+    while y < H - SAFE - d:
         box(img, x - HAIR / 2, y, x + HAIR / 2, y + d, INK, 0.45)
         y += d + gap
 
@@ -243,6 +262,51 @@ def back():
     return np.clip(img, 0, 1)
 
 
+def mount(tile):
+    """편집 캔버스(150×70mm)에 얹는다. **배경만 키운다.**
+
+    가장자리 픽셀을 복제해 늘린다 — 스텁의 검정은 검정대로, 종이 흰색은
+    흰색대로 이어진다. 배경을 따로 그려 넣으면 타일 가장자리와 이음매가
+    생기는데, 복제는 그 이음매가 없다."""
+    px, py = (AW - W) // 2, (AH - H) // 2
+    return cv2.copyMakeBorder(tile, py, AH - H - py, px, AW - W - px,
+                              cv2.BORDER_REPLICATE)
+
+
+def guide(tile):
+    """확인용 — 칼선(빨강)과 안전선(파랑)을 그려 준다. **인쇄에 안 넘긴다.**"""
+    g = mount(tile).copy()
+    px, py = (AW - W) // 2, (AH - H) // 2
+    t = max(2, mm(0.4))
+    red, blue = np.float32([0.9, 0.1, 0.1]), np.float32([0.1, 0.45, 0.95])
+    for (x0, y0, x1, y1, c) in ((px, py, px + W, py + H, red),
+                                (px + SAFE, py + SAFE, px + W - SAFE,
+                                 py + H - SAFE, blue)):
+        box(g, x0, y0, x1, y0 + t, c); box(g, x0, y1 - t, x1, y1, c)
+        box(g, x0, y0, x0 + t, y1, c); box(g, x1 - t, y0, x1, y1, c)
+    return g
+
+
+def edge_check(tile, name):
+    """**칼선 안 2mm 링에 글자가 있으면 경고한다.**
+
+    밝기만 보면 스텁의 검은 면이 걸린다 — 면은 잘려도 되고 글자는 안 된다.
+    라플라시안으로 잔 대비를 재면 면은 0 이고 글자만 튄다."""
+    g = (tile[..., 0] * .299 + tile[..., 1] * .587 + tile[..., 2] * .114)
+    d = np.abs(cv2.Laplacian(g, cv2.CV_32F, ksize=3))
+    ring = np.zeros(d.shape, bool)
+    ring[:SAFE] = ring[-SAFE:] = True
+    ring[:, :SAFE] = ring[:, -SAFE:] = True
+    # **면이 만나는 자리는 뺀다.** 스텁의 검정과 종이 흰색이 만나는 세로선이
+    # 위아래 링을 지나는데, 그건 배경이라 잘려도 된다 — 여기서 봐야 하는 건
+    # 글자와 QR 이다
+    ring[:, max(0, STUB - 4):STUB + 4] = False
+    hit = float((d[ring] > 0.20).mean() * 100)
+    flag = '  ← 칼선 밀리면 잘립니다' if hit > 0.05 else ''
+    print(f'  {name:14} 안전영역 밖 잔 대비 {hit:.3f}%{flag}')
+    return hit
+
+
 def sheet(tile, mirror=False):
     """A4 300dpi 에 들어가는 만큼.
 
@@ -278,17 +342,23 @@ def sheet(tile, mirror=False):
     return s, cols * rows
 
 
-def save(a, name, note=''):
-    p = os.path.join(OUT, f'{name}.png')
+def save(a, name, note='', into=None):
+    p = os.path.join(into or OUT, f'{name}.png')
     Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).save(p, optimize=True)
     print(f'{p}  {a.shape[1]}×{a.shape[0]}px{note}')
 
 
 if __name__ == '__main__':
     f, b = front(), back()
-    note = f'  = {COUPON_MM[0]:.0f}×{COUPON_MM[1]:.0f}mm@{DPI}dpi'
-    save(f, 'COUPON_FRONT', note)
-    save(b, 'COUPON_BACK', note)
+    print(f'칼선 {CUT_MM[0]:.0f}×{CUT_MM[1]:.0f}mm · 편집 {ART_MM[0]:.0f}×{ART_MM[1]:.0f}mm'
+          f' · 안전 {SAFE_MM:.0f}mm')
+    edge_check(f, 'FRONT')
+    edge_check(b, 'BACK')
+    note = f'  = {ART_MM[0]:.0f}×{ART_MM[1]:.0f}mm@{DPI}dpi (칼선 {CUT_MM[0]:.0f}×{CUT_MM[1]:.0f})'
+    save(mount(f), 'COUPON_FRONT', note)
+    save(mount(b), 'COUPON_BACK', note)
+    save(guide(f), 'GUIDE_FRONT', '  확인용 — 인쇄에 넘기지 마세요', GUIDE_OUT)
+    save(guide(b), 'GUIDE_BACK', '  확인용 — 인쇄에 넘기지 마세요', GUIDE_OUT)
     sf, n = sheet(f)
     save(sf, 'COUPON_SHEET_FRONT', f'  A4 · {n}칸')
     sb, _ = sheet(b, mirror=True)

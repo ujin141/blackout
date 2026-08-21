@@ -46,7 +46,8 @@ def spec():
     import band
     import coupon
     bw, bh = band.BAND_MM
-    cw, ch = coupon.COUPON_MM
+    cw, ch = coupon.CUT_MM
+    aw, ah = coupon.ART_MM
     return f"""BLACKOUT — 인쇄 사양서
 
 ■ 입장 밴드 (BAND/)
@@ -61,8 +62,10 @@ def spec():
               막대 개수로도 갈립니다 (1·2·3·4개)
 
 ■ 웰컴드링크 쿠폰 (COUPON/)
-  크기        {cw:.0f} × {ch:.0f} mm
-  해상도      {coupon.DPI}dpi  →  {coupon.W} × {coupon.H} px
+  재단(칼선)  {cw:.0f} × {ch:.0f} mm      ← 주문 사이즈
+  편집사이즈  {aw:.0f} × {ah:.0f} mm      ← 파일 크기. 칼선 밖은 배경만 이어집니다
+  안전영역    칼선에서 {coupon.SAFE_MM:.0f}mm 안쪽. 글자는 전부 이 안에 있습니다
+  해상도      {coupon.DPI}dpi  →  {coupon.AW} × {coupon.AH} px
   파일        COUPON_FRONT / BACK  (낱장)
               COUPON_SHEET_FRONT / BACK  (A4 모아찍기)
   양면        장변 제본(long-edge). 뒷면 시트는 좌우를 뒤집어 뒀습니다
@@ -95,6 +98,11 @@ def main():
         print(f'── {name} ' + '─' * 40)
         for c in cmds:
             run(c)
+        # **중간 폴더를 먼저 비운다.** 파일 이름이 바뀌거나 빠져도 옛것이
+        # 남아 패키지에 딸려 간다 — 확인용 가이드가 인쇄 파일에 섞였던 게 이거다
+        for sub in (src + '_cmyk', src + '_pdf'):
+            if os.path.exists(sub):
+                shutil.rmtree(sub)
         to_cmyk.convert(src)
         to_pdf.convert(src + '_cmyk')
         dst = os.path.join(OUT, name)

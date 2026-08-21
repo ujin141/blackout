@@ -120,7 +120,8 @@ python poster_loud.py                         # 직설 버전 — 컬러 일러�
 python poster_photo.py                        # F안 실사 물 사진 — 밤 버전 (CC0)
 python band.py                                # 입장 밴드 앞면 4종 → BAND_1_GUEST_FRONT.png …
 python band.py back                           # 밴드 뒷면 (로고 + BLACKOUT). 크기는 BAND_MM 에서
-python coupon.py                              # 웰컴드링크 쿠폰 앞뒤 + A4 시트. 크기는 COUPON_MM 에서 (148×68mm)
+python coupon.py                              # 웰컴드링크 쿠폰 앞뒤 + A4 시트
+#                                               칼선 90×50 · 편집 150×70 · 안전 2mm (CUT_MM/ART_MM)
 python print_pack.py                          # **인쇄소에 넘길 폴더 한 방에** → out/print (PDF+TIFF+사양서)
 python story_print.py                         # 쿠폰·밴드를 보여주는 인스타 스토리 판 1080×1920
 python to_cmyk.py out/band                    # CMYK TIFF 만 — 잉크량 250%, 리치블랙 직접 지정
