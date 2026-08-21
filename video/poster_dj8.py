@@ -36,6 +36,10 @@ import event as EV
 
 ORDER = EV.LINEUP
 SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+
+# **라인업에 없는 크루도 뽑을 수 있어야 한다.** 그렇다고 행사 정보를 그대로
+# 두면 안 된다 — 그날 안 뛰는 사람 판에 날짜와 시간이 박히면 그건 거짓말이다.
+# 시간 배지 자리에는 역할을, 발치에는 행사 대신 크루를 넣는다.
 # 인스타 두 자리. 피드는 4:5 가 화면을 제일 많이 먹고, 스토리는 9:16 이다.
 # 정사각도 남겨 둔다 — 프로필 격자에서 잘리지 않는 건 이쪽이다.
 SIZES = {'feed': (1080, 1350), 'sq': (1080, 1080), 'story': (1080, 1920)}
@@ -132,13 +136,14 @@ def build(name, W, H, safe=False):
           a=0.94, anchor='c')
 
     # ── 브랜드 ───────────────────────────────────────────
-    s, e = SET_AT[name]
+    on_bill = name in SET_AT
     gs = get(name)['genres']['ko'][:3]
     ig = get(name)['instagram']
 
     lg = logo(int(46 * V))
     paint(img, lg, W / 2 - lg.shape[1] / 2, y0 + 52 * V, color=PAPER, a=0.95)
-    paint(img, tmask(f'{s} — {e}', BRAND, int(20 * V), 0.22), W - M, y0 + 52 * V,
+    top_r = f'{SET_AT[name][0]} — {SET_AT[name][1]}' if on_bill else 'BLACKOUT CREW'
+    paint(img, tmask(top_r, BRAND, int(20 * V), 0.22), W - M, y0 + 52 * V,
           color=PAPER, a=0.90, anchor='r')
     paint(img, tmask(EV.HANDLE, BRAND, int(13 * V), 0.24), M, y0 + 52 * V,
           color=DIM, a=0.85, anchor='l')
@@ -147,10 +152,12 @@ def build(name, W, H, safe=False):
     paint(img, tmask(SLOGAN, BRAND, int(13 * V), 0.30), W / 2, yb, color=DIM,
           a=0.62, anchor='c')
     yb -= 40 * V
-    paint(img, tmask(f'{EV.DATE_EN}   ·   {EV.VENUE}   ·   {EV.ADDR}', KR,
-                     int(16 * V), 0.02), W / 2, yb, color=DIM, a=0.92, anchor='c')
+    sub = (f'{EV.DATE_EN}   ·   {EV.VENUE}   ·   {EV.ADDR}' if on_bill
+           else f'SEOUL   ·   {EV.SITE}')
+    paint(img, tmask(sub, KR, int(16 * V), 0.02), W / 2, yb, color=DIM,
+          a=0.92, anchor='c')
     yb -= 44 * V
-    em = tmask(EV.NAME, BRAND, int(34 * V), 0.16)
+    em = tmask(EV.NAME if on_bill else 'BLACKOUT', BRAND, int(34 * V), 0.16)
     paint(img, em, W / 2, yb, color=PAPER, anchor='c')
     rule(img, yb + 34 * V, W / 2 - em.shape[1] * 0.60, W / 2 + em.shape[1] * 0.60,
          SILVER, 0.55, max(1, int(2 * V)))
@@ -184,7 +191,8 @@ if __name__ == '__main__':
     want = [a.upper() for a in sys.argv[1:]] or ORDER
     for name in want:
         if name not in HUE:
-            raise SystemExit(f'{name} 은 라인업에 없습니다 — {", ".join(ORDER)}')
+            raise SystemExit(f'{name} 은 색이 정해져 있지 않습니다 — '
+                             f'poster_dj.HUE 에 추가하세요')
         key = name.lower()
         for k, (w, h) in SIZES.items():
             im = build(name, w, h, safe=(k == 'story'))

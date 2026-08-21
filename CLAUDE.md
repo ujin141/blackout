@@ -174,6 +174,7 @@ python poster_dj4.py                          # D안 — 우진 레퍼런스(월
 python poster_dj5.py                          # E안 — 액자를 뚫고 나온다. 해 + 잔상 + 바닥 반사
 python poster_dj6.py                          # F안 — 네온 간판. 콘크리트 벽 + 젖은 바닥
 python poster_dj7.py                          # G안 — 판은 흑백·은색, 사람만 컬러 (브랜드 판)
+python poster_dj8.py xanthic                  # 라인업 밖 크루도 뽑힌다 — 행사 대신 크루가 들어감
 python poster_dj8.py                          # H안 — 같은 사람을 크기 달리해 세 번 세운다 (우진 채택)
 #                                               피드 4:5 · 정사각 · 스토리 세 벌이 나온다
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)

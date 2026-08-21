@@ -53,6 +53,8 @@ CUT = {
     'HEIDY': ('heidy-cutout.png', 0.245, 0.50),
     'DEMIC': ('demic-cutout.png', 0.265, 0.49),
     'AROS':  ('aros-cutout.png',  0.390, 0.55),
+    # 라인업 밖 크루. 개인 판에서만 쓴다(크루 판은 라인업만 그린다)
+    'XANTHIC': ('xanthic-cutout.png', 0.310, 0.52),
 }
 # 머리 아래로 몇 배까지 담을지. 2.6 이면 머리 + 어깨입니다.
 # 키우면 상반신이 들어오는데, 전신 사진(TS·LYNN)만 채워지고 V 는 빈 칸이 됩니다.
