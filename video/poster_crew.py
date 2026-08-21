@@ -77,7 +77,6 @@ def crop_head(name, out_w, out_h):
     ys, xs = np.where(a[..., 3] > 0.03)
     a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
     h0, w0 = a.shape[:2]
-
     keep = min(h0, int(round(h0 * head * BODY)))          # 머리+어깨 높이(원본 px)
     s = out_h / keep
     nw, nh = max(1, int(round(w0 * s))), max(1, int(round(h0 * s)))
@@ -114,22 +113,29 @@ def rimlight(a_, V, thick=3.0, soft=3.4, top_fade=0.17):
 
 
 def crown(al):
-    """정수리를 위로 갈수록 흐리게. **누끼가 잘린 걸 감춘다.**
+    """**머리끝이 잘린 자리만** 위쪽 알파를 부드럽게 깎는다.
 
-    누끼는 머리 꼭대기에서 알파가 일직선으로 끝난다. 거기에 테두리 빛까지
-    얹히면 **가로줄이 그어진 것처럼** 보인다 — '머리 위가 잘린 느낌' 이 이거다.
+    누끼는 원본 사진에서 머리 꼭대기가 프레임 밖으로 나간 만큼 알파가
+    일직선으로 끝난다. 거기에 테두리 빛이 얹히면 가로줄이 그어진 것처럼 보인다.
 
-    페이드 길이는 **원본이 얼마나 잘렸는지에 따라 정한다.** 맨 윗줄이
-    채워져 있을수록(= 사진에서 정수리가 잘려 나갔을수록) 길게 녹인다.
-    TS 는 첫 줄이 5.6% 차 있어서 짧게 주면 여전히 선이 보인다."""
+    두 번 헛짚었다. 먼저 위쪽 전체를 페이드했더니 **멀쩡한 머리카락까지
+    지워져** 정수리가 안개가 됐다. 다음엔 맨 윗줄을 복제해 위로 늘렸더니
+    잘린 폭이 좁은 사람(TS 는 44px, DEMIC 은 13px)에게 **뿔이 났다.**
+
+    잘린 건 정수리 가운데 몇 십 픽셀뿐이다. **그 열만** 손봐야 한다 —
+    맨 윗줄이 차 있는 열을 찾아 좌우로 조금 번지게 한 뒤, 그 열에서만
+    위로 갈수록 투명해지게 한다. 나머지 열은 건드리지 않는다."""
+    n, w = al.shape
+    top = al[0] > 0.5
+    if not top.any():
+        return al
+    m = cv2.GaussianBlur(top.astype(np.float32)[None, :], (0, 0),
+                         max(2.0, w * 0.012))[0]
+    m = np.clip(m / max(m.max(), 1e-6), 0, 1)
+    cd = max(6, int(n * 0.055))
+    ramp = np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.7
     al = al.copy()
-    n = al.shape[0]
-    clipped = float((al[0] > 0.5).mean())
-    # **길게 주면 머리카락이 지워진다.** 테두리 빛을 위에서 죽이는 게
-    # 먼저고(rimlight), 이건 원본이 실제로 잘린 만큼만 거든다
-    cd = max(3, int(n * (0.012 + clipped * 0.85)))
-    cd = min(cd, n)
-    al[:cd] *= np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.65
+    al[:cd] *= 1 - m[None, :] * (1 - ramp)
     return al
 
 
