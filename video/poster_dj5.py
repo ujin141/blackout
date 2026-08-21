@@ -119,8 +119,8 @@ def build(name, W, H, safe=False):
 
     # ── 사람 ─────────────────────────────────────────────
     # **머리가 액자 위로 넘어간다.** 액자가 있으니 넘는 게 보인다
-    hero_h = int(H * 0.720)
-    top = int(H * 0.055)
+    hero_h = int(H * 0.658)
+    top = int(H * 0.082)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))

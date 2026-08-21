@@ -27,7 +27,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, tmask, paint, fit, rule, box, glow, grain,
                         outline, save, sign, bloom)
-from poster_crew import crop_head
+from poster_crew import crop_head, crown
 from fest_kit import justify, night, vignette, rays, specks, haze
 from fonts import KR, KRB
 from members import get
@@ -127,6 +127,7 @@ def melt(a_, px, frac=0.36, seed=0, V=1.0):
         가장자리 깃털   알파를 아주 조금 흐려 하드 엣지를 없앤다
     """
     n, w = a_.shape
+    a_ = crown(a_)          # 정수리를 녹인다 — poster_crew.crown 참고
     fd = max(8, int(n * frac))
     t = np.linspace(0, 1, fd, dtype=np.float32)[:, None]
     rng = np.random.default_rng(seed)
@@ -198,8 +199,8 @@ def build(name, W, H, safe=False):
     # 정사각과 스토리에서 구도가 달라진다 — 같은 비율을 쓰면 두 판이 한 세트로
     # 보인다. 0.86 까지 키웠을 땐 정수리가 프레임에 붙고 배경이 다 가려졌다.
     # 레퍼런스도 인물은 판의 절반 남짓이고 위아래로 배경이 넉넉하다
-    hero_h = int(H * 0.735)
-    top = int(H * 0.085)
+    hero_h = int(H * 0.668)
+    top = int(H * 0.108)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))

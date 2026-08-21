@@ -83,8 +83,8 @@ def build(name, W, H, safe=False):
     chrome(img, nm, W / 2, ny, PAPER, STEEL)
 
     # ── 사람 ─────────────────────────────────────────────
-    hero_h = int(H * 0.720)
-    top = int(H * 0.090)
+    hero_h = int(H * 0.658)
+    top = int(H * 0.115)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))

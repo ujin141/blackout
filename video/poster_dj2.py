@@ -28,7 +28,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from poster_kit import (BRAND, SIZES, tmask, paint, rule, box, grain, save, sign)
-from poster_crew import crop_head
+from poster_crew import crop_head, crown
 from fest_kit import justify, night, vignette, sky, specks
 from fonts import KR, KRB
 from members import get
@@ -175,7 +175,7 @@ def build(name, W, H, safe=False):
     # ── 사람 ─────────────────────────────────────────────
     # **오른쪽으로 민다.** 넓은 판에 그려서 필요한 만큼만 잘라 오면
     # 머리 중심을 원하는 x 에 정확히 세울 수 있다
-    hero_h = int(BH * 0.760)
+    hero_h = int(BH * 0.700)
     wide = int(W * 1.7)
     fig = crop_head(name, wide, hero_h)
     x_from = int(wide * 0.5 - W * 0.635)
@@ -183,8 +183,9 @@ def build(name, W, H, safe=False):
     if fig.shape[1] < W:
         fig = np.pad(fig, ((0, 0), (0, W - fig.shape[1]), (0, 0)))
     al = fig[..., 3]
+    al = crown(al)          # 정수리를 녹인다
 
-    top = int(y0 + BH * 0.130)
+    top = int(y0 + BH * 0.158)
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))
     n = sl[0].stop - sl[0].start
     a_ = al[:n]

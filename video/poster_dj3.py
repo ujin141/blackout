@@ -28,7 +28,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, SIZES, tmask, paint, fit, rule, glow, outline,
                         grain, save, sign, bloom, add)
-from poster_crew import crop_head
+from poster_crew import crop_head, crown
 from fest_kit import justify, night, vignette, sky, beams, specks
 from fonts import KR, KRB
 from members import get
@@ -123,10 +123,11 @@ def build(name, W, H, safe=False):
     flare(img, W * 0.50, y0 + BH * 0.245, W * 0.34, C * 0.5 + PAPER * 0.5, 0.16)
 
     # ── 사람 ─────────────────────────────────────────────
-    hero_h = int(BH * 0.700)
-    top = int(y0 + BH * 0.175)
+    hero_h = int(BH * 0.640)
+    top = int(y0 + BH * 0.202)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
+    al = crown(al)          # 정수리를 녹인다
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))
     n = sl[0].stop - sl[0].start
     a_ = al[:n]

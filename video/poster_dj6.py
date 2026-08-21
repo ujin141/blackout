@@ -92,8 +92,8 @@ def build(name, W, H, safe=False):
          seed=len(name) * 3 + 1)
 
     # ── 사람 ─────────────────────────────────────────────
-    hero_h = int(H * 0.700)
-    top = int(H * 0.115)
+    hero_h = int(H * 0.640)
+    top = int(H * 0.138)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))

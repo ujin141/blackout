@@ -93,6 +93,24 @@ def crop_head(name, out_w, out_h):
     return dst
 
 
+def crown(al):
+    """정수리를 위로 갈수록 흐리게. **누끼가 잘린 걸 감춘다.**
+
+    누끼는 머리 꼭대기에서 알파가 일직선으로 끝난다. 거기에 테두리 빛까지
+    얹히면 **가로줄이 그어진 것처럼** 보인다 — '머리 위가 잘린 느낌' 이 이거다.
+
+    페이드 길이는 **원본이 얼마나 잘렸는지에 따라 정한다.** 맨 윗줄이
+    채워져 있을수록(= 사진에서 정수리가 잘려 나갔을수록) 길게 녹인다.
+    TS 는 첫 줄이 5.6% 차 있어서 짧게 주면 여전히 선이 보인다."""
+    al = al.copy()
+    n = al.shape[0]
+    clipped = float((al[0] > 0.5).mean())
+    cd = max(4, int(n * (0.038 + clipped * 1.7)))
+    cd = min(cd, n)
+    al[:cd] *= np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.65
+    return al
+
+
 def cell(img, name, x0, y0, w, h, V):
     """칸 하나 — 옅은 판, 위에서 내리는 빛, 사람, 테두리, 이름, 시간."""
     x1, y1 = x0 + w, y0 + h

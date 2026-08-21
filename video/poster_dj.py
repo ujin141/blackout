@@ -39,7 +39,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, SIZES, tmask, paint, fit, rule, box, glow,
                         grain, sign, save, bloom)
-from poster_crew import crop_head
+from poster_crew import crop_head, crown
 from fest_kit import justify, night, vignette, sky, rays, torus, specks
 from fonts import KR, KRB
 from members import get
@@ -127,10 +127,11 @@ def build(name, W, H, story=False, safe=False):
                     + ((yy - hy) / (BH * 0.36)) ** 2))[..., None] * C * 0.050
 
     # ── 사람 ─────────────────────────────────────────────
-    top = y0 + BH * 0.150
-    hero_h = int(BH * 0.615)
+    top = y0 + BH * 0.176
+    hero_h = int(BH * 0.560)
     fig = crop_head(name, W, hero_h)
     al = fig[..., 3]
+    al = crown(al)          # 정수리를 녹인다
     g = (fig[..., 0] * .299 + fig[..., 1] * .587 + fig[..., 2] * .114)
     g = np.clip((g - 0.5) * 1.26 + 0.5, 0, 1)
     # 하이라이트만 누른다. 흰 니트·흰 셔츠가 날아가는 걸 되돌리는 정도고,
