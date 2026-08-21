@@ -115,7 +115,7 @@ def fringe(img, amt):
     img[..., 2] = scale(img[..., 2], -amt)
 
 
-def melt(a_, px, frac=0.36, seed=0, V=1.0):
+def melt(a_, px, frac=0.46, seed=0, V=1.0):
     """발치를 **직선으로 자르지 않는다.**
 
     가로 그라데이션만 주면 자로 자른 것처럼 보인다 — 누끼가 딱 끊긴 느낌이
@@ -131,13 +131,16 @@ def melt(a_, px, frac=0.36, seed=0, V=1.0):
     fd = max(8, int(n * frac))
     t = np.linspace(0, 1, fd, dtype=np.float32)[:, None]
     rng = np.random.default_rng(seed)
-    nz = rng.random((max(2, fd // 12), max(2, w // 12))).astype(np.float32)
-    nz = cv2.resize(cv2.GaussianBlur(nz, (0, 0), 1.6), (w, fd),
+    nz = rng.random((max(2, fd // 20), max(2, w // 20))).astype(np.float32)
+    nz = cv2.resize(cv2.GaussianBlur(nz, (0, 0), 1.9), (w, fd),
                     interpolation=cv2.INTER_CUBIC)
     nz = (nz - nz.min()) / (float(np.ptp(nz)) + 1e-6)
-    a_[n - fd:] *= np.clip(1.0 - t ** 1.05 * 1.38 + (nz - 0.5) * 0.98 * t, 0, 1)
-    px[n - fd:] *= (1 - t * 0.74)[..., None]
-    a_ = cv2.GaussianBlur(a_, (0, 0), max(0.8, 1.3 * V))
+    # **곡선을 눕힌다.** t**1.05 는 중간에서 이미 반이 꺼져서, 부드럽게
+    # 줄여도 '거기서 끊겼다' 로 보인다. t**1.7 이면 한참 살아 있다가
+    # 끝에서만 빠르게 사라진다 — 그게 어둠 속으로 걸어 들어가는 모양이다
+    a_[n - fd:] *= np.clip(1.0 - t ** 1.7 * 1.16 + (nz - 0.5) * 0.80 * t, 0, 1)
+    px[n - fd:] *= (1 - t ** 1.4 * 0.70)[..., None]
+    a_ = cv2.GaussianBlur(a_, (0, 0), max(1.0, 2.0 * V))
     return a_, px
 
 
@@ -207,7 +210,7 @@ def build(name, W, H, safe=False):
     n = sl[0].stop - sl[0].start
     a_ = al[:n].copy()
     # 누끼 가장자리의 반투명 잔털을 깎는다. 어두운 판에서 회색 테로 보인다
-    a_ = np.clip((a_ - 0.07) / 0.93, 0, 1)
+    a_ = np.clip((a_ - 0.045) / 0.955, 0, 1)
 
 
     # 인물 뒤 그림자 — 배경이 밝아서 이게 없으면 사람이 배경에 먹힌다

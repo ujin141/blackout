@@ -203,7 +203,7 @@ def build(name, W, H, safe=False):
     fade = int(BH * 0.14)
     fy = min(H, top + hero_h) - fade
     if fy > 0:
-        t = np.linspace(0, 1, fade, dtype=np.float32)[:, None, None] ** 1.5
+        t = np.linspace(0, 1, fade, dtype=np.float32)[:, None, None] ** 2.1
         img[fy:fy + fade] *= (1 - t * 0.94)
 
     # ── 대각 띠 ──────────────────────────────────────────

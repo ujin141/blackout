@@ -65,7 +65,7 @@ def layer(img, name, W, H, V, mult, ytop, dx, blur, bright, keep_color, base_h):
     n = min(H, top + h) - top
     if n <= 0:
         return None, None, None
-    a_ = np.clip((fig[:n, ..., 3].copy() - 0.07) / 0.93, 0, 1)
+    a_ = np.clip((fig[:n, ..., 3].copy() - 0.045) / 0.955, 0, 1)
     px = np.clip(fig[:n, ..., :3], 0, 1).copy()
     if keep_color:
         px = sharpen(px, 2.4 * V, 0.62)

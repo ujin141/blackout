@@ -152,8 +152,8 @@ def build(name, W, H, story=False, safe=False):
     fade_h = int(BH * 0.16)
     fy0 = min(H, t0 + hero_h) - fade_h
     if fy0 > 0:
-        t = np.linspace(0, 1, fade_h, dtype=np.float32)[:, None, None] ** 1.6
-        img[fy0:fy0 + fade_h] *= (1 - t * 0.92)
+        t = np.linspace(0, 1, fade_h, dtype=np.float32)[:, None, None] ** 2.1
+        img[fy0:fy0 + fade_h] *= (1 - t * 0.88)
 
     # ── 시간 배지 ────────────────────────────────────────
     s, e = SET_AT[name]

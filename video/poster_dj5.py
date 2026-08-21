@@ -125,7 +125,7 @@ def build(name, W, H, safe=False):
     al = fig[..., 3]
     sl = (slice(top, min(H, top + hero_h)), slice(0, W))
     n = sl[0].stop - sl[0].start
-    a_ = np.clip((al[:n].copy() - 0.07) / 0.93, 0, 1)
+    a_ = np.clip((al[:n].copy() - 0.045) / 0.955, 0, 1)
     px = sharpen(np.clip(fig[..., :3], 0, 1), 2.4 * V, 0.60)[:n].copy()
     a_, px = melt(a_, px, 0.34, len(name) * 31 + 2, V)
 

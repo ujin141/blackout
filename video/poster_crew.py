@@ -93,7 +93,7 @@ def crop_head(name, out_w, out_h):
     return dst
 
 
-def rimlight(a_, V, thick=3.0, soft=3.4, top_fade=0.17):
+def rimlight(a_, V, thick=3.0, soft=3.8, top_fade=0.24):
     """누끼 테두리 빛 마스크.
 
     **두꺼우면 머리카락이 뭉개진다.** 7px 로 부풀렸더니 머리가 둥근 덩어리가
@@ -108,7 +108,7 @@ def rimlight(a_, V, thick=3.0, soft=3.4, top_fade=0.17):
     e = e / max(e.max(), 1e-6)
     n = e.shape[0]
     cd = max(6, int(n * top_fade))
-    e[:cd] *= np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.9
+    e[:cd] *= np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 1.3
     return e
 
 
@@ -130,10 +130,12 @@ def crown(al):
     if not top.any():
         return al
     m = cv2.GaussianBlur(top.astype(np.float32)[None, :], (0, 0),
-                         max(2.0, w * 0.012))[0]
+                         max(3.0, w * 0.022))[0]
     m = np.clip(m / max(m.max(), 1e-6), 0, 1)
-    cd = max(6, int(n * 0.055))
-    ramp = np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.7
+    # 구간이 짧으면 부드럽게 준다고 해도 결국 '끊긴' 것으로 보인다 —
+    # 길게 잡고 곡선을 눕혀야 스며든다
+    cd = max(8, int(n * 0.090))
+    ramp = np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 1.25
     al = al.copy()
     al[:cd] *= 1 - m[None, :] * (1 - ramp)
     return al
