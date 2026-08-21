@@ -115,8 +115,11 @@ def build(name, W, H, safe=False):
 
     img[sl] = img[sl] * (1 - a_[..., None]) + px * a_[..., None]
 
-    # 이름을 인물 위로 아주 옅게 — 관이 사람 앞을 지나가는 것으로 보인다
-    paint(img, tube, W / 2, ny, color=C * 0.35 + PAPER * 0.65, a=0.30, anchor='c')
+    # 관이 사람 앞을 지나가는 것으로 보이게 한 겹 더. 0.30 으로 뒀더니
+    # **사람에 가린 구간이 흐려서 이름이 안 읽혔다** — 네온은 원래 가는 선이라
+    # 여기서 아끼면 가운데가 통째로 사라진다
+    paint(img, tube, W / 2, ny, color=C * 0.18 + PAPER * 0.82, a=0.62, anchor='c')
+    glow(img, tube, W / 2, ny, C, 0.45, int(16 * V), anchor='c')
 
     # ── 젖은 바닥 ────────────────────────────────────────
     fl = int(H * (0.760 if safe else 0.785))

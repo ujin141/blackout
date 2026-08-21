@@ -21,8 +21,8 @@ A~D안은 전부 **평평합니다.** 인물이 배경 앞에 붙어 있을 뿐 
 import sys
 import numpy as np
 import cv2
-from poster_kit import (BRAND, tmask, paint, rule, box, glow, grain, save, sign,
-                        bloom)
+from poster_kit import (BRAND, tmask, paint, rule, box, glow, grain, outline,
+                        save, sign, bloom)
 from poster_crew import crop_head
 from fest_kit import justify, night, vignette, rays, specks, haze
 from poster_dj import HUE, LINE
@@ -157,7 +157,12 @@ def build(name, W, H, safe=False):
             m = (sa[:rr, ..., None] * t[:rr] * 0.22)
             img[ry:ry + rr] = img[ry:ry + rr] * (1 - m) + strip[:rr] * m
 
-    paint(img, nm, W / 2, ny, color=PAPER, a=0.44, anchor='c')
+    # **사람에 가린 구간이 흐릿했다.** 알파만 올리면 뒤로 넘긴 느낌이
+    # 죽는다 — 면은 반투명으로 두고 **윤곽선만 또렷하게** 한 겹 더 얹는다.
+    # 글자는 속이 아니라 테두리로 읽힌다
+    paint(img, nm, W / 2, ny, color=PAPER, a=0.58, anchor='c')
+    paint(img, outline(nm, max(2, int(3.6 * V))), W / 2, ny, color=PAPER,
+          a=0.94, anchor='c')
 
     # ── 글 ───────────────────────────────────────────────
     s, e = SET_AT[name]

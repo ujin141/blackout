@@ -26,7 +26,7 @@ import sys
 import numpy as np
 import cv2
 from poster_kit import (BRAND, tmask, paint, fit, rule, box, glow, grain,
-                        save, sign, bloom)
+                        outline, save, sign, bloom)
 from poster_crew import crop_head
 from fest_kit import justify, night, vignette, rays, specks, haze
 from fonts import KR, KRB
@@ -260,9 +260,12 @@ def build(name, W, H, safe=False):
     # 흰 띠에 붙는다 — 레퍼런스는 전부 가슴 위다
     # 이름은 인물보다 **먼저** 그렸다(아래 참고). 여기서는 인물 위로
     # 아주 옅게 한 번 더 얹어, 글자가 사람을 투과하는 것처럼 보이게 한다
-    # 0.26 은 너무 옅었다 — DEMIC 은 가운데가 몸에 먹혀 D…MIC 으로 읽혔다.
-    # 이름이 안 읽히면 뒤로 넘긴 의미가 없다
-    paint(img, nm, W / 2, ny, color=PAPER, a=0.46, anchor='c')
+    # **사람에 가린 구간이 흐릿했다.** 알파만 올리면 뒤로 넘긴 느낌이
+    # 죽는다 — 면은 반투명으로 두고 **윤곽선만 또렷하게** 한 겹 더 얹는다.
+    # 글자는 속이 아니라 테두리로 읽힌다
+    paint(img, nm, W / 2, ny, color=PAPER, a=0.58, anchor='c')
+    paint(img, outline(nm, max(2, int(3.6 * V))), W / 2, ny, color=PAPER,
+          a=0.94, anchor='c')
 
     # ── 머리 ─────────────────────────────────────────────
     s, e = SET_AT[name]
