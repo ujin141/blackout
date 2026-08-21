@@ -65,6 +65,19 @@
 원본 방향을 의심하는 데 오래 걸렸다. 앞으로 새 소재가 들어오면
 **저장 해상도가 아니라 실제 출력 해상도를 먼저 재라.**
 
+## 인스타에 올릴 때
+
+    크기      1080×1920 · 30fps · h264 + aac. 릴스 권장 그대로다
+    비트레이트 **너무 높으면 손해다.** crf 17 로 뽑았더니 24Mbps · 60MB 가
+              나왔는데, 인스타는 어차피 자기 기준으로 다시 인코딩한다 —
+              용량만 크고 화질은 그대로 깎인다. crf 21 이면 10Mbps 안쪽이다
+    색 범위    소스가 full-range 라 그냥 두면 `yuvj420p` 로 나간다. 플레이어에
+              따라 검정이 뜨거나 색이 튄다 — `out_range=tv` 로 못 박는다
+
+화면은 9:16 이라 릴스 피드에서 **잘리지 않는다.** 다만 프로필 격자와
+탐색 탭은 커버를 1:1 로 자르고, 재생 중에는 UI 가 위아래를 덮는다 —
+위 14% · 아래 25% 에는 글자를 두지 않는다.
+
 ## 소리
 
 **현장 소리를 살린다.** 처음엔 무음으로 뽑았는데(인스타 음원을 얹을
@@ -151,7 +164,8 @@ def make_cut(i, c):
           f"x='(iw-iw/zoom)*{cx:.3f}':y='(ih-ih/zoom)*{cy:.3f}':"
           f's={W}x{H}:fps={FPS},'
           f'eq=contrast=1.22:saturation=1.34:gamma=0.94:brightness=0.02,'
-          f'unsharp=5:5:0.5')
+          f'unsharp=5:5:0.5,'
+          f'scale=out_range=tv,format=yuv420p')
     if i in FLASH:
         vf += ',fade=t=in:st=0:d=0.09:color=white'
     elif i in DISSOLVE:
@@ -162,7 +176,7 @@ def make_cut(i, c):
           f'aresample=48000')
     run(['ffmpeg', '-v', 'error', '-ss', str(t0), '-i', src, '-t', str(dur),
          '-vf', vf, '-af', af,
-         '-c:v', 'libx264', '-preset', 'medium', '-crf', '17',
+         '-c:v', 'libx264', '-preset', 'medium', '-crf', '21',
          '-pix_fmt', 'yuv420p',
          '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
          '-y', cut_path(i)])
@@ -199,10 +213,15 @@ def build():
     out = os.path.join(OUT, 'pool.mp4')
     run(['ffmpeg', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', lst,
          '-c', 'copy', '-movflags', '+faststart', '-y', out])
-    a = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a:0',
-                        '-show_entries', 'stream=codec_name,channels',
+    q = subprocess.run(['ffprobe', '-v', 'error',
+                        '-show_entries', 'stream=codec_name,width,height,pix_fmt',
+                        '-show_entries', 'format=size,bit_rate',
                         '-of', 'csv=p=0', out], capture_output=True, text=True)
-    print('  소리:', (a.stdout or '없음').strip())
+    info = [l for l in q.stdout.splitlines() if l.strip()]
+    print('  규격:', ' | '.join(info[:2]))
+    if len(info) > 2:
+        sz, br = info[-1].split(',')[:2]
+        print(f'  용량: {int(sz)/1e6:.1f}MB · {int(br)/1e6:.1f}Mbps')
     print(f'{out}  {W}×{H} · {FPS}fps · {sum(durs):.1f}초 · 컷 {len(CUTS)}개')
     for i, c in enumerate(CUTS):
         mark = ' ⚡' if i in FLASH else (' ◐' if i in DISSOLVE else '  ')
