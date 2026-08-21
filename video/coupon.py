@@ -93,7 +93,9 @@ GIVE = 'WELCOME DRINK 1+1'
 # **세 줄로 나누면 여백이 채워지면서 다툴 거리가 같이 준다.**
 # **90×50 에서는 다섯 줄이 안 읽힌다.** 148×68 때 잡은 크기를 그대로 두고
 # 판만 줄였더니 한글이 4.0pt 가 됐다 — 인쇄하면 글자가 아니라 회색 줄이다.
-# 네 줄로 줄이고 크기를 5.8pt 까지 올렸다. 뺀 줄(LOST)은 NOTE 에 합쳤다.
+# 네 줄로 줄이고 크기를 5.8pt 로 올렸는데, 그래도 작다는 지적이 와서
+# **7.6pt 까지 올렸다.** 줄 간격이 82px 인데 글자가 24px 이라 자리는 남았다 —
+# 여백을 아끼느라 글자를 작게 두고 있었던 셈이다.
 TERMS = [('WHO',   '팔로우 화면을 보여주신 분'),
          ('WHEN',  '행사 당일 · 영업 종료 전까지'),
          ('LIMIT', '1인 1회 · 뜯긴 쿠폰만 유효'),
@@ -151,8 +153,8 @@ def stub(img):
 
     nw = STUB - U * 5
     box(img, U * 2.5, H - U * 3.4, U * 2.5 + nw, H - U * 3.4 + HAIR, PAPER, 0.28)
-    paint_bl(img, tmask_bl('NO.', BRAND, int(U * 0.85), 0.24), U * 2.5, H - U * 2.0,
-             color=PAPER, a=0.45)
+    paint_bl(img, tmask_bl('NO.', BRAND, int(U * 1.0), 0.24), U * 2.5, H - U * 2.0,
+             color=PAPER, a=0.50)
     perf(img, STUB)
 
 
@@ -163,8 +165,8 @@ def front():
     x, right = STUB + U * 2.6, W - U * 2.6
 
     # ── 머리 ──────────────────────────────────────────────
-    paint_bl(img, tmask_bl(HEAD, BRAND, int(U * 1.15), 0.40), x, U * 3.6,
-             color=INK, a=0.55)
+    paint_bl(img, tmask_bl(HEAD, BRAND, int(U * 1.35), 0.40), x, U * 3.6,
+             color=INK, a=0.60)
     gs = min(int(U * 2.5), fit(GIVE, BRAND, right - x, 0.05))
     paint_bl(img, tmask_bl(GIVE, BRAND, gs, 0.05), x, U * 7.2, color=INK)
     rule(img, U * 9.4, x, right, INK, 0.28, HAIR)
@@ -178,13 +180,13 @@ def front():
     lstep = (bottom - U * 2.2 - top) / max(len(TERMS) - 1, 1)
     # 라벨 칸. **제일 긴 라벨(LIMIT)이 값과 안 붙을 만큼** 벌린다 —
     # 라벨마다 길이가 다르니 짧은 것에 맞추면 긴 것이 밀린다
-    lx = x + U * 5.9
+    lx = x + U * 6.8
     for i, (k, v) in enumerate(TERMS):
         if i:                                          # 줄 사이 아주 옅은 괘선
             rule(img, ly - U * 1.9, x, right, INK, 0.07, HAIR)
-        paint_bl(img, tmask_bl(k, BRAND, int(U * 0.95), 0.22), x, ly,
-                 color=INK, a=0.42)
-        paint_bl(img, tmask_bl(v, KR, int(U * 1.35), 0.01), lx, ly, color=INK, a=0.80)
+        paint_bl(img, tmask_bl(k, BRAND, int(U * 1.15), 0.22), x, ly,
+                 color=INK, a=0.46)
+        paint_bl(img, tmask_bl(v, KR, int(U * 1.75), 0.01), lx, ly, color=INK, a=0.86)
         ly += lstep
 
     # ── 발치 ──────────────────────────────────────────────
@@ -192,13 +194,13 @@ def front():
     rule(img, fy - U * 2.0, x, right, INK, 0.14, HAIR)
     # **행사 이름과 날짜를 안 적는다.** 적는 순간 그날에만 쓰는 물건이 된다 —
     # 남는 쿠폰이 다음 행사로 넘어가야 인쇄가 안 아깝다
-    paint_bl(img, tmask_bl('BLACKOUT', BRAND, int(U * 1.05), 0.24),
-             x, fy, color=INK, a=0.60)
+    paint_bl(img, tmask_bl('BLACKOUT', BRAND, int(U * 1.25), 0.24),
+             x, fy, color=INK, a=0.66)
     # **누가 확인했는지 적을 자리.** 없으면 바텐더가 볼펜으로 아무 데나 긋는다
     bw = int(U * 5.0)
     box(img, right - bw, fy - U * 1.4, right, fy - U * 1.4 + HAIR, INK, 0.35)
-    paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 0.85), 0.24), right - bw, fy,
-             color=INK, a=0.42)
+    paint_bl(img, tmask_bl('CHECK', BRAND, int(U * 1.0), 0.24), right - bw, fy,
+             color=INK, a=0.46)
 
     grain(img, 0.004, 11)
     return np.clip(img, 0, 1)
@@ -227,20 +229,20 @@ def back():
     ns = min(int(U * 2.3), fit('BLACKOUT', BRAND, W * 0.44, 0.16))
     nm = tmask_bl('BLACKOUT', BRAND, ns, 0.16)
     paint_bl(img, nm, nx, cy + nm[0].shape[0] / 2, color=PAPER)
-    paint_bl(img, tmask_bl('SEOUL  ·  DJ CREW', BRAND, int(U * 0.78), 0.34),
-             nx, cy + nm[0].shape[0] / 2 + U * 2.1, color=PAPER, a=0.45)
+    paint_bl(img, tmask_bl('SEOUL  ·  DJ CREW', BRAND, int(U * 0.96), 0.34),
+             nx, cy + nm[0].shape[0] / 2 + U * 2.2, color=PAPER, a=0.52)
 
     # 슬로건 두 줄. **한 줄로 붙이면 글자가 반으로 준다** — 148mm 라도
     # QR 자리를 빼면 왼쪽은 90mm 뿐이다
     sy = H * 0.62
     for i, line in enumerate(SLOGAN):
-        ss = min(int(U * 1.05), fit(line, BRAND, W * 0.46, 0.22))
-        paint_bl(img, tmask_bl(line, BRAND, ss, 0.22), x, sy + i * U * 2.2,
-                 color=PAPER, a=0.62)
+        ss = min(int(U * 1.28), fit(line, BRAND, W * 0.46, 0.22))
+        paint_bl(img, tmask_bl(line, BRAND, ss, 0.22), x, sy + i * U * 2.5,
+                 color=PAPER, a=0.70)
 
     # 발치 — 주소. QR 을 안 찍는 사람도 찾아올 데가 있어야 한다
-    paint_bl(img, tmask_bl(SITE, BRAND, int(U * 0.82), 0.24), x, H - U * 2.4,
-             color=PAPER, a=0.42)
+    paint_bl(img, tmask_bl(SITE, BRAND, int(U * 1.0), 0.24), x, H - U * 2.4,
+             color=PAPER, a=0.50)
 
     # 오른쪽 — 계정 QR. 세로선으로 두 덩어리를 가른다
     # 17mm. 모듈 0.46mm 라 어두운 실내에서도 잡힌다 — 더 줄이면 안 읽힌다
@@ -252,13 +254,13 @@ def back():
     box(img, qx - U * 0.55, qy - U * 0.55, qx + qs + U * 0.55, qy + qs + U * 0.55,
         PAPER, 0.96)
     img[qy:qy + qs, qx:qx + qs] = code(qs)
-    hs = min(int(U * 0.76), fit(EV.HANDLE, BRAND, qs + U * 0.8, 0.06))
+    hs = min(int(U * 0.94), fit(EV.HANDLE, BRAND, qs + U * 1.4, 0.06))
     paint_bl(img, tmask_bl(EV.HANDLE, BRAND, hs, 0.06), qx, qy + qs + U * 1.9,
              color=PAPER, a=0.88)
     # **찍을 이유가 없으면 안 찍는다.** QR 만 두면 그냥 무늬다
-    ws = min(int(U * 0.78), fit(QR_WHY, KR, qs + U * 1.1, 0.01))
-    paint_bl(img, tmask_bl(QR_WHY, KR, ws, 0.01), qx, qy + qs + U * 3.5,
-             color=PAPER, a=0.50)
+    ws = min(int(U * 0.98), fit(QR_WHY, KR, qs + U * 1.6, 0.01))
+    paint_bl(img, tmask_bl(QR_WHY, KR, ws, 0.01), qx, qy + qs + U * 3.7,
+             color=PAPER, a=0.60)
 
     grain(img, 0.004, 13)
     return np.clip(img, 0, 1)
