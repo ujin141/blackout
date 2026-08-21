@@ -36,7 +36,9 @@ import event as EV
 
 ORDER = EV.LINEUP
 SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
-SIZES = {'sq': (1080, 1080), 'story': (1080, 1920)}
+# 인스타 두 자리. 피드는 4:5 가 화면을 제일 많이 먹고, 스토리는 9:16 이다.
+# 정사각도 남겨 둔다 — 프로필 격자에서 잘리지 않는 건 이쪽이다.
+SIZES = {'feed': (1080, 1350), 'sq': (1080, 1080), 'story': (1080, 1920)}
 
 # (높이 배수, 세로 위치, 가로 밀기, 흐림, 밝기, 색을 남길지) — 뒤에서 앞으로.
 # **뒤로 갈수록 크고 어둡고 흐리다.** 하나라도 어기면 거리가 안 생긴다.
@@ -159,6 +161,16 @@ def build(name, W, H, safe=False):
     yb -= 36 * V
     paint(img, tmask(LINE[name], KRB, int(29 * V), 0.01), W / 2, yb, color=PAPER,
           anchor='c')
+
+    if safe:
+        # 스토리 발치. 글자 블록이 끝난 아래가 그냥 어두우면 여백으로 읽힌다 —
+        # 바닥에 빛이 깔리면 판이 거기까지 이어지는 것이 된다
+        gy = np.arange(H, dtype=np.float32)
+        gx = np.arange(W, dtype=np.float32)
+        spill = (np.exp(-((gy - H * 0.955) / (H * 0.075)) ** 2)[:, None]
+                 * np.exp(-((gx - W * 0.5) / (W * 0.60)) ** 2)[None, :])
+        img += spill[..., None] * SILVER * 0.20
+        rule(img, int(y1), 0, W, SILVER, 0.42, max(1, int(2 * V)))
 
     specks(img, 140, 0, int(y1), PAPER, 0.18, seed=len(name) * 13 + 7, rmax=2.6)
     bloom(img, 0.80, 18 * V, 0.22, PAPER)
