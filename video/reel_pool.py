@@ -33,11 +33,19 @@
 그냥 자르면 피사체가 밖으로 나간다** — 컷마다 `cx`(가로 중심, 0~1)를
 따로 준다.
 
+## 소리
+
+**현장 소리를 살린다.** 처음엔 무음으로 뽑았는데(인스타 음원을 얹을
+생각이었다) 우진이 소리를 빼지 말라고 했다 — 물소리·사람 소리가 있어야
+현장이고, 인스타 음원은 그 위에 얹으면 된다.
+
+컷 경계에서 소리가 툭 끊기면 거슬린다. **컷마다 앞뒤 30ms 페이드**를
+넣으면 클릭 노이즈가 사라진다.
+
 ## 박
 
 120BPM = 0.5초. 컷 길이를 **비트의 정수배**로 잡으면 나중에 어떤 곡을
-얹어도 대충 맞는다. 인스타 음원을 얹을 걸 전제로 한다 —
-릴스는 자체 음원을 쓰는 쪽이 도달이 낫다.
+얹어도 대충 맞는다.
 """
 import os
 import subprocess
@@ -68,14 +76,6 @@ CUTS = [
     # 25.4 로 뒀더니 컷 끝이 흐렸다 — 팬이 시작되는 자리라 앞으로 당겼다
     ('P1023234', 24.8, 5, 0.52, 1.06, '핑크 LED + 풀 — 정보가 얹힐 자리'),
 ]
-
-
-
-
-
-
-
-
 
 # **트랜지션을 안 쓴다.** 흰 플래시와 검정 디졸브를 넣었더니 우진이
 # "너무 세다" 고 했다 — 15초에 효과가 세 번이면 그게 주인공이 된다.
@@ -116,9 +116,16 @@ def make_cut(i, c):
         vf += ',fade=t=in:st=0:d=0.09:color=white'
     elif i in DISSOLVE:
         vf += ',fade=t=in:st=0:d=0.16:color=black'
+    # 컷 경계의 클릭 노이즈를 없앤다 — 앞뒤 30ms 만 페이드
+    af = (f'afade=t=in:st=0:d=0.03,'
+          f'afade=t=out:st={max(0.0, dur - 0.03):.3f}:d=0.03,'
+          f'aresample=48000')
     run(['ffmpeg', '-v', 'error', '-ss', str(t0), '-i', src, '-t', str(dur),
-         '-vf', vf, '-an', '-c:v', 'libx264', '-preset', 'medium',
-         '-crf', '17', '-pix_fmt', 'yuv420p', '-y', cut_path(i)])
+         '-vf', vf, '-af', af,
+         '-c:v', 'libx264', '-preset', 'medium', '-crf', '17',
+         '-pix_fmt', 'yuv420p',
+         '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+         '-y', cut_path(i)])
     return dur
 
 
@@ -152,6 +159,10 @@ def build():
     out = os.path.join(OUT, 'pool.mp4')
     run(['ffmpeg', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', lst,
          '-c', 'copy', '-movflags', '+faststart', '-y', out])
+    a = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a:0',
+                        '-show_entries', 'stream=codec_name,channels',
+                        '-of', 'csv=p=0', out], capture_output=True, text=True)
+    print('  소리:', (a.stdout or '없음').strip())
     print(f'{out}  {W}×{H} · {FPS}fps · {sum(durs):.1f}초 · 컷 {len(CUTS)}개')
     for i, c in enumerate(CUTS):
         mark = ' ⚡' if i in FLASH else (' ◐' if i in DISSOLVE else '  ')
