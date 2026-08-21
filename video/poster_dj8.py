@@ -35,7 +35,7 @@ from members import get
 import event as EV
 
 ORDER = EV.LINEUP
-SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+SET_AT = EV.SLOTS                  # 병행 슬롯까지 들어 있다
 
 # **라인업에 없는 크루도 뽑을 수 있어야 한다.** 그렇다고 행사 정보를 그대로
 # 두면 안 된다 — 그날 안 뛰는 사람 판에 날짜와 시간이 박히면 그건 거짓말이다.

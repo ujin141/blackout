@@ -32,15 +32,18 @@ import numpy as np
 
 from audio import SR, env_ad, lp, hp, kick, hat, clap, reverb, noise_riser
 from audio_reel import sat, subf
+import event as EV
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'lineup')
 os.makedirs(OUT, exist_ok=True)
 
 BPM = 120.0
-BARS = 10
+# **곡 길이를 사람 수에서 뽑는다.** 10 으로 박아 뒀다가 XANTHIC 이
+# 라인업에 들어오면서 한 마디가 모자랐다
+BARS = 2 + len(EV.LINEUP) + 1
 BEAT = 60.0 / BPM                     # 0.5초
 BAR = BEAT * 4                        # 2.0초
-DUR = BAR * BARS                      # 20초
+DUR = BAR * BARS                      # 타이틀 2 + DJ + 아웃트로 1
 
 # Am7 → Fmaj7 → Cmaj7 → G. 라인업이 넘어가는 동안 도는 네 코드다.
 # **단조로 시작해 장조로 푼다** — 마지막 마디가 정보 자리라 열려야 한다

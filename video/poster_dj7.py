@@ -43,7 +43,7 @@ DIM    = np.float32([0.58, 0.60, 0.65])
 SLOGAN = 'WHERE THE LIGHTS FADE,  THE MUSIC TAKES OVER.'
 
 ORDER = EV.LINEUP
-SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+SET_AT = EV.SLOTS                  # 병행 슬롯까지 들어 있다
 SIZES = {'sq': (1080, 1080), 'story': (1080, 1920)}
 
 

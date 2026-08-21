@@ -60,12 +60,15 @@ CUT = {
 # 키우면 상반신이 들어오는데, 전신 사진(TS·LYNN)만 채워지고 V 는 빈 칸이 됩니다.
 BODY = 2.6
 
-ROWS = [4, 3]                      # 일곱을 넷·셋으로. 한 줄에 몰면 얼굴이 손톱만 해진다
+# 사람 수에 맞춰 나눈다. **박아 두면 멤버가 늘 때마다 손으로 고친다** —
+# XANTHIC 이 라인업에 들어오면서 일곱이 여덟이 됐다
+_N = len(EV.LINEUP)
+ROWS = [(_N + 1) // 2, _N // 2] if _N > 4 else [_N]
 
 # 라인업은 event.py 에서 온다 — 여기 다시 적으면 타임테이블과 어긋난다
 ORDER = EV.LINEUP
 SOLO = next((r for r in EV.TIMETABLE if r[2] in EV.PROGRAM), None)
-SET_AT = {n: s for s, _, n in EV.TIMETABLE}
+SET_AT = {k: v[0] for k, v in EV.SLOTS.items()}
 
 
 def crop_head(name, out_w, out_h):

@@ -54,7 +54,7 @@ MATE = {
 }
 
 ORDER = EV.LINEUP
-SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+SET_AT = EV.SLOTS                  # 병행 슬롯까지 들어 있다
 
 
 def vtext(img, text, x, y0, y1, size, color, a=1.0, track=0.02):

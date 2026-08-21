@@ -79,7 +79,7 @@ LINE = {
     'BEI':     '무대는 웬만큼 서봤습니다',
 }
 
-SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+SET_AT = EV.SLOTS                  # 병행 슬롯까지 들어 있다
 
 
 def chips(name):

@@ -33,7 +33,7 @@ PAPER = np.float32([0.98, 0.98, 0.97])
 DIM   = np.float32([0.58, 0.60, 0.64])
 
 ORDER = EV.LINEUP
-SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+SET_AT = EV.SLOTS                  # 병행 슬롯까지 들어 있다
 SIZES = {'sq': (1080, 1080), 'story': (1080, 1920)}
 
 

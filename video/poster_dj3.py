@@ -40,7 +40,7 @@ PAPER = np.float32([0.97, 0.97, 0.95])
 DIM   = np.float32([0.62, 0.64, 0.68])
 
 ORDER = EV.LINEUP
-SET_AT = {n: (s, e) for s, e, n in EV.TIMETABLE}
+SET_AT = EV.SLOTS                  # 병행 슬롯까지 들어 있다
 
 # 크롬 램프. (세로 위치, 밝기) — 위 밝음 → 가운데 어두움 → 아래 다시 밝음.
 # **가운데가 어두워야 금속이다.** 위아래만 밝게 하면 그냥 흐린 글자가 된다.

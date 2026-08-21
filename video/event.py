@@ -267,10 +267,22 @@ TIMETABLE = [
     ('23:30', '24:00', 'AROS'),
 ]
 
+# **공간이 나뉘어 있다.** 솔로파티가 도는 동안에도 다른 쪽 부스에서는
+# 계속 튼다 — 타임테이블이 한 줄이 아니라 두 줄이다.
+#
+# 이건 그냥 운영 사정이 아니라 **파는 말이다.** 솔로파티를 안 해도 놀 데가
+# 있고, 풀만 놀다 가도 된다. 처음엔 이걸 모르고 한 줄로 짜서 XANTHIC 을
+# 넣을 자리가 없다고 봤다.
+PARALLEL = [('21:30', '23:00', 'XANTHIC')]
+
 # 라인업 — 타임테이블에서 뽑는다. 따로 적으면 둘이 어긋난다.
 PROGRAM = {'SOLO PARTY'}          # DJ 가 아니라 프로그램. 타임테이블에서 색을 가른다
-LINEUP = [n for _, _, n in TIMETABLE if n not in PROGRAM]
+_ALL = sorted(TIMETABLE + PARALLEL, key=lambda r: r[0])
+LINEUP = [n for _, _, n in _ALL if n not in PROGRAM]
 LINEUP_STR = ' · '.join(LINEUP)
+# 이름 → (시작, 끝). **판마다 따로 만들지 말 것** — 두 줄이 된 뒤로
+# TIMETABLE 만 보면 병행 슬롯이 빠진다
+SLOTS = {n: (s, e) for s, e, n in _ALL}
 
 # ── 협업 브랜드 ───────────────────────────────────────────
 # assets/img/partners/ 에 파일을 넣으면 자동으로 들어간다. 없으면 그냥 건너뛴다.
