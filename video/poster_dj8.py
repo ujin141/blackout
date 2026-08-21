@@ -24,7 +24,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, tmask, paint, rule, box, glow, outline, grain,
                         save, sign, bloom, logo)
-from poster_crew import crop_head
+from poster_crew import crop_head, rimlight, rimlight
 from fest_kit import justify, night, vignette, rays, specks, haze
 from poster_dj import HUE, LINE
 from poster_dj3 import chrome
@@ -121,9 +121,8 @@ def build(name, W, H, safe=False):
     if sl is not None:
         back = cv2.GaussianBlur(a_, (0, 0), 24 * V)
         img[sl] *= (1 - back[..., None] * 0.62)
-        k = np.ones((max(3, int(7 * V)),) * 2, np.uint8)
-        edge = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0), 7 * V)
-        img[sl] += (edge / max(edge.max(), 1e-6))[..., None] * PAPER * 0.70
+        edge = rimlight(a_, V)      # 얇게, 위쪽은 죽인다
+        img[sl] += edge[..., None] * PAPER * 0.52
         img[sl] = img[sl] * (1 - a_[..., None]) + px * a_[..., None]
 
     paint(img, nm, W / 2, ny, color=PAPER, a=0.50, anchor='c')

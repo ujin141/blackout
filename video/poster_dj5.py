@@ -23,7 +23,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, tmask, paint, rule, box, glow, grain, outline,
                         save, sign, bloom)
-from poster_crew import crop_head
+from poster_crew import crop_head, rimlight
 from fest_kit import justify, night, vignette, rays, specks, haze
 from poster_dj import HUE, LINE
 from poster_dj2 import MATE
@@ -133,12 +133,10 @@ def build(name, W, H, safe=False):
     ghost(img[sl], a_, C, d, 0.30)
     ghost(img[sl], a_, C2, -d, 0.30)
 
-    k = np.ones((max(3, int(7 * V)),) * 2, np.uint8)
-    edge = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0), 7 * V)
-    edge = edge / max(edge.max(), 1e-6)
+    edge = rimlight(a_, V)          # 얇게, 위쪽은 죽인다 — poster_crew 참고
     lr = np.linspace(0, 1, W, dtype=np.float32)[None, :, None] ** 0.8
     two = C2[None, None, :] * (1 - lr) + C[None, None, :] * lr
-    img[sl] += edge[..., None] * (two * 0.75 + PAPER * 0.25) * 0.80
+    img[sl] += edge[..., None] * (two * 0.75 + PAPER * 0.25) * 0.58
 
     img[sl] = img[sl] * (1 - a_[..., None]) + px * a_[..., None]
 

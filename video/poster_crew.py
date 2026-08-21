@@ -27,6 +27,7 @@ python poster_crew.py  →  out/poster/crew_{feed,story}.png
 """
 import os
 import numpy as np
+import cv2
 from PIL import Image
 from poster_kit import (BRAND, IMG, SIZES, tmask, paint, rule, box, grain,
                         info_block, sign, save)
@@ -93,6 +94,25 @@ def crop_head(name, out_w, out_h):
     return dst
 
 
+def rimlight(a_, V, thick=3.0, soft=3.4, top_fade=0.17):
+    """누끼 테두리 빛 마스크.
+
+    **두꺼우면 머리카락이 뭉개진다.** 7px 로 부풀렸더니 머리가 둥근 덩어리가
+    되고 결이 통째로 사라졌다 — 빛은 실루엣을 떼어 놓는 정도면 충분하다.
+
+    그리고 **위쪽은 죽인다.** 정수리에서 알파가 끊기는 자리를 빛이 강조하면
+    거기에 가로줄이 그어진 것처럼 보인다. 머리 위에서 빛을 빼면 선이 사라지고,
+    머리카락은 그대로 남는다 — 알파를 지우는 것(crown)보다 이쪽이 먼저다."""
+    k = np.ones((max(3, int(thick * V)),) * 2, np.uint8)
+    e = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0),
+                         max(1.0, soft * V))
+    e = e / max(e.max(), 1e-6)
+    n = e.shape[0]
+    cd = max(6, int(n * top_fade))
+    e[:cd] *= np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.9
+    return e
+
+
 def crown(al):
     """정수리를 위로 갈수록 흐리게. **누끼가 잘린 걸 감춘다.**
 
@@ -105,7 +125,9 @@ def crown(al):
     al = al.copy()
     n = al.shape[0]
     clipped = float((al[0] > 0.5).mean())
-    cd = max(4, int(n * (0.038 + clipped * 1.7)))
+    # **길게 주면 머리카락이 지워진다.** 테두리 빛을 위에서 죽이는 게
+    # 먼저고(rimlight), 이건 원본이 실제로 잘린 만큼만 거든다
+    cd = max(3, int(n * (0.012 + clipped * 0.85)))
     cd = min(cd, n)
     al[:cd] *= np.linspace(0.0, 1.0, cd, dtype=np.float32)[:, None] ** 0.65
     return al

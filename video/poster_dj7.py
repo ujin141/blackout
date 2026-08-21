@@ -25,7 +25,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, tmask, paint, rule, box, glow, outline, grain,
                         save, sign, bloom, logo)
-from poster_crew import crop_head
+from poster_crew import crop_head, rimlight
 from fest_kit import justify, night, vignette, rays, specks, haze, torus
 from poster_dj import HUE, LINE
 from poster_dj3 import chrome
@@ -98,10 +98,8 @@ def build(name, W, H, safe=False):
     img[sl] *= (1 - back[..., None] * 0.72)
 
     # 테두리 빛도 흰색 하나. **여기에 색을 넣으면 규칙이 깨진다**
-    k = np.ones((max(3, int(7 * V)),) * 2, np.uint8)
-    edge = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0), 7 * V)
-    edge = edge / max(edge.max(), 1e-6)
-    img[sl] += edge[..., None] * PAPER * 0.72
+    edge = rimlight(a_, V)          # 얇게, 위쪽은 죽인다 — poster_crew 참고
+    img[sl] += edge[..., None] * PAPER * 0.54
 
     img[sl] = img[sl] * (1 - a_[..., None]) + px * a_[..., None]
 

@@ -28,7 +28,7 @@ import numpy as np
 import cv2
 from PIL import Image
 from poster_kit import (BRAND, SIZES, tmask, paint, rule, box, grain, save, sign)
-from poster_crew import crop_head, crown
+from poster_crew import crop_head, crown, rimlight
 from fest_kit import justify, night, vignette, sky, specks
 from fonts import KR, KRB
 from members import get

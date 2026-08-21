@@ -27,7 +27,7 @@ import numpy as np
 import cv2
 from poster_kit import (BRAND, tmask, paint, fit, rule, box, glow, grain,
                         outline, save, sign, bloom)
-from poster_crew import crop_head, crown
+from poster_crew import crop_head, crown, rimlight, rimlight
 from fest_kit import justify, night, vignette, rays, specks, haze
 from fonts import KR, KRB
 from members import get
@@ -217,12 +217,10 @@ def build(name, W, H, safe=False):
     # 테두리 빛. **좌우를 다른 색으로 나눈다** — 한 색이면 윤곽선이고,
     # 두 색이면 양쪽에서 조명 두 대가 때리는 것이 된다.
     # 0.85 로 또렷하게 줬더니 오려 붙인 스티커로 보였다 — 빛은 번져야 빛이다
-    k = np.ones((max(3, int(6 * V)),) * 2, np.uint8)
-    edge = cv2.GaussianBlur(np.clip(cv2.dilate(a_, k) - a_, 0, 1), (0, 0), 6 * V)
-    edge = edge / max(edge.max(), 1e-6)
+    edge = rimlight(a_, V)          # 얇게, 위쪽은 죽인다 — poster_crew 참고
     lr = np.linspace(0, 1, W, dtype=np.float32)[None, :, None] ** 0.8
     two = C2[None, None, :] * (1 - lr) + C[None, None, :] * lr
-    img[sl] += edge[..., None] * (two * 0.72 + PAPER * 0.28) * 0.72
+    img[sl] += edge[..., None] * (two * 0.72 + PAPER * 0.28) * 0.55
 
     # **사진은 사진 그대로 둔다.** 흑백으로 바꾸고 색을 덮으면 판의 색과
     # 사람이 한 덩어리가 되어서, 누가 서 있는지가 아니라 무슨 색인지가
