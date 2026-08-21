@@ -181,6 +181,8 @@ python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 
 python poster_motion.py                       # 다섯 시안 영상 × 스토리·피드 두 사이즈 (BGM 포함, 15초)
 python poster_motion.py neon grid             # 시안만 골라서
 python poster_motion.py split story           # 사이즈까지 골라서
+python reel_pool.py                           # 현장 영상 릴스 — 숏폼/ 원본을 잘라 붙인다 (14.5초)
+python reel_pool.py 3                         # 3번 컷만 확인용으로
 ```
 
 영상 스크립트에 시간 두 개를 주면 그 구간만 PNG로 뽑습니다 — `python make.py 15.0 16.2`.
