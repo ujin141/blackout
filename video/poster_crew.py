@@ -40,7 +40,9 @@ PAPER  = np.float32([0.96, 0.96, 0.94])
 DIM    = np.float32([0.56, 0.58, 0.62])
 # **강조는 한 점뿐입니다.** 얼굴이 일곱 개나 있어서, 색까지 여러 개면
 # 눈이 갈 데를 못 찾습니다. 솔로파티 한 줄에만 씁니다.
-ACCENT = np.float32([1.00, 0.46, 0.30])
+# 프로그램 줄 강조. **색으로 가르지 않는다** — 브랜드가 흑백이라
+# 주황 한 줄이 판 전체를 다른 것으로 만든다. 은색으로 밝기만 올린다
+ACCENT = np.float32([0.80, 0.83, 0.90])
 
 # (파일 이름, 머리 높이 / 사진 높이, 머리 가로 중심)
 # **눈으로 맞춘 값입니다.** 고칠 일이 생기면 뽑아 놓고 보면서 고치세요 —
@@ -211,7 +213,7 @@ def build(W, H, story=False, safe=False):
     info_h = step * 6.28 + 40 * V                     # info_block 이 쓰는 높이
     # **솔로파티 줄과 정보 블록이 겹쳤다.** 날짜(2026.08.29. SAT.)는 베이스라인
     # 기준으로 찍혀서 위로 글자가 올라온다 — 그 높이까지 계산에 넣는다
-    solo_h = 148 * V
+    solo_h = 216 * V
     name_h = (74 if story else 62) * V                # 이름 + 시간
     gap = 15 * V
     top = y0 + BH * (0.235 if story else 0.222)
@@ -246,6 +248,15 @@ def build(W, H, story=False, safe=False):
               color=ACCENT, anchor='c')
         paint(img, tmask(f'{SOLO[0]} — {SOLO[1]}   {EV.TAGLINE}', KR, int(19 * V), 0.02),
               W / 2, gbot + 96 * V, color=PAPER, a=0.78, anchor='c')
+        # **이 90분에 음악이 멎는 게 아니다.** 공간이 나뉘어 있어서 솔로파티가
+        # 도는 동안에도 다른 부스에서는 계속 튼다 — 그 말이 없으면 얼굴 판에
+        # XANTHIC 이 21:30 으로 서 있는 것과 위 시간이 부딪혀 보인다
+        if EV.PARALLEL:
+            paint(img, tmask('SAME TIME  ·  OTHER BOOTH', BRAND, int(12 * V), 0.34),
+                  W / 2, gbot + 128 * V, color=DIM, a=0.72, anchor='c')
+            bits = '     '.join(f'{s0} {n0}' for s0, _, n0 in EV.PARALLEL)
+            paint(img, tmask(bits, BRAND, int(16 * V), 0.10), W / 2, gbot + 156 * V,
+                  color=PAPER, a=0.88, anchor='c')
 
     # ── 정보 ─────────────────────────────────────────────
     end = info_block(img, M, gbot + solo_h + 8 * V, CW, V, DIM, PAPER,
