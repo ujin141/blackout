@@ -273,16 +273,62 @@ TIMETABLE = [
 # 이건 그냥 운영 사정이 아니라 **파는 말이다.** 솔로파티를 안 해도 놀 데가
 # 있고, 풀만 놀다 가도 된다. 처음엔 이걸 모르고 한 줄로 짜서 XANTHIC 을
 # 넣을 자리가 없다고 봤다.
-PARALLEL = [('21:30', '23:00', 'XANTHIC')]
+#
+# **백투백은 이름이 두 개다.** 'HEIDY × CHIPS' 를 사람 이름으로 세면 라인업이
+# 열 명이 되고, 개인 판(poster_dj8)이 그 이름을 멤버 데이터에서 못 찾는다.
+# 아래 B2B 로 갈라서 사람은 사람대로, 세트는 세트대로 센다.
+B2B = ' × '
+PARALLEL = [
+    ('21:30', '22:00', 'XANTHIC'),
+    ('22:00', '22:30', 'HEIDY × CHIPS'),
+    ('22:30', '23:00', 'DEMIC × AROS'),
+]
 
 # 라인업 — 타임테이블에서 뽑는다. 따로 적으면 둘이 어긋난다.
 PROGRAM = {'SOLO PARTY'}          # DJ 가 아니라 프로그램. 타임테이블에서 색을 가른다
 _ALL = sorted(TIMETABLE + PARALLEL, key=lambda r: r[0])
-LINEUP = [n for _, _, n in _ALL if n not in PROGRAM]
+
+
+def _people(name):
+    """표시 이름에서 사람만 꺼낸다. 백투백이면 둘, 프로그램이면 없음."""
+    if name in PROGRAM:
+        return []
+    return name.split(B2B) if B2B in name else [name]
+
+
+# **사람 목록이지 슬롯 목록이 아니다.** 백투백은 이미 나온 사람들의 조합이라
+# 라인업을 늘리지 않는다 — 지금은 여덟 명이다.
+LINEUP = []
+for _s, _e, _n in _ALL:
+    for _one in _people(_n):
+        if _one not in LINEUP:
+            LINEUP.append(_one)
 LINEUP_STR = ' · '.join(LINEUP)
-# 이름 → (시작, 끝). **판마다 따로 만들지 말 것** — 두 줄이 된 뒤로
-# TIMETABLE 만 보면 병행 슬롯이 빠진다
-SLOTS = {n: (s, e) for s, e, n in _ALL}
+
+# 이름 → (시작, 끝). **개인 단독 슬롯만.** 백투백까지 넣으면 한 사람에
+# 시간이 둘이 되어 개인 판에 어느 쪽을 찍을지가 흔들린다.
+SLOTS = {n: (s, e) for s, e, n in _ALL if len(_people(n)) == 1}
+
+# 백투백 세트 (시작, 끝, 표시 이름).
+B2B_SETS = [(s, e, n) for s, e, n in _ALL if len(_people(n)) == 2]
+
+# ── 판에 그리는 두 벌 ─────────────────────────────────────
+# **TIMETABLE 은 여덟 줄 그대로 둔다.** 포스터 열두 장이 여덟 줄 기준으로
+# 자리를 잡아 놨고, 열한 줄을 그냥 밀어 넣으면 전부 넘친다.
+#
+# BOARD 는 병행 슬롯까지 들여쓴 열한 줄이다 — 표가 주인공인 판에서 쓴다.
+# 네 번째 값이 True 면 하위 줄(솔로파티 안에서 도는 세트)이다.
+_SOLO = next((r for r in TIMETABLE if r[2] in PROGRAM), None)
+BOARD = []
+for _s, _e, _n in TIMETABLE:
+    BOARD.append((_s, _e, _n, False))
+    if _SOLO and _n == _SOLO[2]:
+        BOARD += [(s2, e2, n2, True) for s2, e2, n2 in PARALLEL]
+
+# 여덟 줄 판에서 솔로파티 밑에 한 줄로 붙이는 말. 시간까지 적으면 길어져서
+# **누가 도는지만** 적는다 — 시간은 BOARD 판에 있다.
+PARALLEL_STR = ' · '.join(n for _, _, n in PARALLEL)
+PARALLEL_NOTE = f'솔로파티 중 다른 부스 · {PARALLEL_STR}'
 
 # ── 협업 브랜드 ───────────────────────────────────────────
 # assets/img/partners/ 에 파일을 넣으면 자동으로 들어간다. 없으면 그냥 건너뛴다.

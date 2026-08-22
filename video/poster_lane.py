@@ -49,30 +49,40 @@ def build(W, H, story=False):
     # 타임테이블 여덟 줄이 그대로 여덟 레인이 된다
     top = H * (0.265 if story else 0.255)
     bot = H * (0.790 if story else 0.775)
-    rows = EV.TIMETABLE
+    # 병행 슬롯까지 다 보이는 열한 줄(EV.BOARD). 하위 줄은 **트인 칸 안에**
+    # 들어가므로 로프를 안 긋고 레인 번호도 안 붙인다 — 별도 레인이 아니다
+    rows = EV.BOARD
     lh = (bot - top) / len(rows)
-    for i, (s, e, name) in enumerate(rows):
+    lane_no = 0
+    for i, (s, e, name, sub) in enumerate(rows):
         y0 = top + lh * i
         cy = y0 + lh * 0.5
         prog = name in EV.PROGRAM
 
-        if prog:
+        if prog or sub:
             # **트인 칸.** 위아래 로프를 안 그리고 바닥을 밝혀 둔다
-            box(img, M, y0 + lh * 0.06, W - M, y0 + lh * 0.94,
+            box(img, M, y0 + (lh * 0.06 if prog else 0), W - M,
+                y0 + lh * (0.94 if i == len(rows) - 1 or not rows[i + 1][3] else 1.0),
                 np.float32([0.10, 0.20, 0.16]), 0.85)
-            box(img, M, y0 + lh * 0.06, M + int(6 * V), y0 + lh * 0.94, LIME, 1.0)
+            box(img, M, y0, M + int(6 * V), y0 + lh, LIME, 1.0)
 
-        kb = tmask_bl(f'{s}–{e}', BRAND, int(21 * V), 0.10)
-        vb = tmask_bl(name, BRAND, int(34 * V) if not prog else int(30 * V), 0.10)
+        kb = tmask_bl(f'{s}–{e}', BRAND, int((17 if sub else 21) * V), 0.10)
+        vb = tmask_bl(name, BRAND,
+                      int((24 if sub else (34 if not prog else 30)) * V), 0.10)
         yb = cy + vb[0].shape[0] * 0.5
-        paint_bl(img, kb, M + 26 * V, yb, color=DIM, a=0.95)
-        paint_bl(img, vb, M + CWD * 0.30, yb, color=LIME if prog else PAPER, a=1.0)
-        # 레인 번호 — 수영장은 칸마다 번호가 붙어 있다
-        paint(img, tmask(f'{i + 1:02d}', BRAND, int(20 * V), 0.14), W - M - 26 * V, cy,
-              color=DIM, a=0.55, anchor='r')
+        paint_bl(img, kb, M + (54 if sub else 26) * V, yb, color=DIM,
+                 a=0.80 if sub else 0.95)
+        paint_bl(img, vb, M + CWD * (0.36 if sub else 0.30), yb,
+                 color=LIME if prog else PAPER, a=0.86 if sub else 1.0)
+        # 레인 번호 — 수영장은 칸마다 번호가 붙어 있다. 하위 줄은 안 센다
+        if not sub:
+            lane_no += 1
+            paint(img, tmask(f'{lane_no:02d}', BRAND, int(20 * V), 0.14),
+                  W - M - 26 * V, cy, color=DIM, a=0.55, anchor='r')
 
         # 칸을 가르는 로프. **트인 칸의 위아래는 긋지 않는다**
-        if i > 0 and not prog and not (rows[i - 1][2] in EV.PROGRAM):
+        if (i > 0 and not prog and not sub
+                and not rows[i - 1][3] and rows[i - 1][2] not in EV.PROGRAM):
             rope(img, y0, W, BUOY, max(3, int(7 * V)), int(14 * V), alt=BUOY2)
 
     # ── 발 ───────────────────────────────────────────────
