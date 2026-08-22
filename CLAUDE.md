@@ -167,6 +167,8 @@ python poster_real.py                         # AA안 실사 한 장 + 한글 �
 python poster_half.py                         # AB안 위=물 / 아래=클럽, 사진 두 장
 python poster_card.py                         # AC안 사진 + 정보판 (제일 정보형)
 python poster_time.py                         # AD안 타임테이블이 주인공
+python poster_board.py                        # 타임테이블 판 — **브랜드 톤(흑백·은색)**
+python poster_board.py story                  #   피드·스토리·정사각. 색 있는 판은 시안 비교용
 python poster_ko.py                           # AE안 한글 헤드라인이 제일 큼
 python poster_night.py                        # AF안 장면 + 한글 헤드라인 (그린 그림)
 python poster_deck.py                         # AG안 장면 위 / 정보판 아래
