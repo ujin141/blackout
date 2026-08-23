@@ -199,6 +199,7 @@ python cover_reels.py                         # 릴스 셋을 피드에서 잇�
 python audio_sunset.py                        # 해 지는 릴스 곡 — 애시드 베이스 125BPM
 python reel_sunset.py                         # 같은 원본 다른 판 — 낮에서 밤으로 (19.2초)
 python reel_pool.py                           # 현장 영상 릴스 — 숏폼/ 원본을 잘라 붙인다 (14.5초)
+python reel_close.py                          # 2차 마감 릴스 15초 — 현장 영상 + 자막. 숫자는 event.py 에서
 python reel_pool.py 3                         # 3번 컷만 확인용으로
 ```
 
