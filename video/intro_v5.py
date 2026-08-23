@@ -64,8 +64,56 @@ OUTRO = 12.30
 SIZES = {'vert': (1080, 1920), 'wide': (1920, 1080)}
 
 
+_GRID = {}
+
+
+def grid(W, H):
+    """거리 맵을 캐시한다. **매 프레임 mgrid 를 만들면 880프레임이 몇 배로
+    느려진다** — 크기당 한 번만 만든다."""
+    k = (W, H)
+    if k not in _GRID:
+        yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+        _GRID[k] = np.sqrt((xx - W / 2) ** 2 + (yy - H * 0.44) ** 2)
+    return _GRID[k]
+
+
 def ease(t):
     return t * t * (3 - 2 * t)
+
+
+def shock(img, t, t0, W, H, V, k=1.0, life=0.95):
+    """충격파 링. 임팩트에서 원이 퍼져 나간다."""
+    p = (t - t0) / life
+    if not 0.0 <= p < 1.0:
+        return
+    d = grid(W, H)
+    r = ease(p) * max(W, H) * 0.72
+    ring = np.exp(-((d - r) / (18 * V)) ** 2) * (1 - p) ** 2.2
+    img += ring[..., None] * PAPER * (0.55 * k)
+
+
+def dust(img, t, W, H, V, gather, burst):
+    """빛 입자. **빌드업에 중앙으로 모이고 클라이맥스에서 터진다.**
+
+    점을 하나씩 그리면 느리다 — 좌표에 값을 쌓고 한 번만 흐린다."""
+    if gather <= 0 and burst <= 0:
+        return
+    rng = np.random.default_rng(17)
+    n = 300
+    ang = rng.uniform(0, 2 * np.pi, n).astype(np.float32)
+    base = rng.uniform(0.16, 1.05, n).astype(np.float32)
+    spin = rng.uniform(-0.5, 0.5, n).astype(np.float32)
+    # 모일 때는 반지름이 줄고, 터질 때는 밖으로 던진다
+    r = base * (1.0 - 0.72 * gather) + burst * (0.9 + base * 1.4)
+    a = ang + spin * (t * 0.5 + burst * 2.2)
+    rad = r * max(W, H) * 0.52
+    px = np.clip(W / 2 + np.cos(a) * rad, 0, W - 1).astype(np.int32)
+    py = np.clip(H * 0.44 + np.sin(a) * rad * 0.92, 0, H - 1).astype(np.int32)
+    amp = (0.55 * gather + 1.0 * max(0.0, 1.0 - burst * 1.6))
+    pts = np.zeros((H, W), np.float32)
+    np.add.at(pts, (py, px), amp)
+    pts = cv2.GaussianBlur(pts, (0, 0), 2.6 * V)
+    img += pts[..., None] * PAPER * 0.42
 
 
 def seg(t, a, b):
@@ -86,13 +134,25 @@ def frame(t, W, H):
         if t > BRK1:
             g = 0.20 + 0.16 * seg(t, BRK1, OUTRO)
         g *= 1.0 - 0.72 * seg(t, OUTRO + 1.4, DUR)
+        # **성운이 숨을 쉰다.** 고정이면 배경이 사진처럼 멈춰 보인다
+        br = 0.84 + 0.10 * np.sin(t * 0.9)
         img += nebula(W, H, W * 0.5, H * 0.42, STEEL * 1.5, SILVER, seed=91,
-                      spread=0.88) * g
+                      spread=br) * g
+        # **광선이 천천히 돈다.** phase 를 시간에 걸면 판이 살아난다
         rays(img, W * 0.5, H * 0.40, 30, int(26 * V),
              int(min(W, H) * (0.55 + 0.25 * seg(t, 1.0, PEAK))), PAPER,
-             0.010 + 0.016 * seg(t, BUILD, PEAK), phase=0.13, duty=0.26)
+             0.010 + 0.020 * seg(t, BUILD, PEAK),
+             phase=0.13 + t * 0.020, duty=0.26)
 
     cy = H * 0.44
+
+    # ── 움직이는 것들 ────────────────────────────────────
+    shock(img, t, HIT, W, H, V, k=1.0)           # 곡이 터지는 자리
+    shock(img, t, PEAK, W, H, V, k=1.35, life=1.15)
+    shock(img, t, BRK1, W, H, V, k=0.55, life=0.8)   # 브레이크가 끝나는 자리
+    dust(img, t, W, H, V,
+         gather=ease(seg(t, BUILD, PEAK)) * (1 if t < PEAK else 0),
+         burst=seg(t, PEAK, PEAK + 1.1) if t >= PEAK else 0.0)
 
     # ── 0~5초 · 로고와 이름이 조여든다 ───────────────────
     if t < BRK0:
@@ -141,8 +201,14 @@ def frame(t, W, H):
             # 아래에서 살짝 올라오며 자간이 조여든다
             dy = (1 - ease(min(1.0, p * 3.2))) * 34 * V
             tr = 0.30 - 0.16 * ease(min(1.0, p * 3.2))
-            paint(img, tmask(n, BRAND, int(96 * V), tr), W / 2, cy + dy,
-                  color=PAPER, a=a, anchor='c')
+            nmk = tmask(n, BRAND, int(96 * V), tr)
+            # **잔상.** 뒤로 세 겹을 흐리게 남기면 글자가 날아오는 것으로 보인다
+            for e in (3, 2, 1):
+                paint(img, nmk, W / 2, cy + dy + e * 16 * V, color=SILVER,
+                      a=a * 0.10 * (1 - ease(min(1.0, p * 3.2))), anchor='c')
+            glow(img, nmk, W / 2, cy + dy, SILVER, 0.22 * a, int(22 * V),
+                 anchor='c')
+            paint(img, nmk, W / 2, cy + dy, color=PAPER, a=a, anchor='c')
         paint(img, tmask(f'DJ {len(names)}', BRAND, int(22 * V), 0.42),
               W / 2, cy + 120 * V, color=SILVER, a=0.60 * la, anchor='c')
 
@@ -166,7 +232,12 @@ def frame(t, W, H):
               cy + 210 * V, color=PAPER, a=0.88 * a * fade, anchor='c')
 
     specks(img, 90, 0, H, PAPER, 0.10, seed=int(t * 60) % 97 + 3, rmax=2.2)
-    fringe(img, 0.0012)
+    # **색분해를 임팩트에 맞춰 펄스.** 고정값이면 그냥 필터고, 소리에
+    # 맞춰 튀면 그게 연출이 된다
+    fr = 0.0010
+    for tk, k in ((HIT, 0.0060), (PEAK, 0.0085), (BRK1, 0.0030)):
+        fr += k * max(0.0, 1.0 - abs(t - tk) / 0.34) ** 2
+    fringe(img, fr)
     vignette(img, 0.42, 2.2)
     grain(img, 0.005, int(t * 60) % 53 + 7)
     return np.clip(img, 0, 1)
