@@ -193,24 +193,6 @@ const MEMBERS = [
     soundcloud: '',
     cutout: 'assets/img/members/heidy-cutout.webp',
     photo: ''
-  },
-  {
-    name: 'BEI',
-    role: { ko: 'DJ', en: 'DJ' },
-    // **장르를 아직 못 받았다.** 비워 두면 그 줄만 안 그려지고 카드는 멀쩡하다
-    genres: { ko: [], en: [] },
-    bio: {
-      ko: '무대는 웬만큼 서봤습니다.',
-      en: 'Been on enough stages.'
-    },
-    career: {
-      ko: ['떡볶이 페스티벌', 'SCR', 'MUSHROOM', '춘희', '스타디움', 'XIMXIM'],
-      en: ['Tteokbokki Festival', 'SCR', 'Mushroom', 'Chunhee', 'Stadium', 'Ximxim']
-    },
-    instagram: 'dj_bei_',
-    soundcloud: '',
-    cutout: 'assets/img/members/bei-cutout.webp',
-    photo: ''
   }
 ];
 
