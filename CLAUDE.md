@@ -197,6 +197,8 @@ python poster_motion.py                       # 다섯 시안 영상 × 스토�
 python poster_motion.py neon grid             # 시안만 골라서
 python poster_motion.py split story           # 사이즈까지 골라서
 python intro_sig.py                           # 크루 시그니처 인트로 5.85초 (세로·가로)
+python intro_v5.py                            # 크루 인트로 V5 14.67초 — 바탕화면 `Blackout V5.mp3` 를 읽는다
+python intro_v5.py 6.5                        #   그 시점 한 프레임만 PNG (확인용)
 #                                               소리를 재서 만든 판 — 4.71초가 클라이맥스
 python audio_lineup.py                        # 라인업 릴스 곡 — 필터 도는 코드 + 사이드체인
 python reel_lineup.py                         # 라인업 공개 릴스 20초 (곡까지 같이 만든다)
