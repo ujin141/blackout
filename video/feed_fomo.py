@@ -19,6 +19,16 @@
 타임라인에서도 마지막에 올린 3차 OPEN 이 먼저 뜬다. 팔로워가 보는 것도
 지금 파는 것이어야 한다.
 
+## 릴스를 끼워 올릴 때
+
+세 칸 중 **열린 차수 칸(3차)** 은 릴스로 올릴 수 있다. 그 칸의 커버를
+`_cover.png` 로 같이 뽑는다 — 릴스는 9:16 이라 4:5 판의 가장자리를 복제해
+늘린 것이고, 격자는 어차피 정사각으로 자르므로 늘린 부분은 안 보인다.
+
+    1) 오른쪽   1차 SOLD OUT    피드 게시물
+    2) 가운데   2차 SOLD OUT    피드 게시물
+    3) 왼쪽     3차 OPEN        **릴스** — 커버로 `_cover.png` 를 지정한다
+
 ## 칸마다 완결된다
 
 배경은 세 칸이 다른 프레임이지만 **색·띠·글자 자리가 같아** 한 줄로 읽힌다.
@@ -36,6 +46,7 @@
 """
 import os
 import subprocess
+import sys
 
 import cv2
 import numpy as np
@@ -57,6 +68,8 @@ os.makedirs(OUT, exist_ok=True)
 
 TW, TH = 1080, 1350
 SAFE_T, SAFE_B = 135, 1215        # 격자가 정사각으로 자르는 구간
+CH_ = 1920                        # 릴스 커버 높이
+PAD = (CH_ - TH) // 2             # 위아래로 늘리는 양 (285)
 
 # 사진은 셋 다 다른 프레임. **같은 그림을 세 번 쓰면 한 장을 세 조각 낸 것으로
 # 보인다** — 0.5초마다 피부 덩어리를 세어 고른 구간에서 셋을 뽑았다
@@ -169,10 +182,20 @@ def build():
         order = len(waves) - i          # 1차가 3번째… 가 아니라 1번째로 올라간다
         tag = 'ABC'[i]
         p = os.path.join(OUT, f'{i + 1}_{tag}_{name}.png')
-        Image.fromarray((img * 255).astype(np.uint8)).save(p, optimize=True)
+        p8 = (img * 255).astype(np.uint8)
+        Image.fromarray(p8).save(p, optimize=True)
         where = ('오른쪽', '가운데', '왼쪽')[i]
         made.append((i + 1, name, where, p))
         print(f'{p}   {where} 칸 · {i + 1}번째로 올림')
+        if not closed:
+            # **열린 차수 칸은 릴스로 올릴 수 있다.** 릴스 커버는 9:16 이라
+            # 4:5 판의 가장자리를 복제해 늘린다 — 격자는 어차피 정사각으로
+            # 자르므로 늘린 부분은 안 보이고 이음매도 안 생긴다
+            cov = cv2.copyMakeBorder(p8, PAD, CH_ - TH - PAD, 0, 0,
+                                     cv2.BORDER_REPLICATE)
+            q = os.path.join(OUT, f'{i + 1}_{tag}_{name}_cover.png')
+            Image.fromarray(cov).save(q, optimize=True)
+            print(f'{q}   ← 이 칸을 릴스로 올릴 때 커버 (1080×1920)')
 
     row = Image.new('RGB', (360 * 3, 360), (0, 0, 0))
     for k, (order, name, where, p) in enumerate(reversed(made)):
