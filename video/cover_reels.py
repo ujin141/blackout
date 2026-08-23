@@ -24,14 +24,24 @@
 ## 올리는 순서 — 거꾸로다
 
 인스타 격자는 **최신이 왼쪽 위**다. 왼쪽 칸을 마지막에 올려야 한다.
-
-    1) C_pool     오른쪽 칸
-    2) B_sunset   가운데 칸
-    3) A_lineup   왼쪽 칸
-
 순서를 틀리면 그림이 뒤집힌다. 파일 이름 앞의 숫자가 올리는 차례다.
+
+## 세트가 둘이다
+
+    python cover_reels.py         cut  — close · neon · water (지금 쓰는 것)
+    python cover_reels.py first   lineup · sunset · pool (먼저 나간 세 편)
+
+**릴스가 바뀌면 커버 내용도 바뀌어야 한다.** 배경과 조각 내는 방식은
+같지만 칸에 들어가는 말이 다르다 — 마감 릴스 커버에 라인업을 적으면
+열어 본 사람이 딴 걸 보게 된다.
+
+## 어느 칸에 뭘 둘지
+
+**제일 급한 걸 왼쪽에 둔다.** 격자에서 왼쪽 위가 최신이라 프로필을
+연 사람이 거기부터 본다 — 지금은 마감이 거기다.
 """
 import os
+import sys
 
 import cv2
 import numpy as np
@@ -55,9 +65,14 @@ PAD = (CH - TH) // 2                 # 위아래로 늘리는 양 (285)
 SAFE_T, SAFE_B = 135, 1215           # 정사각으로 잘려도 남는 구간
 
 # (파일 앞 글자, 올리는 차례, 릴스, 칸 제목)
-SLOTS = [('A', 3, 'lineup', '왼쪽'),
-         ('B', 2, 'sunset', '가운데'),
-         ('C', 1, 'pool', '오른쪽')]
+SETS = {
+    'cut':   [('A', 3, 'close', '왼쪽'),
+              ('B', 2, 'neon', '가운데'),
+              ('C', 1, 'water', '오른쪽')],
+    'first': [('A', 3, 'lineup', '왼쪽'),
+              ('B', 2, 'sunset', '가운데'),
+              ('C', 1, 'pool', '오른쪽')],
+}
 
 
 def band():
@@ -90,7 +105,8 @@ def cell(img, i, draw):
     draw(img, x0 + TW / 2, x0)
 
 
-def build():
+def build(setname='cut'):
+    slots = SETS[setname]
     img = band()
 
     # ── 왼쪽 · 라인업 ─────────────────────────────────────
@@ -140,7 +156,84 @@ def build():
         paint(im, tmask(EV.HANDLE, BRAND, 19, 0.24), cx, y + 92,
               color=SILVER, a=0.72, anchor='c')
 
-    for i, fn in enumerate((left, mid, right)):
+    # ── cut 세트 ─────────────────────────────────────────
+    def c_left(im, cx, x0):
+        """마감. **숫자가 제일 크다** — 격자에서 이것만 읽혀도 된다."""
+        paint(im, tmask(f'{EV.OPEN_WAVE[0]} 마감', KRB, 40, 0.01), cx,
+              SAFE_T + 150, color=SILVER, a=0.92, anchor='c')
+        rule(im, SAFE_T + 205, x0 + TW * 0.24, x0 + TW * 0.76, SILVER, 0.45, 2)
+        big = tmask(str(EV.OPEN_LEFT), BRAND, 300, 0.02)
+        paint(im, big, cx, SAFE_T + 400, color=PAPER, anchor='c')
+        paint(im, tmask('자리 남았습니다', KRB, 40, 0.01), cx, SAFE_T + 600,
+              color=PAPER, a=0.94, anchor='c')
+        paint(im, tmask('오늘 자정에 닫습니다', KR, 30, 0.02), cx, SAFE_T + 665,
+              color=SILVER, a=0.88, anchor='c')
+        # **막대가 있어야 10 이 왜 급한지가 보인다.** 숫자만 있으면 정원이
+        # 얼마인지 모르니 열 자리가 많은 건지 적은 건지도 모른다
+        bx0, bx1, by = x0 + TW * 0.24, x0 + TW * 0.76, SAFE_T + 790
+        cv2.rectangle(im, (int(bx0), int(by)), (int(bx1), int(by + 16)),
+                      tuple(float(v) for v in SILVER * 0.22), -1)
+        w = EV.OPEN_WAVE[2] / EV.OPEN_WAVE[1]
+        cv2.rectangle(im, (int(bx0), int(by)), (int(bx0 + (bx1 - bx0) * w),
+                      int(by + 16)), tuple(float(v) for v in PAPER), -1)
+        # **BRAND(Michroma)에 한글을 넘기면 두부가 찍힌다.** '2차' 를 여기
+        # 붙였다가 '2□' 로 나갔다 — 차수는 위 제목에 이미 있으니 숫자만
+        paint(im, tmask(f'{EV.OPEN_WAVE[2]} / {EV.OPEN_WAVE[1]}', BRAND, 24,
+                        0.22), cx, by + 62, color=SILVER, a=0.80, anchor='c')
+        paint(im, tmask(EV.RESERVE, KRB, 30, 0.01), cx, SAFE_T + 950,
+              color=PAPER, anchor='c')
+        paint(im, tmask(EV.HANDLE, BRAND, 19, 0.24), cx, SAFE_T + 1010,
+              color=SILVER, a=0.70, anchor='c')
+
+    def c_mid(im, cx, x0):
+        """행사. 세 칸 중 유일하게 로고와 이름이 있다."""
+        lg = logo(132)
+        paint(im, lg, cx - lg.shape[1] / 2, SAFE_T + 150, color=PAPER, a=0.95)
+        paint(im, tmask(EV.NAME, BRAND, 104, 0.08), cx, SAFE_T + 350,
+              color=PAPER, anchor='c')
+        paint(im, tmask(EV.FORMAT, BRAND, 21, 0.32), cx, SAFE_T + 420,
+              color=SILVER, a=0.80, anchor='c')
+        rule(im, SAFE_T + 470, x0 + TW * 0.16, x0 + TW * 0.84, SILVER, 0.45, 2)
+        y = SAFE_T + 545
+        for line in (EV.DATE_EN, EV.VENUE, EV.ADDR):
+            paint(im, tmask(line, KR, 27, 0.02), cx, y, color=PAPER, a=0.92,
+                  anchor='c')
+            y += 48
+        paint(im, tmask(EV.TIME_EN, BRAND, 20, 0.22), cx, y + 14,
+              color=SILVER, a=0.75, anchor='c')
+        rule(im, SAFE_T + 780, x0 + TW * 0.30, x0 + TW * 0.70, SILVER, 0.30, 1)
+        paint(im, tmask(EV.ENTRY, KR, 26, 0.02), cx, SAFE_T + 845,
+              color=PAPER, a=0.90, anchor='c')
+        paint(im, tmask(EV.AGE, KR, 22, 0.02), cx, SAFE_T + 900,
+              color=SILVER, a=0.80, anchor='c')
+        paint(im, tmask(f'AFTER PARTY   {EV.AFTER}', KR, 21, 0.02), cx,
+              SAFE_T + 985, color=SILVER, a=0.72, anchor='c')
+
+    def c_right(im, cx, x0):
+        """라인업. 여덟 명을 두 줄로 — 한 줄로 세우면 칸을 넘는다."""
+        paint(im, tmask('LINE UP', BRAND, 56, 0.30), cx, SAFE_T + 160,
+              color=PAPER, anchor='c')
+        rule(im, SAFE_T + 215, x0 + TW * 0.24, x0 + TW * 0.76, SILVER, 0.45, 2)
+        y = SAFE_T + 285
+        for n in EV.LINEUP:
+            paint(im, tmask(n, BRAND, 38, 0.14), cx, y, color=PAPER, a=0.92,
+                  anchor='c')
+            y += 60
+        paint(im, tmask(f'DJ {len(EV.LINEUP)}  ·  SOLO PARTY 90MIN', BRAND, 20,
+                        0.24), cx, y + 30, color=SILVER, a=0.74, anchor='c')
+        # 백투백은 이번에 처음 붙는 것이라 따로 세운다
+        rule(im, y + 92, x0 + TW * 0.30, x0 + TW * 0.70, SILVER, 0.30, 1)
+        paint(im, tmask('BACK TO BACK', BRAND, 24, 0.30), cx, y + 150,
+              color=PAPER, a=0.92, anchor='c')
+        yy = y + 210
+        for _s, _e, n in EV.B2B_SETS:
+            paint(im, tmask(n, BRAND, 26, 0.12), cx, yy, color=PAPER, a=0.88,
+                  anchor='c')
+            yy += 52
+
+    cells = ((c_left, c_mid, c_right) if setname == 'cut'
+             else (left, mid, right))
+    for i, fn in enumerate(cells):
         cell(img, i, fn)
 
     specks(img, 260, 0, H, PAPER, 0.16, seed=17, rmax=2.4)
@@ -148,9 +241,9 @@ def build():
     img = np.clip(img, 0, 1)
 
     full = Image.fromarray((img * 255).astype(np.uint8))
-    full.save(os.path.join(OUT, 'cover_full.png'), optimize=True)
+    full.save(os.path.join(OUT, f'cover_full_{setname}.png'), optimize=True)
 
-    for i, (tag, order, reel, where) in enumerate(SLOTS):
+    for i, (tag, order, reel, where) in enumerate(slots):
         piece = img[:, i * TW:(i + 1) * TW]
         # 커버는 9:16 이라 위아래를 늘린다. **가장자리 픽셀을 복제**해서
         # 이음매가 안 생기게 — 따로 그려 넣으면 그 선이 보인다
@@ -165,10 +258,13 @@ def build():
 
     print()
     print('올리는 순서 — **거꾸로다.** 격자는 최신이 왼쪽 위라 왼쪽 칸을 마지막에 올린다')
-    for tag, order, reel, where in sorted(SLOTS, key=lambda s: s[1]):
+    for tag, order, reel, where in sorted(slots, key=lambda s: s[1]):
         print(f'  {order}) {reel}.mp4   커버 {order}_{tag}_{reel}.png   → {where} 칸')
     return OUT
 
 
 if __name__ == '__main__':
-    build()
+    k = sys.argv[1] if sys.argv[1:] else 'cut'
+    if k not in SETS:
+        raise SystemExit(f'{k} 은 없는 세트입니다 — {", ".join(SETS)}')
+    build(k)

@@ -196,6 +196,7 @@ python intro_sig.py                           # 크루 시그니처 인트로 5.
 python audio_lineup.py                        # 라인업 릴스 곡 — 필터 도는 코드 + 사이드체인
 python reel_lineup.py                         # 라인업 공개 릴스 20초 (곡까지 같이 만든다)
 python cover_reels.py                         # 릴스 셋을 피드에서 잇는 커버 3장 (올리는 순서는 거꾸로)
+python cover_reels.py first                   #   먼저 나간 세 편(lineup·sunset·pool)용 세트
 python audio_sunset.py                        # 해 지는 릴스 곡 — 애시드 베이스 125BPM
 python reel_sunset.py                         # 같은 원본 다른 판 — 낮에서 밤으로 (19.2초)
 python reel_pool.py                           # 현장 영상 릴스 — 숏폼/ 원본을 잘라 붙인다 (14.5초)
