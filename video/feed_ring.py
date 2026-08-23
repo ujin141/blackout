@@ -24,11 +24,14 @@ feed_fomo 는 **차수 숫자를 크게 놓고 사진을 깐** 구조다. 칸마
 닫힌 차수는 **채운 원**, 열린 차수는 **빈 원에 흰 테두리**다. 색을 안 쓰고도
 갈린다(브랜드가 흑백). 빈 원이 하나뿐이라 눈이 거기로 간다.
 
-## 릴스 커버
+## 두 벌로 나온다
 
-열린 차수 칸은 릴스로 올릴 수 있다. 4:5 판의 가장자리를 복제해 9:16 으로
-늘린 `_cover.png` 를 같이 뽑는다 — 격자는 정사각으로 자르므로 늘린 부분은
-안 보인다.
+    `N_X_n차.png`        1080×1350   피드 게시물
+    `N_X_n차_9x16.png`   1080×1920   릴스 커버 · 스토리
+
+4:5 판의 가장자리를 복제해 9:16 을 만든다. 위아래가 이미 검정이라 늘려도
+이음매가 안 생기고, **격자는 어차피 정사각으로 자르므로** 어느 쪽을 올려도
+세 칸은 똑같이 이어진다.
 """
 import os
 import subprocess
@@ -193,12 +196,14 @@ def build():
         where = ('오른쪽', '가운데', '왼쪽')[i]
         print(f'{p}   {where} 칸 · {i + 1}번째로 올림')
         made.append((i + 1, name, where, p))
-        if not closed:
-            cov = cv2.copyMakeBorder(p8, PAD, CH_ - TH - PAD, 0, 0,
-                                     cv2.BORDER_REPLICATE)
-            q = os.path.join(OUT, f'{i + 1}_{tag}_{name}_cover.png')
-            Image.fromarray(cov).save(q, optimize=True)
-            print(f'{q}   ← 이 칸을 릴스로 올릴 때 커버 (1080×1920)')
+        # **세 장 다 9:16 로도 뽑는다.** 어느 칸을 릴스로 올릴지, 스토리로
+        # 돌릴지는 그때 정하면 된다 — 격자는 어차피 정사각으로 자르므로
+        # 늘린 위아래는 안 보이고 이음매도 안 생긴다
+        cov = cv2.copyMakeBorder(p8, PAD, CH_ - TH - PAD, 0, 0,
+                                 cv2.BORDER_REPLICATE)
+        q = os.path.join(OUT, f'{i + 1}_{tag}_{name}_9x16.png')
+        Image.fromarray(cov).save(q, optimize=True)
+        print(f'{q}   {where} 칸 · 9:16 (1080×1920)')
 
     row = Image.new('RGB', (360 * 3, 360), (0, 0, 0))
     for k, (order, name, where, p) in enumerate(reversed(made)):
