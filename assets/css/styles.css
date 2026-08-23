@@ -1462,6 +1462,14 @@ html[lang='ko'] .display { font-size: clamp(1.4rem, 3.3vw, 2.7rem); }
 .evt__status b { color: var(--white); font-weight: 600; }
 .evt__status span:last-child { color: var(--w-60); }
 
+/* 지금 받는 차수와 마감. **상태줄과 같은 크기로 두면 안 읽힌다** —
+   이 줄만 흰색으로 올려서 눈이 먼저 닿게 한다 */
+.evt__wave { font-size: var(--t-2); color: var(--white); font-weight: 600;
+             margin: -0.35rem 0 0.75rem; letter-spacing: -0.01em; }
+.evt__wave[hidden] { display: none; }
+.party__wave { font-size: var(--t-2); color: var(--white); font-weight: 600; }
+.party__wave[hidden] { display: none; }
+
 .evt__price { font-size: var(--t-2); color: var(--w-60); margin-bottom: 0.2rem; }
 .evt__price em { display: block; font-style: normal; color: var(--white);
                  margin-top: 0.28rem; }

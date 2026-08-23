@@ -189,6 +189,7 @@
         </span>
         <span class="evt__bar"><span style="--fill:50%"></span></span>
         <span class="party__seat" data-evt-left>80명 중 40명</span>
+        <span class="party__wave" data-evt-wave hidden></span>
         <span class="party__more" data-i18n="party.more">상세 보기</span>
       </span>
     </button>
@@ -439,14 +440,16 @@
       </ul>
 
       <!-- 남은 자리. 숫자만 적으면 안 와닿아서 막대를 같이 둔다 -->
-      <div class="evt__bar" role="img" aria-label="80명 중 20명 예약 완료">
-        <span style="--fill:25%"></span>
+      <div class="evt__bar" role="img" aria-label="80명 중 40명 예약 완료">
+        <span style="--fill:50%"></span>
       </div>
       <p class="evt__status">
         <span class="evt__off" data-i18n="evt.sold">1차 사전예약 마감</span>
         <b data-i18n="evt.open">2차 예약중</b>
-        <span data-evt-left>80명 중 20명</span>
+        <span data-evt-left>80명 중 40명</span>
       </p>
+      <!-- 지금 받는 차수와 마감. main.js 의 EVENT.wave 가 칠한다 -->
+      <p class="evt__wave" data-evt-wave hidden></p>
 
       <p class="evt__price">
         <span data-i18n="evt.price">2차 입장 · 여 49,000 · 남 59,000</span>

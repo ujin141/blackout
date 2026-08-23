@@ -163,6 +163,8 @@ const I18N = {
     'evt.dday': 'D-{n}',
     'evt.today': '오늘 밤',
     'evt.left': '{cap}명 중 {done}명',
+    'evt.waveToday': '{name} {left}자리 · 오늘 자정 마감',
+    'evt.waveIn': '{name} {left}자리 · {n}일 남음',
     'evt.barPlace': '양재 루프탑',
   },
 
@@ -323,6 +325,8 @@ const I18N = {
     'evt.dday': 'D-{n}',
     'evt.today': 'TONIGHT',
     'evt.left': '{done} of {cap} booked',
+    'evt.waveToday': '{left} spots left · closes tonight',
+    'evt.waveIn': '{left} spots left · {n} days',
     'evt.barPlace': 'Yangjae Rooftop',
   }
 };

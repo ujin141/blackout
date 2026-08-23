@@ -12,7 +12,10 @@ const EVENT = {
   delay: 1200,                                    // 들어오자마자 덮치면 그냥 닫는다
   muteHours: 20,                                  // '오늘 하루 안 보기' 가 유지되는 시간
   cap: 80,                                        // 정원
-  done: 40                                        // 지금까지 예약된 수 — 여기만 고치면 막대가 따라온다
+  done: 40,                                       // 지금까지 예약된 수 — 여기만 고치면 막대가 따라온다
+  /* 지금 받는 차수. **여기만 고치면 팝업과 파티 섹션이 같이 따라옵니다.**
+     마감일이 지나면 그 줄은 스스로 사라집니다 — 다음 차수 값으로 바꾸세요. */
+  wave: { name: '2차', nameEn: '2nd', left: 10, close: '2026-08-23' }
 };
 
 const CONFIG = {
@@ -1000,6 +1003,22 @@ const sheet = (modal, focusSel) => {
     $$('[data-evt-left]').forEach(el => {
       el.textContent = (d['evt.left'] || '{cap}명 중 {done}명')
         .replace('{cap}', EVENT.cap).replace('{done}', EVENT.done);
+    });
+    /* 지금 받는 차수와 마감. **'몇 자리 남음' 이 '몇 명 예약' 보다 훨씬 급하다** —
+       앞의 줄은 상태고 이 줄은 지금 움직일 이유다. */
+    const w = EVENT.wave;
+    $$('[data-evt-wave]').forEach(el => {
+      if (!w || !w.close) { el.hidden = true; return; }
+      const en = document.documentElement.lang === 'en';
+      const cd = new Date(w.close + 'T00:00:00+09:00');
+      const n = Math.ceil((cd - new Date(now.getFullYear(), now.getMonth(),
+                                         now.getDate())) / 864e5);
+      if (n < 0) { el.hidden = true; return; }      // 지나면 스스로 사라진다
+      const key = n === 0 ? 'evt.waveToday' : 'evt.waveIn';
+      el.textContent = (d[key] || '')
+        .replace('{name}', en ? w.nameEn : w.name)
+        .replace('{left}', w.left).replace('{n}', n);
+      el.hidden = false;
     });
     // **막대가 두 곳이다** — 팝업과 파티 섹션. $ 로 하나만 잡으면
     // 섹션 쪽 막대가 0% 로 남는다
