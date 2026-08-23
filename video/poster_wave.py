@@ -28,9 +28,12 @@
 python poster_wave.py  →  out/poster/wave_{feed,story}.png
 """
 import numpy as np
-from poster_kit import (BRAND, HEROES, SIZES, tmask, tmask_bl, fit,
-                        paint, paint_bl, rule, box, duotone, grain, save)
-from fest_kit import vignette, justify, night
+from poster_kit import (BRAND, SIZES, tmask, tmask_bl, fit, glow, logo,
+                        paint, paint_bl, rule, box, grain, save, bloom)
+from poster_dj3 import chrome
+from poster_dj4 import nebula, fringe
+from poster_dj7 import PAPER, SILVER, STEEL, DIM
+from fest_kit import vignette, justify, night, rays, specks, haze
 from fonts import KR, KRB
 import os
 import event as EV
@@ -49,24 +52,24 @@ CROPS = {1: dict(focus=0.52, zoom=1.06),
          3: dict(focus=0.50, zoom=1.00, offx=0.50)}
 _ENV = os.environ.get('BLACKOUT_HERO')      # 지정하면 그걸 우선한다
 
-DEEP = np.float32([0.016, 0.034, 0.054])
-LIT = np.float32([0.340, 0.520, 0.610])
-PAPER = np.float32([0.98, 0.99, 1.00])
-AQUA = np.float32([0.32, 0.92, 1.00])
-CORAL = np.float32([1.00, 0.42, 0.38])
-DIM = np.float32([0.58, 0.70, 0.78])
+# **색은 안 쓴다.** 브랜드가 흑백·은색이고, 시안·산호를 쓰던 판이 크루 판·
+# 개인 판과 나란히 걸리면 그것만 남의 것으로 보였다. 지금 열린 차수는
+# 색이 아니라 **밝기와 면**으로 가른다(poster_board 와 같은 규칙)
+ACC = PAPER                    # 지금 열린 차수
+OLD = STEEL * 1.6              # 마감된 차수
 
 
 def build(W, H, story=False):
     V = W / 1080.0
     # **다른 판과 다른 사진을 쓴다.** 현황 판은 며칠마다 다시 올리는 판이라
     # 포스터와 같은 사진이면 같은 게시물을 또 올린 것처럼 보인다.
-    n = int(_ENV) if _ENV else HERO_BY_SIZE[story]
-    n = max(1, min(len(HEROES), n))
-    img = duotone(HEROES[n - 1][0], W, H, DEEP, LIT, contrast=1.16, keep=0.18, **CROPS[n])
-    img *= 0.42
-    yy = np.arange(H, dtype=np.float32)[:, None, None]
-    img *= 1 - 0.42 * np.exp(-((yy - H * 0.52) / (H * 0.34)) ** 2)
+    img = np.repeat(np.repeat(np.float32([0.015, 0.015, 0.020])[None, None, :],
+                              H, 0), W, 1).copy()
+    img += nebula(W, H, W * 0.50, H * 0.18, STEEL * 1.5, SILVER, seed=53,
+                  spread=0.88) * 0.58
+    rays(img, W * 0.50, H * 0.16, 30, int(26 * V), int(H * 0.60), PAPER, 0.020,
+         phase=0.13, duty=0.26)
+    haze(img, int(H * 0.72), int(H * 0.99), SILVER, 0.036, seed=23)
 
     M = int(W * 0.095)
     CWD = W - M * 2
@@ -75,18 +78,20 @@ def build(W, H, story=False):
     paint(img, tmask('BLACKOUT CREW  ·  SEOUL', BRAND, int(17 * V), 0.42), M, ty,
           color=DIM, a=0.85)
     paint(img, tmask(EV.DATE_EN, BRAND, int(19 * V), 0.24), W - M, ty,
-          color=AQUA, a=0.95, anchor='r')
+          color=SILVER, a=0.95, anchor='r')
 
     ny = H * (0.150 if story else 0.140)
     paint(img, tmask(EV.NAME, BRAND, justify(EV.NAME, CWD, 0.09, cap=int(96 * V)), 0.09),
           M, ny, color=PAPER)
-    paint(img, tmask(EV.FORMAT, BRAND, int(20 * V), 0.32), M, ny + 52 * V, color=AQUA)
+    paint(img, tmask(EV.FORMAT, BRAND, int(20 * V), 0.32), M, ny + 52 * V, color=SILVER)
 
     # ── 막대 — 정원 전체에서 어디까지 왔는지 ───────────────
     # **블록을 통째로 가운데에 앉힌다.** 제목 자리를 비율로 박아 뒀더니 스토리에서
     # 가운데가 통째로 비었다 — 이름 아래와 발치 사이의 남는 높이에 맞춘다.
     step = 92 * V
     blkh = 46 * V + 62 * V + 78 * V + 56 * V + 96 * V + step * len(EV.WAVES)
+    if EV.LAST_LINES:
+        blkh += 196 * V
     top = ny + 52 * V + 70 * V
     bot = H - (270 if story else 250) * V - 60 * V
     hy = top + max(0, (bot - top - blkh)) * 0.50
@@ -109,17 +114,17 @@ def build(W, H, story=False):
     if sub:
         # **몇 자리 남았는지와 언제까지인지는 붙어 있어야 한다.** 자리만 말하면
         # 급할 이유가 없고, 날짜만 말하면 얼마나 급한지를 모른다.
-        paint(img, tmask(sub, KRB, int(26 * V), 0.02), M, hy + 54 * V, color=CORAL)
+        paint(img, tmask(sub, KRB, int(26 * V), 0.02), M, hy + 54 * V, color=SILVER)
     if EV.NEXT_OPEN:
         # 다음 차수가 언제 열리는지. **닫는 말만 하면 그냥 끝난 행사로 읽힌다**
         paint(img, tmask(EV.NEXT_OPEN, KRB, int(24 * V), 0.02), M, hy + 100 * V,
-              color=AQUA, a=0.95)
+              color=SILVER, a=0.95)
 
     by = hy + 186 * V
     bh = 22 * V
     box(img, M, by - bh / 2, W - M, by + bh / 2, PAPER, 0.14)
     done = CWD * (EV.DONE / max(EV.CAP, 1))
-    box(img, M, by - bh / 2, M + done, by + bh / 2, CORAL, 0.95)
+    box(img, M, by - bh / 2, M + done, by + bh / 2, PAPER, 0.92)
     # **숫자 폭을 재고 그 뒤에 붙인다.** 96V 로 박아 뒀더니 두 자리 수에서 겹쳤다
     nm = tmask_bl(f'{EV.DONE} / {EV.CAP}', BRAND, int(20 * V), 0.16)
     paint_bl(img, nm, M, by + 44 * V, color=PAPER, a=0.95)
@@ -133,10 +138,15 @@ def build(W, H, story=False):
         #   마감      끝났다. 흐리게 두되 지우지는 않는다(앞 차수가 찼다는 게 근거다)
         #   n자리 남음 지금 움직일 이유. 여기만 색을 준다
         #   오픈 예정  아직 안 열렸다. 존재와 마감일만 알린다
+        # **`got > 0` 으로 열린 차수를 판정하면 안 된다.** 3차가 막 열려
+        # 0명일 때 '오픈 예정' 으로 찍혔다 — 열린 차수는 event.py 가 안다
         full = got >= cap
-        openning = (not full) and got > 0
+        openning = bool(EV.OPEN_WAVE) and name == EV.OPEN_WAVE[0]
         col = DIM if full else PAPER
-        acc = CORAL if openning else (DIM if full else AQUA)
+        acc = ACC if openning else OLD
+        if openning:
+            # 색이 없으니 면으로 가른다 — 지금 받는 줄만 판을 깐다
+            box(img, M, y - 4 * V, W - M, y + 62 * V, STEEL, 0.40)
         box(img, M, y, M + 6 * V, y + 58 * V, acc, 0.95 if openning else 0.45)
         paint_bl(img, tmask_bl(name, KRB, int(30 * V), 0.02), M + 28 * V, y + 42 * V,
                  color=col, a=1.0 if not full else 0.60)
@@ -159,9 +169,26 @@ def build(W, H, story=False):
         rule(img, y + 70 * V, M, W - M, PAPER, 0.10, max(1, int(1 * V)))
         y += step
 
+    # **표 아래가 통째로 비었다.** 3차가 마지막이라는 게 이 판의 핵심인데
+    # 그 말이 없어서 '아직 40자리나 남았네' 로 읽혔다 — 남은 자리가 많을수록
+    # 이 블록이 필요하다
+    if EV.LAST_LINES:
+        y += 22 * V
+        rule(img, y, M, W - M, SILVER, 0.34, max(2, int(2 * V)))
+        y += 56 * V
+        paint_bl(img, tmask_bl(EV.LAST_LINES[0], KRB, int(42 * V), 0.01), M, y,
+                 color=PAPER)
+        y += 46 * V
+        paint_bl(img, tmask_bl(EV.LAST_LINES[1], KR, int(24 * V), 0.02), M, y,
+                 color=SILVER, a=0.92)
+        y += 40 * V
+        paint_bl(img, tmask_bl(EV.LAST_LINES[2], KRB, int(27 * V), 0.01), M, y,
+                 color=PAPER, a=0.96)
+        y += 22 * V
+
     if EV.SHOW_RATIO:
         paint_bl(img, tmask_bl(EV.RATIO, KR, int(20 * V), 0.02), M, y + 34 * V,
-                 color=AQUA, a=0.92)
+                 color=SILVER, a=0.92)
         y += 44 * V
 
     # ── 발 ────────────────────────────────────────────────
@@ -172,11 +199,11 @@ def build(W, H, story=False):
     paint_bl(img, tmask_bl(f'OPEN {EV.TIME_EN}', BRAND, int(17 * V), 0.18), M, fy + 44 * V,
              color=DIM, a=0.92)
     paint_bl(img, tmask_bl(EV.ENTRY, KR, int(18 * V), 0.01), M, fy + 78 * V,
-             color=AQUA, a=0.95)
+             color=SILVER, a=0.95)
     # **파는 것에 따라 가는 곳이 다르다.** 테이블만 파는데 프로필 링크로 보내면
     # 폼에 테이블 항목이 없어서 들어간 사람이 그냥 나간다
     paint(img, tmask(EV.RESERVE_NOW, KR, int(30 * V), 0.02), M, fy + 130 * V,
-          color=CORAL)
+          color=SILVER)
     paint(img, tmask(EV.HANDLE, BRAND, int(17 * V), 0.24), W - M, fy + 130 * V,
           color=PAPER, a=0.88, anchor='r')
     paint(img, tmask(EV.PARTNERS_STR, BRAND,

@@ -128,7 +128,7 @@ def build():
                    fill=(255, 255, 255, 255), anchor='mm')
             mid(d, 1010, '자리 남았습니다', ImageFont.truetype(KRD, 86),
                 (255, 255, 255, 250))
-            mid(d, 1130, f'{EV.OPEN_WAVE[0]} 예약 · 오늘 자정 마감',
+            mid(d, 1130, f'{EV.OPEN_WAVE[0]} 예약 · {EV.DUE_STR} 마감',
                 ImageFont.truetype(KRB, 44), (232, 236, 244, 232))
         else:
             f1 = fit(d, l1, KRD, 128, W * 0.86)

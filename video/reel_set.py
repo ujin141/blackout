@@ -165,20 +165,23 @@ def overlay(kind, tag, i):
              _f(KRB, 56), (255, 255, 255, 242))
 
     elif kind == 'filled':
+        # **차수 기준으로 세면 안 된다.** 3차가 막 열렸을 때 '3차 40명 중
+        # 0명이 찼습니다' 가 나갔다 — 파는 말이 아니라 안 팔린다는 말이다.
+        # 전체 정원 기준은 차수가 넘어가도 계속 오르기만 한다
         _plate(d, H * 0.26, H * 0.62, 168)
-        _mid(d, H * 0.335, f'{wave[0]} {wave[1]}명 중 {wave[2]}명이 찼습니다',
+        _mid(d, H * 0.335, f'{EV.CAP}명 중 {EV.DONE}명이 찼습니다',
              _f(KRB, 62), (255, 255, 255, 246))
         bx0, bx1, by = W * 0.16, W * 0.84, H * 0.455
         d.rounded_rectangle([bx0, by, bx1, by + 22], 11, fill=(255, 255, 255, 62))
-        d.rounded_rectangle([bx0, by, bx0 + (bx1 - bx0) * wave[2] / wave[1],
+        d.rounded_rectangle([bx0, by, bx0 + (bx1 - bx0) * EV.DONE / EV.CAP,
                              by + 22], 11, fill=(255, 255, 255, 240))
-        _mid(d, by + 48, f'{wave[2]} / {wave[1]}', _f(BRAND, 34),
+        _mid(d, by + 48, f'{EV.DONE} / {EV.CAP}', _f(BRAND, 34),
              (255, 255, 255, 205), track=6)
 
     elif kind == 'close':
         _plate(d, H * 0.23, H * 0.60, 180)
         _mid(d, H * 0.295, f'{wave[0]} 예약', _f(KRB, 42), (208, 214, 226, 224))
-        _mid(d, H * 0.355, f'오늘 {wave[3]} 자정에 닫습니다', _f(KRD, 80),
+        _mid(d, H * 0.355, f'{EV.DUE_STR}에 닫습니다', _f(KRD, 80),
              (255, 255, 255, 252))
 
     elif kind == 'crew':
@@ -209,7 +212,7 @@ def overlay(kind, tag, i):
         _mid(d, H * 0.330, f'{EV.DATE} · {EV.VENUE}', _f(KRB, 46),
              (255, 255, 255, 240))
         _mid(d, H * 0.392, EV.ADDR, _f(KR, 34), (210, 214, 224, 220))
-        _mid(d, H * 0.470, f'{wave[0]} {left}자리 · 오늘 마감', _f(KRD, 58),
+        _mid(d, H * 0.470, f'{wave[0]} {left}자리 · {wave[3]} 마감', _f(KRD, 58),
              (255, 255, 255, 250))
         _mid(d, H * 0.548, '프로필 링크에서 예약', _f(KRB, 44),
              (255, 255, 255, 242))
