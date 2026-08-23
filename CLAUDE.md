@@ -185,6 +185,7 @@ python poster_dj7.py                          # G안 — 판은 흑백·은색, 
 python poster_dj8.py xanthic                  # 라인업 밖 크루도 뽑힌다 — 행사 대신 크루가 들어감
 python poster_dj8.py                          # H안 — 같은 사람을 크기 달리해 세 번 세운다 (우진 채택)
 python poster_b2b.py                          # 백투백 판 — 둘이 같이 선다 (HEIDY × CHIPS · DEMIC × AROS)
+python feed_b2b.py                            # 백투백 피드 3연작 — 가운데 타이틀, 양쪽이 마주 본다
 python poster_b2b.py "HEIDY x CHIPS"          # 골라서. 세트는 event.py 의 B2B_SETS 에서 온다
 #                                               피드 4:5 · 정사각 · 스토리 세 벌이 나온다
 python audio_poster.py                        # 포스터 전용 BGM 다섯 곡 (릴스 곡과 안 겹침)
