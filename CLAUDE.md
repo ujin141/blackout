@@ -207,6 +207,7 @@ python reel_cut.py water                      #   골라서. 컷은 USED 에 없
 python audio_check.py                         # **곡이 기존 곡과 겹치는지 잰다** — 음색·리듬·음정
 python audio_set.py && python reel_set.py     # **릴스 세트 3편** — push(마감)·day(낮)·dusk(밤)
 python reel_set.py push                       #   컷은 피부 덩어리 수로 골랐다. 색은 피부 살리는 쪽
+python cover_set.py                           # 그 세 편 커버 — 현장 사진 + 큰 훅 (탐색 탭용)
 python reel_pool.py 3                         # 3번 컷만 확인용으로
 ```
 
