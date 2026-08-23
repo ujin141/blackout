@@ -205,6 +205,8 @@ python reel_close.py                          # 2차 마감 릴스 15초 — 현
 python audio_cut.py && python reel_cut.py     # 현장 컷 릴스 두 편 — water(낮·물) · neon(밤·조명)
 python reel_cut.py water                      #   골라서. 컷은 USED 에 없는 구간만 (assert 로 막힘)
 python audio_check.py                         # **곡이 기존 곡과 겹치는지 잰다** — 음색·리듬·음정
+python audio_set.py && python reel_set.py     # **릴스 세트 3편** — push(마감)·day(낮)·dusk(밤)
+python reel_set.py push                       #   컷은 피부 덩어리 수로 골랐다. 색은 피부 살리는 쪽
 python reel_pool.py 3                         # 3번 컷만 확인용으로
 ```
 
