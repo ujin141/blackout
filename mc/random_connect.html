@@ -1,0 +1,255 @@
+<!--
+  MC 대본 — 랜덤 커넥트. A4 세로, 인쇄용.
+
+  **어두운 데서 읽는다.** 클럽 조명 아래 종이를 보는 것이라 본문을 크게 잡았다
+  (12pt 가 아니라 15pt). 폰으로 볼 수도 있어서 한 줄이 길지 않게 끊었다.
+
+  **대사와 지시를 색이 아니라 형태로 가른다.** 흑백 인쇄가 기본이라 색으로
+  구분하면 복사본에서 사라진다 — 대사는 왼쪽에 굵은 세로선, 지시는 괄호와
+  들여쓰기로 갈랐다.
+
+  PDF 로 뽑기:
+    chrome --headless=new --disable-gpu --no-pdf-header-footer \
+      --print-to-pdf="BLACKOUT_MC대본.pdf" random_connect.html
+-->
+<meta charset="utf-8">
+<title>랜덤 커넥트 — MC 대본</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm 14mm 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+    color: #111; line-height: 1.62; font-size: 15px; margin: 0;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  h1 { font-size: 25px; margin: 0 0 2px; letter-spacing: -0.02em; }
+  .sub { color: #666; font-size: 13px; margin: 0 0 18px; }
+  h2 {
+    font-size: 18px; margin: 26px 0 10px; padding: 7px 0 7px 12px;
+    border-left: 5px solid #111; background: #f2f2f2;
+    break-after: avoid; page-break-after: avoid;
+  }
+  h3 { font-size: 15px; margin: 18px 0 6px; break-after: avoid; }
+  p { margin: 0 0 9px; }
+  .lead { color: #333; margin-bottom: 14px; }
+
+  /* 대사 — MC 가 실제로 하는 말. 크게, 왼쪽에 굵은 선 */
+  .say {
+    border-left: 4px solid #111; padding: 11px 0 11px 15px;
+    margin: 10px 0 14px; font-size: 17px; line-height: 1.72;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .say b { font-weight: 700; }
+  /* 지시 — 하는 일. 말하지 않는다 */
+  .do {
+    color: #555; font-size: 13.5px; margin: 6px 0 6px 15px;
+    font-style: normal;
+  }
+  .do::before { content: '▸ '; color: #999; }
+
+  .note {
+    background: #f7f7f7; border: 1px solid #ddd; padding: 11px 13px;
+    margin: 12px 0; font-size: 13.5px; color: #333;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .warn { border-left: 4px solid #111; background: #fff; padding-left: 13px; }
+  ul { margin: 6px 0 10px; padding-left: 19px; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px;
+          font-size: 13.5px; break-inside: avoid; }
+  th, td { border: 1px solid #ccc; padding: 6px 9px; text-align: left;
+           vertical-align: top; }
+  th { background: #f2f2f2; width: 22%; font-weight: 600; }
+  .flow { font-size: 14px; line-height: 1.9; margin: 10px 0 0 4px; }
+  .pb { break-before: page; page-break-before: always; }
+  .foot { margin-top: 22px; padding-top: 10px; border-top: 1px solid #ddd;
+          color: #777; font-size: 12px; }
+</style>
+
+<h1>랜덤 커넥트 — MC 대본</h1>
+<p class="sub">AFTER SUNSET · 2026.08.29 (토) · 솔로파티 21:30 — 23:00</p>
+
+<p class="lead">
+  게임은 <b>30~40분</b>이면 됩니다. 90분을 다 채우려 하지 마세요.
+  여덟에서 열 라운드 돌리고 나머지는 음악만 틀어도 됩니다 —
+  그때쯤이면 서로 얼굴을 다 본 뒤라 알아서 돌아갑니다.
+</p>
+
+<h2>한 라운드 흐름</h2>
+<div class="flow">
+  통에서 뽑기 → 주인공 등장 → 30초 춤 → 친구 호출 →
+  반대편에서 한 명 지목 → 둘이 20초 → 다음 사람 뽑기
+</div>
+<p class="do">한 라운드 3~4분. 길어지면 다음 사람이 지루해집니다</p>
+
+<h2>준비물</h2>
+<table>
+  <tr><th>통</th><td>입장할 때 받은 이름표를 넣어 둡니다. 뚜껑 있는 게 좋습니다</td></tr>
+  <tr><th>이름표</th><td>입장 시 작성. 닉네임도 가능 — 본명이 부담스러운 사람이 있습니다</td></tr>
+  <tr><th>마이크</th><td>무선. 유선이면 통 앞에 묶여서 움직일 수가 없습니다</td></tr>
+  <tr><th>DJ 신호</th><td>손 내리면 줄이고 올리면 키우기. 매번 마이크로 외치면 흐름이 끊깁니다</td></tr>
+  <tr><th>곡</th><td>30초짜리 서너 개를 미리 골라 둡니다. 같은 곡이 여덟 번 나오면 지칩니다</td></tr>
+  <tr><th>샴페인</th><td>마지막 상품. 게임 내내 보이는 데 두면 그 자체가 동기가 됩니다</td></tr>
+</table>
+
+<h2>1 · 시작</h2>
+<p class="do">30초 안에 끝냅니다. 설명이 길면 그때부터 강당이 됩니다</p>
+<div class="say">
+  자, 잠깐만요. 음악 좀 줄여주세요.<br><br>
+  지금부터 게임 하나 합니다.<br>
+  저기 통에 이름 다 들어가 있어요. 아까 입장할 때 적으신 거.<br><br>
+  규칙 간단해요.<br>
+  <b>이름 뽑히면 나와서 30초 춤춥니다.</b> 그게 다예요.<br>
+  잘 출 필요 없어요. 그냥 나오면 됩니다.<br><br>
+  그리고 <b>나온 사람이 다음 사람을 뽑습니다.</b><br>
+  그러니까 여기 있는 사람 전부 언제든 걸려요.<br><br>
+  시작합니다. 음악!
+</div>
+
+<h2>2 · 첫 번째 — 여기가 제일 어색합니다</h2>
+<div class="say">
+  자 첫 번째!
+</div>
+<p class="do">통에서 뽑고, 종이를 펴서 이름을 확인한 뒤 부릅니다</p>
+<div class="say">
+  ○○○! 어디 계세요?
+</div>
+<p class="do">나오면 바로 박수를 유도합니다. 머뭇거릴 틈을 주지 않습니다</p>
+<div class="say">
+  박수 한 번 주세요!<br>
+  자 30초 갑니다. DJ 틀어주세요!
+</div>
+<p class="do">30초. 시계 보지 말고 한 곡 후렴 한 번 정도로 감을 잡습니다</p>
+
+<h2>3 · 친구 호출</h2>
+<p class="do">여기서 인원이 늘어나야 분위기가 터집니다</p>
+<div class="say">
+  야 잠깐만.<br>
+  ○○○씨 오늘 혼자 왔어요, 친구랑 왔어요?
+</div>
+<p class="do">친구랑 왔다고 하면</p>
+<div class="say">
+  친구들 어디 있어요? 다 나와요 다.<br>
+  숨지 말고 나와요.<br><br>
+  자 다시! 이번엔 같이!
+</div>
+<p class="do">혼자 왔다고 하면 — <b>그게 더 좋은 그림입니다</b></p>
+<div class="say">
+  혼자 왔어요? 오 대박.<br>
+  자 여기 혼자 온 사람 손! 손 들어봐요!<br><br>
+  다 나와요. 오늘 이거 하려고 만든 자리예요.
+</div>
+
+<div class="pb"></div>
+
+<h2>4 · 남녀 연결 — 핵심</h2>
+<div class="say">
+  좋아요. 자 이제.<br><br>
+  ○○○씨, 이 중에서 한 명만 골라주세요.<br>
+  저쪽에서요.<br><br>
+  부담 갖지 마시고, 그냥 눈 마주친 사람.
+</div>
+<p class="do">고르면 바로 부릅니다. 생각할 시간을 주면 어색해집니다</p>
+<div class="say">
+  오케이! ○○○씨 나와주세요!<br><br>
+  자 둘이서 20초. 음악 주세요!
+</div>
+<p class="do">20초 후 — 호응을 유도합니다. 이게 이 게임의 정점입니다</p>
+<div class="say">
+  어때요, 둘이 어울려요?<br>
+  어울린다 싶으면 소리 질러주세요!
+</div>
+
+<h2>5 · 다음 사람으로</h2>
+<div class="say">
+  자 ○○○씨, 마지막으로 하나만.<br><br>
+  이 통에서 다음 사람 뽑아주세요. 아무나 한 장.
+</div>
+<p class="do">본인이 뽑고 본인이 읽게 합니다 — MC 가 읽으면 연결이 안 됩니다</p>
+<div class="say">
+  읽어주세요!<br><br>
+  자 바로 갑니다!
+</div>
+<p class="do">여기서 <b>2번으로 돌아갑니다.</b> 여덟에서 열 번 반복</p>
+
+<h2>6 · 마무리</h2>
+<div class="say">
+  자 마지막입니다.<br><br>
+  오늘 제일 반응 좋았던 사람. 누구였어요?
+</div>
+<p class="do">이름이 두셋 나오면 그 사람들을 부릅니다</p>
+<div class="say">
+  ○○○! ○○○! 나와주세요.<br><br>
+  자 박수 소리로 정합니다.<br>
+  ○○○씨!<br>
+  ○○○씨!
+</div>
+<p class="do">박수가 큰 쪽. 애매하면 그냥 MC 가 정합니다 — 재투표는 늘어집니다</p>
+<div class="say">
+  ○○○씨 축하합니다. 샴페인 한 병 갑니다!<br><br>
+  자 이제 진짜 놉니다. DJ!
+</div>
+
+<h2>7 · 상황별 대응</h2>
+
+<h3>안 나오려는 사람</h3>
+<p class="do">억지로 끌면 그 사람도 주변도 굳습니다. 5초 이상 멈추지 마세요</p>
+<div class="say">
+  아 괜찮아요. 나중에 다시 뽑을게요.<br>
+  ○○○씨 대신 옆에 계신 분!
+</div>
+
+<h3>술이 많이 된 사람</h3>
+<p class="do">짧게 끊고 넘깁니다. 무대에 오래 두면 사고로 갑니다</p>
+<div class="say">
+  오케이 좋아요! 박수! 다음!
+</div>
+
+<h3>지목을 못 하고 망설일 때</h3>
+<div class="say">
+  아무나요. 제일 가까운 사람.<br>
+  자 그럼 제가 뽑을게요 — 거기 모자 쓰신 분!
+</div>
+
+<h3>분위기가 처질 때</h3>
+<p class="do">사람 수를 늘립니다. 한 명보다 다섯 명이 항상 낫습니다</p>
+<div class="say">
+  자 이번엔 다 나와요. 여기 앞으로 다.<br>
+  30초만 같이 갑니다!
+</div>
+
+<div class="note warn">
+  <b>인스타 아이디는 마이크로 읽지 않습니다.</b>
+  술자리에서 공개적으로 읽히면 나중에 문제가 됩니다. 궁금한 사람끼리
+  직접 물어보게 두고, MC 는 이 한 줄만 합니다 —
+  <i>“궁금한 사람 있으면 직접 물어보세요. 오늘 그러라고 만든 자리예요.”</i>
+</div>
+
+<h2>8 · MC 가 하지 말아야 할 것</h2>
+<ul>
+  <li><b>“여러분”</b> — 이 단어가 나오는 순간 클럽이 강당이 됩니다</li>
+  <li><b>“~하실 수 있습니다” · “지금부터 ~하겠습니다”</b> — 진행자 톤.
+      짧게 끊고 명령형으로 갑니다. “나와요”, “소리 질러”, “박수”</li>
+  <li><b>설명을 두 번</b> — 처음에 30초로 끝냅니다. 못 알아들은 사람은
+      첫 라운드 보면 다 압니다</li>
+  <li><b>한 사람에게 오래</b> — 재밌어도 4분을 넘기지 않습니다.
+      기다리는 사람이 서른아홉 명입니다</li>
+  <li><b>외모 평가</b> — “예쁘다”, “잘생겼다” 를 MC 가 먼저 말하지 않습니다.
+      관객이 하는 건 괜찮지만 진행자가 하면 성격이 달라집니다</li>
+</ul>
+
+<h2>9 · 시작 전 확인</h2>
+<ul>
+  <li>통에 이름표가 다 들어갔는지 (입장 마감 후 한 번 더 확인)</li>
+  <li>마이크 배터리</li>
+  <li>DJ 와 손 신호 맞췄는지</li>
+  <li>30초용 곡 서너 개 큐 잡혔는지</li>
+  <li>샴페인이 보이는 자리에 있는지</li>
+  <li>뽑은 종이를 따로 담을 통 (다시 섞이면 같은 사람이 두 번 나옵니다)</li>
+</ul>
+
+<p class="foot">
+  BLACKOUT CREW · 문의 @blackoutcrew_official<br>
+  이 대본은 흐름표입니다. 그대로 읽지 말고 현장 분위기에 맞춰 바꾸세요 —
+  대사보다 <b>속도</b>가 중요합니다.
+</p>
