@@ -73,22 +73,6 @@ const MEMBERS = [
     photo: ''
   },
   {
-    name: 'DEMIC',
-    role: { ko: 'DJ', en: 'DJ' },
-    bio: {
-      ko: '고등학생 때 TV로 본 Deadmau5 무대를 보고 시작했습니다. 대학 축제부터 클럽, 호텔 풀파티까지 무대를 가리지 않습니다.',
-      en: 'Started after seeing a Deadmau5 set on TV. Plays anything — university festivals, clubs, hotel pool parties.'
-    },
-    career: {
-      ko: ['포포인츠 바이 쉐라톤 수원 풀파티', '강남 THE FATE LOUNGE', '홍대 TASK FORCE', '압구정 VASSMENT ONE', '신촌 ESCAPE 파티 디렉터', '청담 MOHENIC HOUSE DJ 토너먼트 2위'],
-      en: ['Four Points by Sheraton Suwon (pool party)', 'The Fate Lounge, Gangnam', 'Task Force, Hongdae', 'Vassment One, Apgujeong', 'Escape, Sinchon (party director)', '2nd — Mohenic House DJ Tournament']
-    },
-    instagram: 'demic.10.16',
-    soundcloud: '',
-    cutout: 'assets/img/members/demic-cutout.webp',
-    photo: ''
-  },
-  {
     name: 'XANTHIC',
     role: { ko: 'DJ', en: 'DJ' },
     genres: {
