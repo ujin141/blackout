@@ -17,29 +17,6 @@
 
 const MEMBERS = [
   {
-    name: 'V',
-    role: { ko: 'DJ', en: 'DJ' },
-    genres: {
-      ko: ['힙합', '테크노', '하우스'],
-      en: ['Hip-hop', 'Techno', 'House']
-    },
-    bio: {
-      ko: '남녀불문, 장르에 국한되지 않게 음악의 길로 안내해 드립니다.',
-      en: 'Whoever you are, whatever the genre. I will show you the way into the music.'
-    },
-    career: {
-      ko: ['홍대 다다르다', '세인트 더 스위트 양양 풀파티', '구디 별밤', '루미아르 청담'],
-      en: ['Dadareuda, Hongdae', 'Saint the Sweet, Yangyang (pool party)', 'Byeolbam, Guro', 'Lumiar Cheongdam']
-    },
-    instagram: '_hogil',
-    soundcloud: '',
-    // **누끼가 아니라 사진으로 간다.** 원본이 정수리에서 잘려 있어서 누끼로 세우면
-    // 머리가 잘린 실루엣이 그대로 보인다. 카드를 꽉 채우면 그냥 타이트한 크롭으로
-    // 읽힌다 — 머리 위가 여유 있는 사진이 생기면 누끼로 되돌리면 된다.
-    cutout: '',
-    photo: 'assets/img/members/v-photo.webp'
-  },
-  {
     name: 'LYNN',
     role: { ko: 'DJ', en: 'DJ' },
     genres: {
@@ -153,47 +130,6 @@ const MEMBERS = [
     cutout: 'assets/img/members/1ucky-cutout.webp',
     photo: ''
   },
-  {
-    name: 'CHIPS',
-    role: { ko: 'DJ', en: 'DJ' },
-    genres: {
-      ko: ['하우스', '테크노', '바운스', '페스티벌 EDM'],
-      en: ['House', 'Techno', 'Bounce', 'Festival EDM']
-    },
-    bio: {
-      ko: '월디페 느낌을 내고 싶다면.',
-      en: 'When you want that festival main-stage feeling.'
-    },
-    // **경력 줄은 비워 뒀다.** 받은 건 '디제이 연습생 1년' 인데, 다른 멤버
-    // 칸에는 선 업장 이름이 들어간다 — 같은 자리에 연차를 적으면 그 한 칸만
-    // 비어 보인다. 선 곳이 생기면 그때 채우는 게 낫다.
-    instagram: 'ck_chips',
-    soundcloud: '',
-    cutout: 'assets/img/members/chips-cutout.webp',
-    photo: ''
-  },
-  {
-    name: 'HEIDY',
-    role: { ko: 'DJ', en: 'DJ' },
-    // **한 장르만 적는다.** 넷씩 늘어놓은 다른 멤버 옆에서 오히려 이게 세다 —
-    // 3년 반을 한 장르에 썼다는 게 그대로 읽힌다
-    genres: {
-      ko: ['바운스'],
-      en: ['Bounce']
-    },
-    bio: {
-      ko: '미친듯이 뛰어놀고 싶다면, HEIDY 바운스의 세계로.',
-      en: 'If you came to jump — welcome to HEIDY bounce.'
-    },
-    career: {
-      ko: ['바운스만 3년 반'],
-      en: ['3.5 years, bounce only']
-    },
-    instagram: 'dj_heidy_official',
-    soundcloud: '',
-    cutout: 'assets/img/members/heidy-cutout.webp',
-    photo: ''
-  }
 ];
 
 /* 멤버 수가 이 숫자보다 적으면 남는 칸은 "모집 중"으로 표시됩니다. 0이면 표시 안 함. */
