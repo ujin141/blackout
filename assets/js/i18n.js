@@ -315,7 +315,7 @@ const I18N = {
     'apply.other': 'Other',
 
     /* Event popup */
-    'evt.kicker': 'POOL PARTY × SOLO PARTY',
+    'evt.kicker': 'HANGAWI LOUNGE',
     'evt.day': 'SAT',
     'evt.venue': 'Venue TBA',
     'evt.sold': '1st round sold out',
