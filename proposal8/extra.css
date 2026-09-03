@@ -1,0 +1,114 @@
+/* proposal7 의 판형을 그대로 쓴다. 다시 쓰면 자간과 여백이 미묘하게
+   달라져 다른 크루 문서로 보인다. */
+
+  /* 표지 — 두 이름을 나란히. **한쪽이 크면 갑을이 된다** */
+  .cover { justify-content: center; text-align: center; }
+  .cover__x { display: flex; align-items: center; justify-content: center;
+              gap: 14mm; margin-bottom: 11mm; }
+  .cover__side { display: flex; flex-direction: column; align-items: center; }
+  /* **로고를 글자로 다시 치지 않는다.** 원본 PNG 를 그대로 쓴다 —
+     다시 그리면 자간과 획이 달라져서 다른 크루로 보인다 */
+  .cover__lock { height: 32mm; width: auto; display: block; }
+  .cover__n { font-family: var(--brand); font-size: 23pt; letter-spacing: 0.1em; }
+  .cover__side small { display: block; font-family: var(--body); font-size: 8pt;
+                       letter-spacing: 0; color: var(--w45); margin-top: 3.5mm; }
+  .cover__op { font-family: var(--brand); font-size: 12pt; color: var(--w28); }
+  .cover__one { font-size: 15pt; font-weight: 700; line-height: 1.55;
+                max-width: 175mm; margin: 0 auto; letter-spacing: -0.01em; }
+  .cover__one em { font-style: normal; color: var(--w45); font-weight: 400; }
+  .cover__meta { margin-top: 11mm; font-family: var(--brand); font-size: 7pt;
+                 letter-spacing: 0.24em; color: var(--w45); }
+
+  /* 주고받는 표 — 두 칸이 같은 무게여야 거래로 읽힌다 */
+  .swap { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 2mm; }
+  .swap__c { border: 1px solid var(--line-soft); padding: 7mm;
+             background: linear-gradient(180deg, rgba(255,255,255,.035), transparent 60%); }
+  .swap__c.is-us { border-color: var(--line); }
+  .swap__w { font-family: var(--brand); font-size: 6.6pt; letter-spacing: 0.24em;
+             color: var(--w45); margin-bottom: 4mm; }
+  .swap__h { font-size: 13pt; font-weight: 700; line-height: 1.35; margin-bottom: 4mm; }
+  .swap__l { list-style: none; }
+  .swap__l li { font-size: 8.6pt; line-height: 1.7; color: var(--w65);
+                padding-left: 4mm; position: relative; margin-bottom: 1.6mm; }
+  .swap__l li::before { content: ''; position: absolute; left: 0; top: 2.6mm;
+                        width: 2mm; height: 1px; background: var(--w28); }
+  .swap__free { margin-top: 5mm; padding-top: 4mm; border-top: 1px solid var(--line-soft);
+                font-family: var(--brand); font-size: 7pt; letter-spacing: 0.18em;
+                color: var(--w45); }
+
+  /* 숫자 — 약속할 수 있는 것만 크게 */
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 6mm; }
+  .nums__i { border-top: 1px solid var(--line); padding-top: 4mm; }
+  .nums__n { font-size: 26pt; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .nums__n em { font-style: normal; font-size: 11pt; color: var(--w45); margin-left: 1.5mm; }
+  .nums__k { font-size: 8.4pt; color: var(--w65); margin-top: 3mm; line-height: 1.65; }
+
+  /* 하루 흐름 — **2차 파트너한테 제일 중요한 건 몇 시에 끝나느냐다** */
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+          margin-top: 9mm; border: 1px solid var(--line-soft); }
+  .flow__i { padding: 5mm 6mm; border-right: 1px solid var(--line-soft); }
+  .flow__i:last-child { border-right: 0; }
+  .flow__i.is-on { background: rgba(255,255,255,0.07); }
+  .flow__i b { display: block; font-family: var(--brand); font-size: 9.5pt;
+               letter-spacing: 0.1em; margin-bottom: 2.5mm; }
+  .flow__i span { font-size: 8.4pt; color: var(--w65); line-height: 1.6; }
+  .flow__i.is-on span { color: var(--white); }
+
+  /* 협업 안 — **부담 낮은 것부터.** 제일 큰 걸 먼저 내밀면 거기서 닫힌다 */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; margin-top: 6mm; }
+  .tier { border: 1px solid var(--line-soft); padding: 6mm; display: flex;
+          flex-direction: column;
+          background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 60%); }
+  .tier.is-on { border-color: var(--white); background: rgba(255,255,255,0.05); }
+  .tier__n { font-family: var(--brand); font-size: 6.4pt; letter-spacing: 0.22em;
+             color: var(--w28); margin-bottom: 3.5mm; }
+  .tier__t { font-size: 11.5pt; font-weight: 700; margin-bottom: 3mm; line-height: 1.3; }
+  .tier__d { font-size: 8.4pt; line-height: 1.7; color: var(--w65); flex: 1 1 auto; }
+  .tier__d b { color: var(--white); font-weight: 600; }
+  .tier__c { margin-top: 4mm; padding-top: 3.5mm; border-top: 1px solid var(--line-soft);
+             font-family: var(--brand); font-size: 6.6pt; letter-spacing: 0.18em;
+             color: var(--w45); }
+  .tier.is-on .tier__c { color: var(--white); }
+
+  /* 노출 자리 — 실물을 보여야 믿는다 */
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 5mm; }
+  .shots figure { border: 1px solid var(--line-soft); background: #050505; }
+  .shots img { width: 100%; height: 62mm; object-fit: cover; object-position: 50% 40%;
+               display: block; }
+  /* **가로로 긴 인쇄물은 cover 로 자르면 글자 조각만 남는다.** 밴드가
+     그랬다 — 통째로 보여야 무슨 물건인지 안다 */
+  .shots figure.wide img { object-fit: contain; background: #050505; padding: 6mm 4mm; }
+  .shots figcaption { padding: 3.5mm 4mm; font-size: 8pt; color: var(--w65); line-height: 1.6; }
+  .shots figcaption b { display: block; font-family: var(--brand); font-size: 6.4pt;
+                        letter-spacing: 0.2em; color: var(--w45); margin-bottom: 1.8mm; }
+
+  /* 조건 줄 */
+  .terms { margin-top: 4mm; }
+  .terms__r { display: grid; grid-template-columns: 34mm 1fr; gap: 6mm;
+              padding: 4mm 0; border-bottom: 1px solid var(--line-soft); }
+  .terms__r:last-child { border-bottom: 0; }
+  .terms__k { font-family: var(--brand); font-size: 7pt; letter-spacing: 0.2em;
+              color: var(--w45); padding-top: 0.8mm; }
+  .terms__v { font-size: 9.2pt; line-height: 1.75; color: var(--w90); }
+  .terms__v small { display: block; font-size: 8.2pt; color: var(--w45); margin-top: 1.6mm; }
+
+  .note { margin-top: 6mm; padding: 5mm 6mm; border: 1px solid var(--line-soft);
+          background: rgba(255,255,255,0.03); font-size: 8.6pt; line-height: 1.75;
+          color: var(--w65); }
+  .note b { color: var(--white); font-weight: 600; }
+
+  .ask { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 6mm; }
+  .ask__i { border: 1px solid var(--line-soft); padding: 6mm; }
+  .ask__n { font-family: var(--brand); font-size: 6.4pt; letter-spacing: 0.22em;
+            color: var(--w28); margin-bottom: 3.5mm; }
+  .ask__t { font-size: 10.5pt; font-weight: 700; margin-bottom: 2.5mm; }
+  .ask__d { font-size: 8.4pt; line-height: 1.7; color: var(--w65); }
+
+  .sign { margin-top: auto; padding-top: 6mm; border-top: 1px solid var(--line-soft);
+          display: flex; justify-content: space-between; align-items: flex-end; }
+  .sign__l { font-size: 9pt; line-height: 1.8; color: var(--w65); }
+  .sign__l b { display: block; font-size: 11pt; color: var(--white); margin-bottom: 2mm; }
+  .sign__r { font-family: var(--brand); font-size: 6.6pt; letter-spacing: 0.24em;
+             color: var(--w28); text-align: right; }
+  /* 머리말 마크가 7mm 라 인쇄하면 거의 안 보였다 */
+  .head__logo img { height: 9mm; }
