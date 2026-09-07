@@ -205,5 +205,127 @@ def main():
     print('완료:', OUT)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and 'above' not in os.sys.argv:
     main()
+
+
+# ══════════════════════════════════════════════════════════
+#  이미 올린 P1~P3 위에 여섯 장을 쌓는다
+# ══════════════════════════════════════════════════════════
+#
+# P1~P3 이 먼저 올라갔다. 격자는 새 글이 위로 가니 그 셋은 **맨 아랫줄**이
+# 된다. 지우고 다시 올리면 반응이 날아가니 그대로 두고, 위 두 줄을
+# 그 셋의 배경에 이어지게 그린다.
+#
+#     맨 위   지금 하라   9,900원 · 1차 30명 · QR      (마지막에 올림)
+#     가운데  왜 오는지   혼자 · 15:15 · 웰컴샷
+#     맨 아래 P1~P3       이미 올라감
+#
+# 심볼은 P1~P3 을 그릴 때와 같은 크기·같은 가로 위치, 세로만 아랫줄
+# 가운데에 맞춘다. 그러면 원의 윗부분이 가운데 줄로 올라온다.
+#
+# 올리는 순서 U1 → U6. U 는 올리는 순서다.
+
+ABOVE = [
+    # (파일, 종류, 제목, 부제, CTA)  — 가운데 줄, 오른쪽부터
+    ('U1', 'type', ['웰컴샷', '쿠폰'], '예매하면 티켓에 붙어요. 바에서 보여주면 끝', '예매하면 자동 발급'),
+    ('U2', 'type', ['남녀', '15 : 15'], '성비 맞춰 받아요. 한쪽 차면 그쪽 마감', '남은 자리 보기 → 프로필 링크'),
+    ('U3', 'type', ['혼자 가도', '되나요'], '지난 파티 45명 중 45명이 혼자 왔어요', '파티 보기 → 프로필 링크'),
+    # 맨 윗줄, 오른쪽부터
+    ('U4', 'qr', ['지금 예매'], 'QR 찍으면 바로 예매 화면', 'App Store · 파티모아'),
+    ('U5', 'type', ['1차 30명'], '차면 2차. 먼저 잡는 쪽이 먼저', '남은 자리 보기 → 프로필 링크'),
+    ('U6', 'type', ['9,900원'], 'AFTER MOON · 9.26 토 · 압구정 딥하우즈', '예매하기 → 프로필 링크'),
+]
+# 격자 자리. (열, 줄) — 줄 0 이 맨 위
+SLOT = {'U1': (2, 1), 'U2': (1, 1), 'U3': (0, 1), 'U4': (2, 0), 'U5': (1, 0), 'U6': (0, 0)}
+
+
+def background_above():
+    """줄마다 P1~P3 과 같은 그라데이션. 심볼은 아랫줄 기준."""
+    yy = np.linspace(0, 1, H, dtype=np.float32)[:, None, None]
+    top = np.float32(BRAND) / 255
+    low = np.float32(DEEP) / 255
+    row = top * (1 - yy ** 1.4) + low * (yy ** 1.4)
+    row = np.repeat(row, RW, axis=1)
+    xx = np.linspace(0, 1, RW, dtype=np.float32)[None, :, None]
+    row += 0.06 * np.exp(-(((xx - 0.18) / 0.45) ** 2) - ((yy - 0.1) / 0.5) ** 2)
+    a = np.concatenate([row, row, row], axis=0)
+    pil = Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
+
+    lay = Image.new('RGBA', (RW, RH), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    S = RW / 63.0
+    ox = (RW - (ACC[0] - 26.6) * S) / 2 - 26.6 * S
+    oy = 2 * H + H * 0.50 - 50 * S                # 아랫줄(P1~P3) 과 같은 자리
+    r = 2.8 * S
+    for x, y in DOTS:
+        cx, cy = ox + x * S, oy + y * S
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHITE + (22,))
+    cx, cy = ox + ACC[0] * S, oy + ACC[1] * S
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ACCENT + (120,))
+    lay = lay.filter(ImageFilter.GaussianBlur(1.2))
+    pil.alpha_composite(lay)
+
+    d = ImageDraw.Draw(pil)
+    for rr in range(ROWS):
+        ly = rr * H + int(H * 0.86)
+        d.line([(M, ly), (RW - M, ly)], fill=WHITE + (110,), width=2)
+    return pil
+
+
+def tile_at(sheet, col, row, kind, lines, sub, cta):
+    """tile() 과 같지만 번호를 안 단다 — 올라간 셋이 /03 으로 끝나서
+    /09 를 달면 안 맞는다."""
+    t = sheet.crop((col * W, row * H, (col + 1) * W, (row + 1) * H))
+    d = ImageDraw.Draw(t)
+    ly = int(H * 0.86)
+    if kind == 'type':
+        y0 = 360 if len(lines) == 2 else 470
+        head(d, lines, sub, HEAD_TYPE, y0)
+        cta_plate(d, cta, ly - 92 - 48)
+    else:
+        yb = head(d, lines, sub, HEAD_TYPE, 300)
+        q = qr_build(PARTY_URL, 300, [0.08, 0.04, 0.24], [1.0, 1.0, 1.0],
+                     badge=False, error='m')
+        qs = 320
+        q = q.resize((qs, qs), Image.NEAREST)
+        box = Image.new('RGBA', (qs + 48, qs + 48), (0, 0, 0, 0))
+        ImageDraw.Draw(box).rounded_rectangle([0, 0, qs + 47, qs + 47], 28, fill=WHITE)
+        box.paste(q, (24, 24))
+        qx, qy = M, yb + 60
+        t.alpha_composite(box, (qx, qy))
+        d = ImageDraw.Draw(t)
+        f = font(KR, 26)
+        for k, s_ in enumerate(('카메라로 찍으면', 'AFTER MOON 예매', '화면이 열려요')):
+            d.text((qx + qs + 48 + 28, qy + 24 + 40 * k), s_, font=f, fill=WHITE + (220,))
+        cta_plate(d, cta, ly - 92 - 48)
+    fb = font(KR, 22)
+    d.text((M, ly + 22), 'partymoa.com', font=fb, fill=WHITE + (200,))
+    r = 'App Store'
+    d.text((W - M - d.textlength(r, font=fb), ly + 22), r, font=fb, fill=WHITE + (200,))
+    return t.convert('RGB')
+
+
+def above():
+    sheet = background_above()
+    done = {}
+    for name, kind, lines, sub, cta in ABOVE:
+        col, row = SLOT[name]
+        im = tile_at(sheet, col, row, kind, lines, sub, cta)
+        im.save(os.path.join(OUT, f'{name}.jpg'), quality=94)
+        done[(col, row)] = im
+    # 미리보기. 아랫줄은 이미 올린 P1~P3
+    g = Image.new('RGB', (W * 3 + 16, H * 3 + 16), (255, 255, 255))
+    for (col, row), im in done.items():
+        g.paste(im, (col * (W + 8), row * (H + 8)))
+    for col in range(3):
+        p = os.path.join(OUT, f'P{col + 1}.jpg')
+        if os.path.exists(p):
+            g.paste(Image.open(p), (col * (W + 8), 2 * (H + 8)))
+    g.resize((g.width // 4, g.height // 4), Image.LANCZOS).save(
+        os.path.join(OUT, '_격자_위여섯.jpg'), quality=92)
+    print('완료: U1~U6')
+
+
+if __name__ == '__main__' and 'above' in os.sys.argv:
+    above()
