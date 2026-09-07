@@ -278,6 +278,16 @@ def tile_at(sheet, col, row, kind, lines, sub, cta):
     /09 를 달면 안 맞는다."""
     t = sheet.crop((col * W, row * H, (col + 1) * W, (row + 1) * H))
     d = ImageDraw.Draw(t)
+    # 로고. 여섯 장 전부. 한 장씩 따로 보이는 게 피드라 매 장에 있어야 한다
+    f = font(KRB, 34)
+    S = 0.42
+    ox, oy = M, 104
+    for x, y in DOTS:
+        cx, cy = ox + x * S, oy + y * S
+        d.ellipse([cx - 2.2, cy - 2.2, cx + 2.2, cy + 2.2], fill=WHITE)
+    cx, cy = ox + ACC[0] * S, oy + ACC[1] * S
+    d.ellipse([cx - 2.6, cy - 2.6, cx + 2.6, cy + 2.6], fill=ACCENT)
+    d.text((ox + 48, oy + 4), '파티모아', font=f, fill=WHITE)
     ly = int(H * 0.86)
     if kind == 'type':
         y0 = 360 if len(lines) == 2 else 470
