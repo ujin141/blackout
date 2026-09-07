@@ -150,7 +150,7 @@ def tile(sheet, i, shot, lines, sub):
     d.text((M, y + 14), sub, font=fs, fill=ACCENT)
 
     # 폰. 바닥선 아래로 잘린다. 셋이 같은 높이에 선다
-    pw = 610
+    pw = 540
     body = phone(shot, pw)
     px, py = (W - pw) // 2, 560
     sh, pad = shadow(body.size, 40, 140)
@@ -158,7 +158,7 @@ def tile(sheet, i, shot, lines, sub):
     t.alpha_composite(body, (px, py))
 
     # 아래 선 밑 글자
-    fb = font(KR, 24)
+    fb = font(KR, 22)
     ly = int(H * 0.86)
     d = ImageDraw.Draw(t)
     d.text((M, ly + 22), 'partymoa.com', font=fb, fill=WHITE + (200,))
