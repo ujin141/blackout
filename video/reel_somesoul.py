@@ -159,10 +159,12 @@ def feeds():
     d = ImageDraw.Draw(b)
     logo_line(d, M, 96)
     y = head(d, ['매주 토요일', '18:30'], '신림역 도보 2분 · 본파티 3시간 · 애프터 00:30까지', 150, 250)
-    fs = font(KRB, 40)
+    # 글은 노란 선(60%) 위에서 끝난다. 선을 타고 넘으면 겹쳐 보인다
+    fs = font(KRB, 38)
     for k, line in enumerate(('안주 · 주류 무제한', '술 못 먹어도 참여 가능', '남녀 30 : 30')):
-        d.ellipse([M, y + 60 + k * 66 + 12, M + 16, y + 60 + k * 66 + 28], fill=ACCENT)
-        d.text((M + 34, y + 60 + k * 66), line, font=fs, fill=WHITE)
+        yy = y + 36 + k * 58
+        d.ellipse([M, yy + 12, M + 16, yy + 28], fill=ACCENT)
+        d.text((M + 34, yy), line, font=fs, fill=WHITE)
     cta_plate(d, '예매 → 프로필 링크', int(FH * 0.86) - 92 - 48)
     footer(d, 0)
     b.convert('RGB').save(os.path.join(OUT, 'S1.jpg'), quality=94)
@@ -172,22 +174,24 @@ def feeds():
     b = sheet.crop((2 * W, 0, 3 * W, FH)).convert('RGBA')
     d = ImageDraw.Draw(b)
     logo_line(d, M, 96)
-    y = head(d, ['입장권', '세 가지'], '여 · 남 따로. 예매할 때 고르면 돼요', 150, 250)
-    y += 60
-    fl = font(KRB, 40)
-    fn = font(KR, 28)
-    fp = font(KRB, 34)
+    # 표 전체가 노란 선 위에 들어가야 한다. 제목 한 줄, 줄 간격 84
+    y = head(d, ['입장권 세 가지'], '여 · 남 따로. 예매할 때 고르면 돼요', 120, 250)
+    y += 36
+    fl = font(KRB, 36)
+    fn = font(KR, 26)
+    fp = font(KRB, 32)
     for name, note, pf, pm in PRICES:
         d.line([(M, y), (W - M, y)], fill=WHITE + (70,), width=1)
-        y += 18
+        y += 14
         d.text((M, y), name, font=fl, fill=WHITE)
-        d.text((M, y + 50), note, font=fn, fill=WHITE + (180,))
+        d.text((M, y + 44), note, font=fn, fill=WHITE + (180,))
         s1 = f'여 {won(pf)}'
         s2 = f'남 {won(pm)}'
-        d.text((W - M - d.textlength(s1, font=fp), y + 2), s1, font=fp, fill=ACCENT)
-        d.text((W - M - d.textlength(s2, font=fp), y + 46), s2, font=fp, fill=WHITE)
-        y += 100
+        d.text((W - M - d.textlength(s1, font=fp), y), s1, font=fp, fill=ACCENT)
+        d.text((W - M - d.textlength(s2, font=fp), y + 40), s2, font=fp, fill=WHITE)
+        y += 84
     d.line([(M, y), (W - M, y)], fill=WHITE + (70,), width=1)
+    assert y < ly - 8, f'값 표가 노란 선을 넘는다: {y} >= {ly}'
     cta_plate(d, '예매 → 프로필 링크', int(FH * 0.86) - 92 - 48)
     footer(d, 0)
     b.convert('RGB').save(os.path.join(OUT, 'S2.jpg'), quality=94)
