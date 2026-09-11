@@ -25,8 +25,8 @@ from audio_reel import sat
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'partymoa')
 os.makedirs(OUT, exist_ok=True)
 
-STYLES = {'organ': (124.0, 8), 'epiano': (128.0, 8), 'dub': (140.0, 8)}
-ROOT = {'organ': 55.0, 'epiano': 49.0, 'dub': 41.2}       # A1 · G1 · E1
+STYLES = {'organ': (124.0, 8), 'epiano': (128.0, 8), 'dub': (140.0, 8), 'garage': (132.0, 8)}
+ROOT = {'organ': 55.0, 'epiano': 49.0, 'dub': 41.2, 'garage': 58.3}   # A1 · G1 · E1 · Bb1
 
 
 def _n(f, semi):
@@ -178,6 +178,33 @@ def build(style):
                 t = np.arange(n) / SR
                 place(buf, np.sin(2 * np.pi * _n(R, root) * t) * _env(n, 0.004, 0.5, 0.15) * 0.75, at(bar, b))
         buf = reverb(buf, 0.7, 0.10)
+
+    elif style == 'garage':
+        # 2스텝. 킥 1·2.5, 스네어 2·4, 하이햇 셔플. 오르간 스탭이 뒤박에, 이피가 답한다
+        prog = [(0, (0, 4, 7, 11)), (-3, (0, 3, 7, 10)), (5, (0, 4, 7, 11)), (-5, (0, 4, 7, 10))]
+        for bar in range(bars):
+            root, semis = prog[bar % 4]
+            for b in (0, 2.5):
+                place(buf, kick(0.4, 0.9 if bar >= 1 else 0.6), at(bar, b))
+            if bar >= 1:
+                place(buf, snare_break(0.16, 0.7), at(bar, 1))
+                place(buf, snare_break(0.16, 0.7), at(bar, 3))
+                for k in range(8):
+                    off = k * 0.5 + (0.08 if k % 2 else 0)
+                    place(buf, hat(0.05, 0.16 if k % 2 else 0.09), at(bar, off))
+            g = 0.75 if bar >= 2 else 0.5
+            place(buf, chord_organ(_n(R * 4, root), semis[:3], beat * 0.3, g), at(bar, 0.75))
+            place(buf, chord_organ(_n(R * 4, root), semis[:3], beat * 0.3, g), at(bar, 1.75))
+            place(buf, chord_organ(_n(R * 4, root), semis[:3], beat * 0.3, g * 0.8), at(bar, 3.25))
+            if bar >= 2:
+                place(buf, epiano(_n(R * 8, root + semis[1]), beat * 0.5, 0.35, 1.2), at(bar, 2.75))
+            for b in (0, 1.5, 2.5):
+                n = int(SR * beat * 0.6)
+                t = np.arange(n) / SR
+                place(buf, np.sin(2 * np.pi * _n(R, root) * t) * _env(n, 0.004, 0.45, 0.15) * 0.75, at(bar, b))
+            if bar == 3:
+                place(buf, noise_riser(beat * 4, 400, 7000, 0.22), at(bar, 0))
+        buf = reverb(buf, 0.8, 0.12)
 
     else:  # dub — 하프타임. 킥 1·2.5, 스네어 3 하나. 코드는 1.75·3.5 에 딜레이
         semis = (0, 3, 7, 10)
