@@ -158,13 +158,14 @@ def feeds():
     b = sheet.crop((W, 0, 2 * W, FH)).convert('RGBA')
     d = ImageDraw.Draw(b)
     logo_line(d, M, 96)
-    y = head(d, ['매주 토요일', '18:30'], '신림역 도보 2분 · 본파티 3시간 · 애프터 00:30까지', 150, 250)
+    y = head(d, ['매주 토요일', '18:30'], '신림역 도보 2분 · 본파티 3시간 · 애프터 00:30까지', 140, 240)
     # 글은 노란 선(60%) 위에서 끝난다. 선을 타고 넘으면 겹쳐 보인다
     fs = font(KRB, 38)
     for k, line in enumerate(('안주 · 주류 무제한', '술 못 먹어도 참여 가능', '남녀 30 : 30')):
-        yy = y + 36 + k * 58
+        yy = y + 24 + k * 54
         d.ellipse([M, yy + 12, M + 16, yy + 28], fill=ACCENT)
         d.text((M + 34, yy), line, font=fs, fill=WHITE)
+    assert yy + 44 < ly - 8, f'조건 줄이 노란 선을 넘는다: {yy + 44} >= {ly}'
     cta_plate(d, '예매 → 프로필 링크', int(FH * 0.86) - 92 - 48)
     footer(d, 0)
     b.convert('RGB').save(os.path.join(OUT, 'S1.jpg'), quality=94)
