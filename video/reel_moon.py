@@ -205,8 +205,13 @@ def end_card(img, t, t0):
     put(img, p, (W - p.shape[1]) // 2, int(H * 0.44), k)
     t1 = text_rgba(f'{CTA_KO} · 프로필 링크', KR, step(0), DIM)
     put(img, t1, (W - t1.shape[1]) // 2, int(H * 0.44) + p.shape[0] + U * 2, k)
-    t2 = text_rgba(f'{DATE}  ·  압구정 딥하우즈', BRAND_FONT, step(-1), FAINT, 0.12)
-    put(img, t2, (W - t2.shape[1]) // 2, int(H * 0.44) + p.shape[0] + U * 7, k)
+    # 날짜는 브랜드 서체, 장소는 한글 서체. Michroma 엔 한글이 없어 □ 로 찍혔다
+    t2a = text_rgba(f'{DATE}  ·  ', BRAND_FONT, step(-1), FAINT, 0.12)
+    t2b = text_rgba('압구정 딥하우즈', KR, step(-1), FAINT)
+    tw = t2a.shape[1] + t2b.shape[1]
+    ty = int(H * 0.44) + p.shape[0] + U * 7
+    put(img, t2a, (W - tw) // 2, ty, k)
+    put(img, t2b, (W - tw) // 2 + t2a.shape[1], ty + (t2a.shape[0] - t2b.shape[0]) // 2, k)
 
 
 # ══════════════════════════════════════════════════════════
