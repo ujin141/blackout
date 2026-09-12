@@ -67,9 +67,11 @@ def strip(y0, y1):
     """지난 파티 와이드컷을 세 칸 폭으로. 위아래는 검정으로 녹는다."""
     im = cv2.imread(os.path.join(PH, '029.jpg'))[..., ::-1]
     h, w = im.shape[:2]
-    bh = int(w * (y1 - y0) / RW)
+    # 오른쪽 26% 는 펜스와 다리뿐이라 잘라 낸다. 셋째 칸엔 풀과 튜브가 온다
+    xa, xb = 0, int(w * 0.74)
+    bh = int((xb - xa) * (y1 - y0) / RW)
     top = int(np.clip(h * 0.55 - bh / 2, 0, h - bh))
-    a = np.asarray(cv2.resize(im[top:top + bh], (RW, y1 - y0), interpolation=cv2.INTER_AREA),
+    a = np.asarray(cv2.resize(im[top:top + bh, xa:xb], (RW, y1 - y0), interpolation=cv2.INTER_AREA),
                    np.float32) / 255.0
     a = silverize(a) * 0.62
     yy = np.linspace(0, 1, y1 - y0, dtype=np.float32)[:, None, None]
