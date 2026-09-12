@@ -1,7 +1,7 @@
 """
 **AFTER MOON · 블랙아웃 한 줄.** 릴스 하나 + 피드 둘. 지난 파티에서 다음 파티로.
 
-    python feed_moon_row.py   →  out/moon/M_지난다음.mp4   (릴스 12초, 무음)
+    python feed_moon_row.py   →  out/moon/M_딥하우즈.mp4   (릴스 12초, 무음)
                                  out/moon/MC.jpg            (릴스 커버 1080×1920)
                                  out/moon/M1.jpg M2.jpg     (피드 1080×1350)
                                  out/moon/_한줄격자.jpg
@@ -9,22 +9,22 @@
 ## 한 줄이 한 판
 
 격자에서 [릴스 커버 | M1 | M2]. 올리는 순서 M2 → M1 → 릴스.
-셋을 잇는 건 **지난 파티 사진 한 장**이다. 루프탑 풀 와이드컷을 은색으로
-빼서 세 칸 아래쪽에 깔고, 달이 가운데 칸에서 그 위로 뜬다.
+셋을 잇는 건 **딥하우즈 영상 띠**다. 파티가 열리는 곳이니 그 영상이어야
+한다. 간판 · 홀 · 사람들 컷을 세 칸 아래쪽에 같은 높이로 깔고, 위아래를
+같은 선으로 묶는다. 달이 가운데 칸에서 띠 위로 머리를 내민다.
 
-    커버   AFTER SUNSET → AFTER MOON   지난 파티에서 다음 파티로
+    커버   여기서 합니다 · AFTER MOON   간판 컷
     M1     09.26 SAT                   22:00 – 02:10 · 압구정 딥하우즈 · 라인업
     M2     9,900                       웰컴샷 · 1차 30명 · 15:15 · QR
 
 ## 릴스
 
-지난 파티 사진 여섯 장이 1초씩 넘어가고, 다음 파티가 뜬다. 무음 —
-인스타 음원 얹게. 컷이 1초 고정이라 어떤 곡에도 안 어긋난다.
+간판 → 매장 컷 0.5초씩 → AFTER MOON. 무음 — 인스타 음원 얹게.
+컷이 0.5초 고정이라 어떤 곡에도 안 어긋난다.
 
 ## 색
 
-판은 검정·은색. 사진도 은색으로 뺀다. 색은 사람에게만 — 여기 사람은
-멀리 있으니 사진 전체를 은색으로 두는 게 맞다.
+판은 검정·은색. 영상은 채도만 조금 줄인다 — 간판 주황은 매장 얼굴이라 남긴다.
 """
 import os
 
@@ -44,8 +44,8 @@ from feed_crew_moon import (DIM, FAINT, INK, M, RULE, SILVER, U, BOT, TOP, W, H 
 from reel_moon import (DUR, FPS, NF, SAFE_BOT, SAFE_TOP, darken, end_card, fade,
                        finish, put, text_rgba)
 from reel_moon import DIM as DIM_T, FAINT as FAINT_T, INK as INK_T   # 글자용 RGBA 튜플
-from reel_moon2 import encode_silent, logo
-from reel_partymoa2 import kb
+from reel_moon2 import SHOTS_ALL, encode_silent, logo
+from reel_moon import clip_frames, footage
 
 H = 1920
 COLS = 3
@@ -53,7 +53,6 @@ RW = W * COLS
 BAND_Y = (H - FH) // 2
 PH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'partymoa', '_photos')
 PARTY_URL = 'https://www.partymoa.com/party/after-moon-20260926'
-LAST = 'AFTER SUNSET'
 
 
 def silverize(rgb, keep=0.22):
@@ -63,19 +62,28 @@ def silverize(rgb, keep=0.22):
     return rgb * keep + mono * (1 - keep)
 
 
+SHOT = dict((n, (t0, d)) for n, t0, d in SHOTS_ALL)
+# 칸마다 어느 컷을, 프레임 몇 번째를, 세로 어디를 쓸지 (컷, 프레임 비율, 세로 중심 비율)
+BAND_CUTS = [('s_sign', 0.55, 0.42), ('s_room', 0.5, 0.50), ('s_crowd', 0.6, 0.55)]
+
+
+def frame_of(name, frac):
+    t0, d = SHOT[name]
+    files = clip_frames(name, t0, d)
+    return footage(files[min(len(files) - 1, int(len(files) * frac))])
+
+
 def strip(y0, y1):
-    """지난 파티 와이드컷을 세 칸 폭으로. 위아래는 검정으로 녹는다."""
-    im = cv2.imread(os.path.join(PH, '029.jpg'))[..., ::-1]
-    h, w = im.shape[:2]
-    # 오른쪽 26% 는 펜스와 다리뿐이라 잘라 낸다. 셋째 칸엔 풀과 튜브가 온다
-    xa, xb = 0, int(w * 0.74)
-    bh = int((xb - xa) * (y1 - y0) / RW)
-    top = int(np.clip(h * 0.55 - bh / 2, 0, h - bh))
-    a = np.asarray(cv2.resize(im[top:top + bh, xa:xb], (RW, y1 - y0), interpolation=cv2.INTER_AREA),
-                   np.float32) / 255.0
-    a = silverize(a) * 0.62
-    yy = np.linspace(0, 1, y1 - y0, dtype=np.float32)[:, None, None]
-    a *= np.clip(yy / 0.22, 0, 1) * np.clip((1 - yy) / 0.30, 0, 1)
+    """딥하우즈 영상 컷 셋을 한 띠로. 칸마다 한 컷, 같은 높이."""
+    bh = y1 - y0
+    a = np.zeros((bh, RW, 3), np.float32)
+    for c, (name, frac, cy) in enumerate(BAND_CUTS):
+        fr = frame_of(name, frac)                       # 1080×1920 float
+        top = int(np.clip(fr.shape[0] * cy - bh / 2, 0, fr.shape[0] - bh))
+        a[:, c * W:(c + 1) * W] = fr[top:top + bh, :W]
+    a = silverize(a, 0.55) * 0.72
+    yy = np.linspace(0, 1, bh, dtype=np.float32)[:, None, None]
+    a *= np.clip(yy / 0.18, 0, 1) * np.clip((1 - yy) / 0.26, 0, 1)
     return a
 
 
@@ -96,8 +104,11 @@ def sheet():
     s = strip(y0, y1)
     # 띠는 달을 가린다. 달은 띠 위로 머리만 내민다
     yy = np.linspace(0, 1, y1 - y0, dtype=np.float32)[:, None, None]
-    m = np.clip(yy / 0.22, 0, 1) * np.clip((1 - yy) / 0.30, 0, 1)
+    m = np.clip(yy / 0.18, 0, 1) * np.clip((1 - yy) / 0.26, 0, 1)
     img[y0:y1] = img[y0:y1] * (1 - m) + s
+    # 세 컷을 한 띠로 묶는 선 두 줄. 칸 경계를 넘어 쭉 간다
+    for ly in (y0 + 60, y1 - 90):
+        cv2.line(img, (M, ly), (RW - M, ly), (SILVER * 0.35).tolist(), 1, cv2.LINE_AA)
     return img
 
 
@@ -109,19 +120,16 @@ def feeds():
     x0 = 0
     lh = header(img, x0, 1)
     y = lh + U * 9
-    lab = tmask('지난 파티 8.29', KR, step(-1))
+    lab = tmask('압구정 딥하우즈', KR, step(0))
     paint(img, lab, x0 + M, y + lab.shape[0] / 2, color=DIM, anchor='l')
-    y += lab.shape[0] + U
-    last = tmask(LAST, BRAND_FONT, min(fit(LAST, BRAND_FONT, W - M * 2, 0.06), 84), 0.06)
-    paint(img, last, x0 + M, y + last.shape[0] / 2, color=FAINT, anchor='l')
-    y += last.shape[0] + U * 2
-    arrow = tmask('↓  다음 파티 9.26', KR, step(-1))
-    paint(img, arrow, x0 + M, y + arrow.shape[0] / 2, color=DIM, anchor='l')
-    y += arrow.shape[0] + U
+    y += lab.shape[0] + U * 2
     ttl = tmask(TITLE, BRAND_FONT, min(fit(TITLE, BRAND_FONT, W - M * 2, 0.06), 110), 0.06)
     plate = metal(*ttl.shape, ttl.astype(np.float32) / 255.0)
     glow(img, ttl, x0 + M + ttl.shape[1] / 2, y + ttl.shape[0] / 2, SILVER, 0.22, 26, 'c', 'c')
     over(img, plate, x0 + M, y)
+    y += ttl.shape[0] + U * 2
+    here = tmask('여기서 합니다', KRB, step(3))
+    paint(img, here, x0 + M, y + here.shape[0] / 2, color=INK, anchor='l')
     # 재생 표시 — 이 칸이 릴스라는 신호. 사진 띠 위
     py = 1160
     cv2.fillPoly(img, [np.array([[x0 + M, py], [x0 + M, py + 44], [x0 + M + 36, py + 22]])], INK.tolist(), cv2.LINE_AA)
@@ -205,48 +213,53 @@ def feeds():
 # ══════════════════════════════════════════════════════════
 
 def reel():
-    cuts = [('209', (1.0, 1.10), (0, 0)), ('083', (1.1, 1.0), (-0.3, 0)),
-            ('184', (1.0, 1.12), (0, 0.3)), ('262', (1.05, 1.15), (0, -0.2)),
-            ('221', (1.0, 1.1), (0, 0)), ('244', (1.12, 1.0), (0, 0))]
-    per = 1.0
-    t_cut0 = 2.4
-    t_next = t_cut0 + per * len(cuts)
+    cut = 0.5
+    order = ['s_room', 's_crowd', 's_bar', 's_grill', 's_crowd', 's_room', 's_sign2',
+             's_bar', 's_steak', 's_crowd', 's_room', 's_crowd', 's_bar']
+    by = {n: clip_frames(n, t0, d) for n, t0, d in SHOTS_ALL}
+    t_cut0 = 2.0
+    t_next = t_cut0 + cut * len(order)
     t_end = 10.4
-    lab_last = text_rgba('지난 파티 · 8.29', KR, step(0), DIM_T)
-    ttl_last = text_rgba(LAST, BRAND_FONT, step(4), INK_T, 0.10)
-    lab_next = text_rgba('다음 파티', KR, step(0), DIM_T)
+    lab_here = text_rgba('압구정 딥하우즈', KR, step(0), DIM_T)
+    ttl_here = text_rgba('여기서 합니다', KRB, step(4), INK_T)
+    lab_next = text_rgba('09.26 SAT', BRAND_FONT, step(1), DIM_T, 0.2)
     ttl_next = text_rgba(TITLE, BRAND_FONT, step(5), INK_T, 0.10)
-    l1 = text_rgba(f'{DATE} · 22:00 — 02:10', KRB, step(1), INK_T)
-    l2 = text_rgba('압구정 딥하우즈 · 9,900원 · 1차 30명', KR, step(0), DIM_T)
+    l1 = text_rgba('22:00 — 02:10 · 9,900원 · 1차 30명', KRB, step(1), INK_T)
+    l2 = text_rgba('BHO · LYNN · LII · AROS · TS', BRAND_FONT, step(-1), DIM_T, 0.14)
 
     def frames():
         for i in range(NF):
             t = i / FPS
             if t < t_cut0:
-                img = silverize(kb('044', t / t_cut0, (1.0, 1.08), (0, 0), dim=0.5), 0.15)
-                darken(img, int(H * 0.36), int(H * 0.60), 0.4)
-                put(img, lab_last, (W - lab_last.shape[1]) / 2, H * 0.42, fade(t, 0.0))
-                put(img, ttl_last, (W - ttl_last.shape[1]) / 2, H * 0.42 + 60, fade(t, 0.2))
+                files = by['s_sign']
+                fi = min(len(files) - 1, int(t / t_cut0 * len(files)))
+                img = footage(files[fi], 1.0 + 0.05 * t / t_cut0)
+                darken(img, int(H * 0.52), int(H * 0.72), 0.45)
+                put(img, lab_here, (W - lab_here.shape[1]) / 2, H * 0.57, fade(t, 0.0))
+                put(img, ttl_here, (W - ttl_here.shape[1]) / 2, H * 0.57 + 44, fade(t, 0.2))
             elif t < t_next:
-                j = min(len(cuts) - 1, int((t - t_cut0) / per))
-                name, zm, pn = cuts[j]
-                k = (t - t_cut0 - j * per) / per
-                img = silverize(kb(name, k, zm, pn), 0.35)
-                n = text_rgba(f'{j + 1:02d} / {len(cuts):02d}', BRAND_FONT, step(-1), DIM_T, 0.2)
+                ci = min(len(order) - 1, int((t - t_cut0) / cut))
+                files = by[order[ci]]
+                k = (t - t_cut0 - ci * cut) / cut
+                fi = min(len(files) - 1, int(k * cut * FPS) + (ci * 9) % max(1, len(files) - 16))
+                img = footage(files[fi], 1.0 + 0.06 * k)
+                n = text_rgba(f'{ci + 1:02d} / {len(order):02d}', BRAND_FONT, step(-1), DIM_T, 0.2)
                 put(img, n, W - M - n.shape[1], SAFE_TOP + U * 4)
             else:
-                img = silverize(kb('029', (t - t_next) / (DUR - t_next), (1.0, 1.06), (0, 0), dim=0.55), 0.12)
-                darken(img, int(H * 0.32), int(H * 0.66), 0.45)
+                files = by['s_crowd']
+                img = footage(files[-1], 1.06)
+                darken(img, int(H * 0.30), int(H * 0.68), 0.5)
                 if t < t_end:
                     put(img, lab_next, (W - lab_next.shape[1]) / 2, H * 0.36, fade(t, t_next))
                     put(img, ttl_next, (W - ttl_next.shape[1]) / 2, H * 0.36 + 56, fade(t, t_next + 0.1))
-                    put(img, l1, (W - l1.shape[1]) / 2, H * 0.36 + 56 + ttl_next.shape[0] + U * 2, fade(t, t_next + 0.3))
-                    put(img, l2, (W - l2.shape[1]) / 2, H * 0.36 + 56 + ttl_next.shape[0] + U * 2 + l1.shape[0] + U, fade(t, t_next + 0.5))
+                    yy = H * 0.36 + 56 + ttl_next.shape[0] + U * 2
+                    put(img, l1, (W - l1.shape[1]) / 2, yy, fade(t, t_next + 0.3))
+                    put(img, l2, (W - l2.shape[1]) / 2, yy + l1.shape[0] + U, fade(t, t_next + 0.5))
             logo(img, M, SAFE_TOP + U * 2, 0.20)
             end_card(img, t, t_end)
             yield finish(img)
 
-    encode_silent('M_지난다음', frames())
+    encode_silent('M_딥하우즈', frames())
 
 
 if __name__ == '__main__':
