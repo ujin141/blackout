@@ -25,8 +25,8 @@ from audio_reel import sat
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'partymoa')
 os.makedirs(OUT, exist_ok=True)
 
-STYLES = {'organ': (124.0, 8), 'epiano': (128.0, 8), 'dub': (140.0, 8), 'garage': (132.0, 8)}
-ROOT = {'organ': 55.0, 'epiano': 49.0, 'dub': 41.2, 'garage': 58.3}   # A1 · G1 · E1 · Bb1
+STYLES = {'organ': (124.0, 8), 'epiano': (128.0, 8), 'dub': (140.0, 8), 'garage': (132.0, 8), 'disco': (118.0, 8)}
+ROOT = {'organ': 55.0, 'epiano': 49.0, 'dub': 41.2, 'garage': 58.3, 'disco': 51.9}   # A1 · G1 · E1 · Bb1 · G#1
 
 
 def _n(f, semi):
@@ -205,6 +205,33 @@ def build(style):
             if bar == 3:
                 place(buf, noise_riser(beat * 4, 400, 7000, 0.22), at(bar, 0))
         buf = reverb(buf, 0.8, 0.12)
+
+    elif style == 'disco':
+        # 디스코 하우스. 킥 4/4, 오픈햇 오프비트, 클랩 2·4, 옥타브 베이스가 걷는다.
+        # 코드는 이피로 4분음 스타카토 — 필터 디스코 느낌
+        prog = [(0, (0, 4, 7, 11)), (0, (0, 4, 7, 11)), (-2, (0, 3, 7, 10)), (5, (0, 4, 7, 11))]
+        for bar in range(bars):
+            root, semis = prog[bar % 4]
+            for b in range(4):
+                place(buf, kick(0.45, 0.9 if bar >= 1 else 0.6), at(bar, b))
+                place(buf, hat(0.11, 0.22 if bar >= 1 else 0.1, open_=True), at(bar, b + 0.5))
+            if bar >= 1:
+                place(buf, clap(0.5), at(bar, 1))
+                place(buf, clap(0.5), at(bar, 3))
+            g = 0.7 if bar >= 2 else 0.45
+            for b in (0, 1, 2, 3):
+                place(buf, chord_ep(_n(R * 4, root), semis, beat * 0.28, g * (1.0 if b % 2 == 0 else 0.7), 0.9), at(bar, b + 0.5))
+            if bar >= 3:
+                place(buf, chord_organ(_n(R * 8, root), semis[:2], beat * 0.9, 0.45), at(bar, 2))
+            # 옥타브 베이스. 8분음, 루트와 한 옥타브 위를 번갈아
+            for k in range(8):
+                n = int(SR * beat * 0.4)
+                t = np.arange(n) / SR
+                f = _n(R, root) * (2 if k % 2 else 1)
+                place(buf, np.sin(2 * np.pi * f * t) * _env(n, 0.003, 0.25, 0.1) * (0.6 if k % 2 else 0.8), at(bar, k * 0.5))
+            if bar == 3:
+                place(buf, noise_riser(beat * 4, 500, 8000, 0.22), at(bar, 0))
+        buf = reverb(buf, 0.9, 0.12)
 
     else:  # dub — 하프타임. 킥 1·2.5, 스네어 3 하나. 코드는 1.75·3.5 에 딜레이
         semis = (0, 3, 7, 10)
