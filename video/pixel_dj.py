@@ -16,9 +16,11 @@
     별        1px 별이 온 판에
     띠        맨 아래 조건 한 줄이 세 칸을 이어 흐른다
 
-## 색은 사람에게만
+## 사람은 사진 그대로
 
-판은 검정·남색·은색·흰색 네 단계. 누끼만 색이 있다 — 그것도 8색으로 줄인다.
+판(하늘·달·바닥·글자)만 픽셀이다. 누끼는 원본 해상도 사진으로 그 위에
+얹는다 — 픽셀 세상에 진짜 사람이 서 있는 대비가 이 판의 맛이다.
+층은 셋: 픽셀 배경 → 사진 → 픽셀 이름(어깨를 덮는다).
 BHO · LII 는 누끼가 없어 없다. 셋이 한 판이고 라인업 다섯은 띠에 다 적는다.
 
 ## 올리는 순서
@@ -31,7 +33,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 from fonts import KR, KRB
-from poster_crew import crop_head
+from poster_crew import crop_head, rimlight
+from poster_dj4 import melt, sharpen
 from poster_lineup import LINEUP
 from poster_moon import BRAND_FONT, OUT
 
@@ -116,20 +119,16 @@ def floor(d, y0=168, y1=190):
     d.line([(0, y0 - 1), (RW, y0 - 1)], fill=GRAY)
 
 
-def pixel_person(name, w, h):
-    """누끼를 픽셀로. 작게 줄인 뒤 8색으로. 알파는 딱 자른다."""
-    fig = crop_head(name, w * 2, h * 2)              # 2배로 받아 줄이면 점이 덜 튄다
-    rgb = (np.clip(fig[..., :3], 0, 1) * 255).astype(np.uint8)
-    a = (fig[..., 3] > 0.5).astype(np.uint8) * 255
-    im = Image.fromarray(rgb).resize((w, h), Image.BOX)
-    al = Image.fromarray(a).resize((w, h), Image.NEAREST)
-    q = im.quantize(colors=8, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert('RGB')
-    # 살짝 대비. 8색으로 줄이면 뭉개지니 밝은 건 더 밝게
-    arr = np.asarray(q, np.float32)
-    arr = np.clip((arr - 128) * 1.15 + 128, 0, 255).astype(np.uint8)
-    out = Image.fromarray(arr).convert('RGBA')
-    out.putalpha(al)
-    return out
+def photo_person(name, w, h):
+    """누끼를 원본 해상도로. 발치는 녹이고 테두리에 은빛 한 줄."""
+    fig = crop_head(name, w, h)
+    a_ = np.clip((fig[..., 3] - 0.045) / 0.955, 0, 1).copy()
+    px = sharpen(np.clip(fig[..., :3], 0, 1).copy(), 2.0, 0.6)
+    a_, px = melt(a_, px, 0.22, len(name) * 31, 1.0)
+    rim = rimlight(a_, 1.0, 1.4, 2.2, 0.28)
+    px = np.clip(px + rim[..., None] * np.float32(SILVER) / 255 * 0.55, 0, 1)
+    out = np.dstack([px, a_[..., None]])
+    return Image.fromarray((out * 255).astype(np.uint8), 'RGBA')
 
 
 def outline(d, im, x, y):
@@ -148,27 +147,31 @@ def text1(d, xy, s, path, size, fill, anchor='la'):
     d.text(xy, s, font=font(path, size), fill=fill, anchor=anchor)
 
 
-def tile(d, img, c, name):
+def tile(d, c, name):
+    """픽셀 층에 머리글만. 사람과 이름은 main 에서 층을 나눠 얹는다."""
     x0 = c * PW
-    n, a, b = slot(name)
-    # 머리글
     text1(d, (x0 + 8, 8), 'BLACKOUT', BRAND_FONT, 8, SILVER)
     text1(d, (x0 + PW - 8, 8), f'{c + 1:02d}/03', BRAND_FONT, 7, GRAY, 'ra')
-    text1(d, (x0 + PW // 2, 22), 'AFTER MOON · 09.26', BRAND_FONT, 6, GRAY, 'ma')
-    # 사람. 바닥 위에 선다. 이름이 어깨를 덮는다
-    fw, fh = 118, 122
-    fig = pixel_person(name, fw, fh)
-    fx, fy = x0 + (PW - fw) // 2, 48
-    outline(d, fig, fx, fy)
-    img.alpha_composite(fig, (fx, fy))
-    d = ImageDraw.Draw(img)
-    # 이름. 그림자 1px 검정 → 은색
-    ny = 142
-    text1(d, (x0 + PW // 2 + 1, ny + 1), name, BRAND_FONT, 22, BLACK, 'ma')
-    text1(d, (x0 + PW // 2, ny), name, BRAND_FONT, 22, WHITE, 'ma')
-    text1(d, (x0 + PW // 2 + 1, ny + 27), f'{n:02d}  {a} - {b}', BRAND_FONT, 7, BLACK, 'ma')
-    text1(d, (x0 + PW // 2, ny + 26), f'{n:02d}  {a} - {b}', BRAND_FONT, 7, SILVER, 'ma')
-    return d
+    text1(d, (x0 + PW // 2, 21), 'AFTER MOON · 09.26', BRAND_FONT, 7, GRAY, 'ma')
+
+
+FIG_W, FIG_H, FIG_Y = 118, 122, 48      # 픽셀 단위. 사진은 이걸 6배로 받는다
+NAME_Y = 142
+
+
+def names_layer():
+    """이름·시간만 든 투명 픽셀 층. 사진 위에 올라간다."""
+    lay = Image.new('RGBA', (RW, PH), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    d.fontmode = '1'
+    for c, name in enumerate(DJS):
+        x0 = c * PW
+        n, a, b = slot(name)
+        text1(d, (x0 + PW // 2 + 1, NAME_Y + 1), name, BRAND_FONT, 22, BLACK, 'ma')
+        text1(d, (x0 + PW // 2, NAME_Y), name, BRAND_FONT, 22, WHITE, 'ma')
+        text1(d, (x0 + PW // 2 + 1, NAME_Y + 27), f'{n:02d}  {a} - {b}', BRAND_FONT, 7, BLACK, 'ma')
+        text1(d, (x0 + PW // 2, NAME_Y + 26), f'{n:02d}  {a} - {b}', BRAND_FONT, 7, SILVER, 'ma')
+    return lay
 
 
 def band(d):
@@ -181,6 +184,7 @@ def band(d):
 
 
 def main():
+    # 1. 픽셀 배경
     img = Image.new('RGBA', (RW, PH), BLACK + (255,))
     d = ImageDraw.Draw(img)
     d.fontmode = '1'
@@ -188,10 +192,20 @@ def main():
     moon(d, RW // 2, 52, 34)
     floor(d)
     for c, name in enumerate(DJS):
-        d = tile(d, img, c, name)
+        tile(d, c, name)
     band(d)
+    big = img.resize((RW * S, PH * S), Image.NEAREST)
 
-    big = img.convert('RGB').resize((RW * S, PH * S), Image.NEAREST)
+    # 2. 사진. 원본 해상도로 얹는다
+    for c, name in enumerate(DJS):
+        fig = photo_person(name, FIG_W * S, FIG_H * S)
+        fx = c * PW * S + (PW * S - FIG_W * S) // 2
+        big.alpha_composite(fig, (fx, FIG_Y * S))
+
+    # 3. 이름. 픽셀로, 사람 앞에
+    big.alpha_composite(names_layer().resize((RW * S, PH * S), Image.NEAREST))
+
+    big = big.convert('RGB')
     tiles = []
     for c in range(COLS):
         t = big.crop((c * PW * S, 0, (c + 1) * PW * S, PH * S))
@@ -200,7 +214,7 @@ def main():
     g = Image.new('RGB', (PW * S * 3 + 16, PH * S), (255, 255, 255))
     for i, t in enumerate(tiles):
         g.paste(t, (i * (PW * S + 8), 0))
-    g.resize((g.width // 3, g.height // 3), Image.NEAREST).save(
+    g.resize((g.width // 3, g.height // 3), Image.LANCZOS).save(
         os.path.join(OUT, '_픽셀격자.jpg'), quality=92)
     print('완료: PX1~PX3')
 
