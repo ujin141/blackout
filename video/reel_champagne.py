@@ -154,7 +154,7 @@ def reel_2():
         for i in range(NF):
             t = i / FPS
             img, ci, t0 = base(cuts, t)
-            darken(img, int(H * 0.28), int(H * 0.74), 0.6)
+            darken(img, int(H * 0.28), int(H * 0.74), 0.8 if ci == 3 else 0.6)
             bubbles(img, bs, t, 0.3, 0.35)
             if ci < 3:
                 popin(img, big[ci], W / 2, H * 0.44, t, t0)
@@ -185,7 +185,7 @@ def reel_3():
         for i in range(NF):
             t = i / FPS
             img, ci, t0 = base(cuts, t)
-            darken(img, int(H * 0.28), int(H * 0.72), 0.6)
+            darken(img, int(H * 0.28), int(H * 0.72), 0.8 if ci == 0 else 0.6)
             if ci == 0:
                 popin(img, n1, W / 2, H * 0.44, t, 0.1)
                 popin(img, n2, W / 2, H * 0.44 + 120, t, beat(2) - 0.1)
