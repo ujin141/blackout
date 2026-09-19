@@ -75,8 +75,9 @@ def band(d):
     d.line([(0, y + hh(unit, f) + U * 2), (RW, y + hh(unit, f) + U * 2)], fill=RULE, width=1)
 
 
-def main():
-    img, b, bx, by = sheet()
+def render(img, b, bx, by, names=('Q1', 'Q2', 'Q3'), grid='_샴페인격자.jpg', marks=False):
+    """판 위에 글을 얹고 세 장으로 자른다. 릴스 커버도 같은 함수로 뽑는다 —
+    marks 가 True 면 칸마다 ▶ 릴스 표시를 단다."""
     pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
     pil.alpha_composite(Image.fromarray((np.clip(b, 0, 1) * 255).astype(np.uint8), 'RGBA'), (bx, by))
     d = ImageDraw.Draw(pil)
@@ -92,6 +93,9 @@ def main():
         pil.alpha_composite(lg, (x0 + W - M - lw, TOP + U))
         n = font(BRAND_FONT, step(-2))
         tracked(d, (x0 + M, BOT - hh('0', n)), f'{c + 1:02d} / 03', n, 0.30, FAINT)
+        if marks:
+            d.polygon([(x0 + W - M - 150, BOT - 34), (x0 + W - M - 150, BOT), (x0 + W - M - 122, BOT - 17)], fill=(214, 217, 226, 255))
+            d.text((x0 + W - M - 108, BOT - 34), '릴스 · 12초', font=font(KR, step(-2)), fill=FAINT)
 
     # ── Q1. 후크
     col = W - M * 2
@@ -150,14 +154,19 @@ def main():
     tiles = []
     for c in range(3):
         t = big.crop((c * W, 0, (c + 1) * W, H))
-        t.save(os.path.join(OUT, f'Q{c + 1}.jpg'), quality=94)
+        t.save(os.path.join(OUT, f'{names[c]}.jpg'), quality=94)
         tiles.append(t)
     g = Image.new('RGB', (W * 3 + 16, H), (255, 255, 255))
     for i, t in enumerate(tiles):
         g.paste(t, (i * (W + 8), 0))
     g.resize((g.width // 3, g.height // 3), Image.LANCZOS).save(
-        os.path.join(OUT, '_샴페인격자.jpg'), quality=92)
-    print('완료: Q1~Q3')
+        os.path.join(OUT, grid), quality=92)
+    print('완료:', ' '.join(names))
+    return tiles
+
+
+def main():
+    render(*sheet())
 
 
 if __name__ == '__main__':
