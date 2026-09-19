@@ -59,10 +59,10 @@ def bottle_rgba():
 
 def build(W, H, top, bot, tag):
     M = int(W * 0.082)
-    col = int((W - M * 2) * 0.60)          # 후크는 왼쪽 6할. 오른쪽은 병 자리
+    col = int((W - M * 2) * 0.66)          # 후크는 왼쪽 2/3. 오른쪽은 병 자리
 
-    fsub = font(KR, step(1))
-    fsub2 = font(KR, step(0))
+    fsub = font(KRB, step(2))
+    fsub2 = font(KR, step(1))
     fname = font(BRAND_FONT, step(1))
     fdate = font(BRAND_FONT, step(2))
     flead = font(KR, step(-1))
@@ -74,7 +74,7 @@ def build(W, H, top, bot, tag):
              + U * 4 + 2 + U * 3 + hh(STRIP, fstrip) + U * 3 + 2
              + U * 3 + hh(CTA, fcta))
 
-    y_hook = top + U * 7
+    y_hook = top + U * 5
     avail = (bot - lower - U * 5) - y_hook
     subs_h = U * 2 + hh(SUB, fsub) + U + hh(SUB2, fsub2)
     fh = font(KRB, 40)
@@ -88,7 +88,7 @@ def build(W, H, top, bot, tag):
             break
     hooks = [silver_text(t, fh, 0.0) for t in LINES]
     tall = sum(h.shape[0] for h in hooks) + int(U * 0.4)
-    y = y_hook + int(max(0, avail - tall - subs_h) * 0.30)
+    y = y_hook
 
     # ── 방 ──
     img = sky(W, H, [(0.0, (0.030, 0.030, 0.038)),
@@ -129,7 +129,10 @@ def build(W, H, top, bot, tag):
         pil.alpha_composite(
             Image.fromarray((np.clip(h, 0, 1) * 255).astype(np.uint8), 'RGBA'), (M, y))
         y += h.shape[0] + int(U * 0.4)
-    y += U * 2
+    # 조건은 후크와 아래 정보 **사이 한가운데**. 후크 밑에 붙이면 그 아래가
+    # 텅 비고, 아래에 붙이면 후크가 떠 보인다. 빈 자리를 반으로 나눈다
+    sub_h = hh(SUB, fsub) + U + hh(SUB2, fsub2)
+    y = y + (bot - lower - U * 2 - y - sub_h) // 2
     d.text((M, y), SUB, font=fsub, fill=INK)
     y += hh(SUB, fsub) + U
     d.text((M, y), SUB2, font=fsub2, fill=DIM)
