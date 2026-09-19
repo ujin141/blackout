@@ -1,9 +1,8 @@
 """
 **AFTER MOON 릴스 · 샴페인.** 딥하우즈 매장 영상 위에 병과 조건.
 
-    python reel_champagne.py   →  out/moon/C_샴페인.mp4        (12초, 종 소리 114)
-                                  out/moon/C_샴페인_무음.mp4   (인스타에서 음원 얹기)
-                                  out/moon/CC.jpg              (커버 1080×1920)
+    python reel_champagne.py   →  out/moon/C_샴페인.mp4   (12초, 무음 — 인스타에서 음원 얹기)
+                                  out/moon/CC.jpg         (커버 1080×1920)
 
 ## 흐름 (컷은 박에)
 
@@ -27,7 +26,7 @@ from poster_champagne import bottle_rgba
 from poster_hook import BRAND_FONT, silver_text
 from poster_moon import DATE, TITLE
 from reel_moon import (DIM, FAINT, FPS, H, INK, M, NF, OUT, SAFE_BOT, SAFE_TOP, U, W,
-                       beat, clip_frames, darken, encode, end_card, fade, finish, font,
+                       beat, clip_frames, darken, end_card, fade, finish, font,
                        footage, plate, put, step, text_rgba)
 from reel_moon2 import SHOTS_ALL, encode_silent, logo
 from render import out_expo
@@ -138,11 +137,8 @@ def main(argv):
                 Image.fromarray(out).save(os.path.join(OUT, 'CC.jpg'), quality=94)
             yield out
 
-    if 'silent' in argv:
-        encode_silent('C_샴페인_무음', frames())
-    else:
-        encode('C_샴페인', frames())
-        encode_silent('C_샴페인_무음', frames())
+    # 곡을 안 넣는다. 인스타에서 음원을 얹어야 릴스가 돈다
+    encode_silent('C_샴페인', frames())
 
 
 if __name__ == '__main__':
