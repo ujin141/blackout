@@ -50,6 +50,7 @@ SRC_DIR = os.path.join(os.path.expanduser('~'), 'Downloads')
 CACHE = os.path.join(OUT, '_reel_dh')
 T_END = 9.8
 DDAY = 'D-3'
+LEFT_F, LEFT_M = 2, 4                  # 9.23 앱 잔여. 바뀌면 여기만
 BAND = 1350
 BAND_Y = (H - BAND) // 2
 
@@ -79,7 +80,14 @@ def frame(path, zoom=1.0):
         cw, ch = int(w / zoom), int(h / zoom)
         x0, y0 = (w - cw) // 2, (h - ch) // 2
         im = im.crop((x0, y0, x0 + cw, y0 + ch)).resize((w, h), Image.LANCZOS)
-    return grade(np.asarray(im, np.float32) / 255.0)
+    return expose(grade(np.asarray(im, np.float32) / 255.0))
+
+
+def expose(a):
+    """grade 가 검정을 내리고 0.86 을 곱해 판이 너무 어두웠다. 감마를 풀고
+    한 단 올린다. 간판 같은 밝은 데는 클립되지 않게 무릎을 준다."""
+    a = np.clip(a, 0, 1) ** 0.80 * 1.30
+    return np.where(a > 0.85, 0.85 + (a - 0.85) * 0.45, a)
 
 
 def still(n, t):
@@ -104,7 +112,6 @@ def base(cuts, t):
     k = (t - at) / max(0.01, nxt - at)
     fi = min(len(files) - 1, int((t - at) * FPS))
     img = frame(files[fi], 1.0 + 0.05 * k)
-    img *= 0.80
     logo(img, M, SAFE_TOP + U * 2, 0.22)
     return img, ci, at
 
@@ -165,7 +172,7 @@ def reel_2():
     h2 = silver_text('딥하우즈', font(KRB, 180), 0.0)
     rows = [('22:00 — 02:10', '토요일 밤 열 시부터 새벽 두 시'),
             ('9,900원', '웰컴샷 포함 · 남녀 같은 값'),
-            ('1차 30명', '남녀 15 : 15 · 한쪽 차면 마감')]
+            (f'{LEFT_F + LEFT_M}자리 남음', f'여 {LEFT_F} · 남 {LEFT_M} · 한쪽 차면 그쪽부터 마감')]
     bigs = [silver_text(a, font(KRB, 150), 0.0) for a, _ in rows]
     smalls = [text_rgba(b, KR, step(1), DIM) for _, b in rows]
 
@@ -205,8 +212,8 @@ def reel_3():
     d1 = plate(DDAY, 300, 0.04)
     d2 = silver_text('토요일 밤 10시', font(KRB, 140), 0.0)
     d3 = text_rgba('추석 연휴 마지막날', KR, step(2), DIM)
-    l1 = silver_text('30명만', font(KRB, 170), 0.0)
-    l2 = text_rgba('남녀 15 : 15 · 한쪽 차면 그쪽부터 마감', KR, step(1), DIM)
+    l1 = silver_text(f'여 {LEFT_F} · 남 {LEFT_M}', font(KRB, 170), 0.0)
+    l2 = text_rgba(f'자리 남았어요 · 30명 중 {30 - LEFT_F - LEFT_M}명 찼어요', KR, step(1), DIM)
     l3 = silver_text('혼자 와도 됩니다', font(KRB, 120), 0.0)
     l4 = text_rgba('1인 예매 환영 · 웰컴샷 한 잔', KR, step(1), DIM)
 
@@ -237,7 +244,7 @@ def reel_3():
 
 # ── 커버 ──────────────────────────────────────────────
 # (컷, 시각, 띠를 자를 세로 오프셋, 밝기). 간판은 글 아래로 내리고, 병은 어두워서 올린다
-COVER_SRC = [(1426, 20.5, BAND_Y, 0.70), (1415, 4.5, 60, 0.62), (1438, 6.0, BAND_Y, 1.25)]
+COVER_SRC = [(1426, 20.5, BAND_Y, 0.95), (1415, 4.5, 60, 0.80), (1438, 6.0, BAND_Y, 1.35)]
 TOP, BOT = 90, 1266
 
 
@@ -247,7 +254,7 @@ def covers():
     for c, (n, t, oy, k) in enumerate(COVER_SRC):
         img[:, c * W:(c + 1) * W] = still(n, t)[oy:oy + BAND] * k
     yy = np.linspace(0, 1, BAND, dtype=np.float32)[:, None, None]
-    img *= 0.42 + 0.58 * np.exp(-((yy - 0.5) / 0.30) ** 2)
+    img *= 0.50 + 0.50 * np.exp(-((yy - 0.5) / 0.30) ** 2)
     pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
     d = ImageDraw.Draw(pil)
 
@@ -300,7 +307,7 @@ def covers():
     y += 260 + U * 4
     d.text((x0 + M, y), '9,900원 · 웰컴샷 포함', font=font(KRB, step(2)), fill=INK)
     y += step(2) + U * 2
-    d.text((x0 + M, y), '1차 30명 · 남녀 15 : 15', font=font(KR, step(1)), fill=DIM)
+    d.text((x0 + M, y), f'여 {LEFT_F}자리 · 남 {LEFT_M}자리 남음', font=font(KR, step(1)), fill=DIM)
 
     out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
     band_img = Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8))
@@ -308,7 +315,7 @@ def covers():
     for c, (n, t, oy, k) in enumerate(COVER_SRC):
         tile = band_img.crop((c * W, 0, (c + 1) * W, BAND))
         tiles.append(tile)
-        full = Image.fromarray((np.clip(still(n, t) * 0.28, 0, 1) * 255).astype(np.uint8))
+        full = Image.fromarray((np.clip(still(n, t) * 0.36, 0, 1) * 255).astype(np.uint8))
         full.paste(tile, (0, BAND_Y))
         full.save(os.path.join(OUT, f'DC{c + 1}.jpg'), quality=94)
     g = Image.new('RGB', (W * 3 + 16, BAND), (255, 255, 255))
