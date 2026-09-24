@@ -25,7 +25,7 @@ from PIL import Image
 from fonts import KR, KRB
 from poster_hook import silver_text
 from poster_moon import BRAND_FONT, DATE, OUT, TITLE
-from reel_dh import LEFT_F, LEFT_M, clip, frame
+from reel_dh import clip, frame
 from reel_moon import DIM, FPS, H, INK, M, U, W, darken, fade, finish, font, plate, put, step, text_rgba
 from reel_moon2 import encode_silent, logo
 from render import out_expo
@@ -47,7 +47,7 @@ WORDS = [(0.0, 1.2, '내일 밤 10시', '9.26 토 · 추석 마지막 밤'),
          (2.8, 3.4, '웰컴샷', '한 잔 포함'),
          (3.4, 4.0, 'DJ 5명', '테크하우스 · 베이스하우스 · 테크노'),
          (4.0, 4.8, '새벽 2시까지', '22:00 — 02:10'),
-         (4.8, 6.0, f'여 {LEFT_F} · 남 {LEFT_M}', '자리 남았어요'),
+         (4.8, 6.0, '거의 마감', '몇 자리 안 남았어요'),
          (6.0, 7.0, '혼자 와도 됨', '1인 예매 환영'),
          (7.0, 9.0, 'AFTER MOON', '예매 → 프로필 링크')]
 
