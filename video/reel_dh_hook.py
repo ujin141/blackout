@@ -76,7 +76,8 @@ def main():
             # 컷이 넘어갈 때 살짝 크게 들어와서 줄어든다. 박에 맞춘 느낌
             img = frame(files[fi], 1.10 - 0.10 * out_expo(min(1, k * 2)))
             img *= 1.0 + 0.18 * max(0, 1 - k * 4)
-            darken(img, int(H * 0.34), int(H * 0.68), 0.55)
+            # 간판·패널 컷은 밝아서 글자가 묻힌다. 그 컷만 더 누른다
+            darken(img, int(H * 0.34), int(H * 0.68), 0.85 if SHOTS[ci][0] in (1415, 1408, 1424, 1433) else 0.6)
             for t0, t1, a, b in WORDS:
                 if t0 <= t < t1:
                     kk = fade(t, t0, 0.18)
