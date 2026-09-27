@@ -16,9 +16,15 @@
     달       가운데 장 위에 큰 보름달. 빛줄기가 양옆 장까지 번진다
     박쥐     달 둘레에서 세 장을 가로질러 흩어진다
     땅       철창 울타리와 안개가 세 장 바닥을 지난다
-    호박     셋째 장 울타리 앞에 하나. **색은 호박불 하나뿐** — 판은 검정·은색
+    호박     셋째 장 무덤 사이에 둘
+    묘지     울타리 앞에 묘비가 세 장을 지난다. 안개 속에 붉은 눈이 몇 쌍
 
-비네트는 안 건다. 칸마다 가장자리를 누르면 격자에서 이음새가 보인다.
+## 무섭게
+
+핏빛 달 · 글자에서 흘러내리는 피 · 묘비 · 어둠 속 눈 · 모서리 거미줄 · 맨 나무 둘.
+색은 **피 빨강과 호박불** 둘. 나머지는 검정·은색.
+
+비네트는 한 장씩이 아니라 **세 장을 붙인 판 전체**에 건다. 그래야 이음새가 안 보인다.
 
 올리는 순서 HW3 → HW2 → HW1. 격자 새 글이 왼쪽 위.
 """
@@ -28,7 +34,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
-from fest_kit import night, sky
+from fest_kit import night, sky, vignette
 from fonts import KR, KRB
 from poster_hook import BRAND_FONT, DIM, FAINT, INK, U, font, hh, probe, silver_text, step
 from poster_kit import bloom, grain
@@ -174,6 +180,137 @@ def ember(img, glow):
     img += (halo + wide)[..., None] * EMBER * 0.55
 
 
+# ── 무서운 것들 ───────────────────────────────────────
+BLOOD = np.float32([0.46, 0.02, 0.035])
+BLOOD_HI = np.float32([0.85, 0.16, 0.14])
+EYE = np.float32([1.0, 0.10, 0.06])
+
+
+def blood_moon(R):
+    """핏빛 달. 은색 달 표면을 그대로 두고 색만 붉게 가라앉힌다."""
+    mf = moonface(R)
+    mf[..., 0] *= 0.95
+    mf[..., 1] *= 0.30
+    mf[..., 2] *= 0.28
+    return mf
+
+
+def moon_halo(img, cx, cy, R):
+    H, W = img.shape[:2]
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    dd = (xx - cx) ** 2 + (yy - cy) ** 2
+    img += np.exp(-dd / (2 * (R * 1.5) ** 2))[..., None] * np.float32([0.26, 0.030, 0.035])
+    img += np.exp(-dd / (2 * (R * 4.0) ** 2))[..., None] * np.float32([0.07, 0.010, 0.014])
+
+
+def dripping(m, seed, n=(2, 4), max_len=160):
+    """
+    글자 밑에서 피가 흘러내린다. m 은 silver_text 가 준 RGBA.
+
+    글자 아래쪽 30% 를 붉게 물들이고, 밑변에서 몇 줄기를 떨어뜨린다.
+    줄기는 끝이 둥글게 맺힌다 — 막대로 끝나면 페인트다.
+    """
+    rng = np.random.default_rng(seed)
+    h, w = m.shape[:2]
+    pad = max_len + 30
+    out = np.zeros((h + pad, w, 4), np.float32)
+    out[:h] = m
+    t = np.clip((np.arange(h, dtype=np.float32) / h - 0.62) / 0.38, 0, 1)[:, None, None]
+    rgb = out[:h, :, :3]
+    out[:h, :, :3] = rgb * (1 - t * 0.85) + BLOOD * t * 0.85 + BLOOD_HI * t * 0.15 * rgb.mean(-1, keepdims=True)
+    a = m[..., 3]
+    bottom = np.full(w, -1)
+    for x in range(w):
+        ys = np.where(a[:, x] > 0.6)[0]
+        if len(ys):
+            bottom[x] = ys.max()
+    cols = [x for x in range(4, w - 4) if bottom[x] > h * 0.6]
+    if not cols:
+        return out
+    k = int(rng.integers(n[0], n[1] + 1))
+    lay = np.zeros((h + pad, w), np.float32)
+    for x in rng.choice(cols, size=min(k, len(cols)), replace=False):
+        y0 = int(bottom[x]) - 4
+        L = int(rng.uniform(0.25, 1.0) * max_len)
+        ww = rng.uniform(5, 11)
+        cv2.line(lay, (int(x), y0), (int(x), y0 + L), 1.0, int(ww), cv2.LINE_AA)
+        cv2.circle(lay, (int(x), y0 + L), int(ww * 0.85), 1.0, -1, cv2.LINE_AA)
+        # 밑변을 따라 살짝 번진 자리
+        cv2.ellipse(lay, (int(x), y0 + 2), (int(ww * 1.6), int(ww * 0.7)), 0, 0, 360, 1.0, -1, cv2.LINE_AA)
+    lay = cv2.GaussianBlur(lay, (0, 0), 0.8)
+    shade = np.clip(np.linspace(0.8, 1.15, h + pad, dtype=np.float32), 0, 1.2)[:, None, None]
+    col = BLOOD * shade
+    hi = cv2.GaussianBlur(np.roll(lay, -2, axis=1) - lay, (0, 0), 1.0).clip(0, 1)
+    col = col + hi[..., None] * BLOOD_HI * 0.9
+    na = np.maximum(out[..., 3], lay)
+    mix = lay[..., None] * (1 - out[..., 3:4])
+    out[..., :3] = out[..., :3] + col * mix
+    out[..., 3] = na
+    return out
+
+
+def tomb(d, cx, base, w, h, kind, lean=0.0):
+    """묘비. 둥근 머리 · 십자가 · 기운 판."""
+    fill, rim = (10, 8, 10, 255), (70, 30, 32, 255)
+    if kind == 0:
+        pts = [(cx - w / 2, base), (cx - w / 2, base - h + w / 2)]
+        pts += [(cx + np.cos(a) * w / 2, base - h + w / 2 - np.sin(a) * w / 2) for a in np.linspace(np.pi, 0, 14)]
+        pts += [(cx + w / 2, base - h + w / 2), (cx + w / 2, base)]
+    elif kind == 1:
+        t = w * 0.26
+        pts = [(cx - t / 2, base), (cx - t / 2, base - h * 0.62), (cx - w / 2, base - h * 0.62),
+               (cx - w / 2, base - h * 0.62 - t), (cx - t / 2, base - h * 0.62 - t), (cx - t / 2, base - h),
+               (cx + t / 2, base - h), (cx + t / 2, base - h * 0.62 - t), (cx + w / 2, base - h * 0.62 - t),
+               (cx + w / 2, base - h * 0.62), (cx + t / 2, base - h * 0.62), (cx + t / 2, base)]
+    else:
+        pts = [(cx - w / 2, base), (cx - w / 2 + 6, base - h), (cx + w / 2 + 6, base - h + 10), (cx + w / 2, base)]
+    c, s = np.cos(lean), np.sin(lean)
+    pts = [(cx + (x - cx) * c - (y - base) * s, base + (x - cx) * s + (y - base) * c) for x, y in pts]
+    d.polygon(pts, fill=fill, outline=rim)
+
+
+def graveyard(d, W, base, seed, n, hmin, hmax, avoid=()):
+    rng = np.random.default_rng(seed)
+    xs = np.sort(rng.uniform(40, W - 40, n))
+    for x in xs:
+        if any(a0 < x < a1 for a0, a1 in avoid):
+            continue
+        h = rng.uniform(hmin, hmax)
+        tomb(d, x, base + rng.uniform(-6, 10), h * rng.uniform(0.5, 0.7), h,
+             int(rng.integers(0, 3)), rng.normal(0, 0.07))
+
+
+def eyes(glow, spots):
+    """어둠 속 눈. 둘씩 짝, 가로로 길게."""
+    g = ImageDraw.Draw(glow)
+    for x, y, s in spots:
+        for dx in (-s * 1.6, s * 1.6):
+            g.ellipse([x + dx - s, y - s * 0.45, x + dx + s, y + s * 0.45], fill=255)
+
+
+def eye_glow(img, glow):
+    m = np.asarray(glow, np.float32) / 255.0
+    core = cv2.GaussianBlur(m, (0, 0), 0.8)
+    halo = cv2.GaussianBlur(m, (0, 0), 10) * 4.0
+    img[...] = img * (1 - core[..., None]) + np.float32([1.0, 0.55, 0.40]) * core[..., None]
+    img += halo[..., None] * EYE * 0.55
+
+
+def web(d, cx, cy, R, a0, a1, spokes=7, rings=7):
+    """모서리 거미줄. 살은 곧게, 고리는 가운데로 처지게."""
+    col = (150, 148, 156, 150)
+    angs = np.linspace(a0, a1, spokes)
+    for a in angs:
+        d.line([(cx, cy), (cx + np.cos(a) * R, cy + np.sin(a) * R)], fill=col, width=1)
+    for k in range(1, rings + 1):
+        r = R * k / rings
+        for a, b in zip(angs, angs[1:]):
+            p0 = (cx + np.cos(a) * r, cy + np.sin(a) * r)
+            p1 = (cx + np.cos(b) * r, cy + np.sin(b) * r)
+            mid = (cx + np.cos((a + b) / 2) * r * 0.86, cy + np.sin((a + b) / 2) * r * 0.86)
+            d.line([p0] + _bez(p0, mid, p1, 6), fill=col, width=1)
+
+
 def logo_img(w):
     lg = Image.open(LOGO).convert('RGBA')
     return lg.resize((w, max(1, round(lg.height * w / lg.width))), Image.LANCZOS)
@@ -183,12 +320,20 @@ def paste(pil, arr, x, y):
     pil.alpha_composite(Image.fromarray((np.clip(arr, 0, 1) * 255).astype(np.uint8), 'RGBA'), (int(x), int(y)))
 
 
-def finish(pil, glow, tag):
+def finish(pil, glow, eye_mask):
     out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
     ember(out, glow)
-    bloom(out, 0.60, out.shape[1] * 0.006, 0.34)
-    grain(out, 0.010)
+    eye_glow(out, eye_mask)
+    bloom(out, 0.58, out.shape[1] * 0.006, 0.36)
+    vignette(out, 0.42, 1.8)
+    grain(out, 0.018)
     return out
+
+
+def night_sky(W, H):
+    img = sky(W, H, [(0.0, (0.010, 0.008, 0.012)), (0.40, (0.040, 0.014, 0.020)),
+                     (0.80, (0.085, 0.022, 0.026)), (1.0, (0.020, 0.008, 0.010))])
+    return img
 
 
 # ══════════════════════════════════════════════════════════
@@ -200,38 +345,39 @@ def feed():
     RW = W * 3
     M = 88
     TOP = 90
-    img = sky(RW, H, [(0.0, (0.034, 0.034, 0.050)), (0.40, (0.082, 0.080, 0.118)),
-                      (0.78, (0.050, 0.050, 0.070)), (1.0, (0.030, 0.030, 0.040))])
-    starfield(img, 40, 900, 360, seed=31)
-    mcx, mcy, MR = W + W // 2, 360, 232
-    godrays(img, mcx, mcy, MR, seed=5, a=0.20)
-    yy, xx = np.mgrid[0:H, 0:RW].astype(np.float32)
-    img += np.exp(-((xx - mcx) ** 2 + (yy - mcy) ** 2) / (2 * (MR * 1.8) ** 2))[..., None] * \
-        np.float32([0.10, 0.10, 0.13])
-    over(img, moonface(MR), mcx - MR, mcy - MR)
-    horizon(img, H - 150, 150, 0.30)
+    img = night_sky(RW, H)
+    starfield(img, 40, 700, 180, seed=31)
+    mcx, mcy, MR = W + W // 2, 360, 236
+    moon_halo(img, mcx, mcy, MR)
+    over(img, blood_moon(MR), mcx - MR, mcy - MR)
+    horizon(img, H - 170, 170, 0.22)
+    img += np.exp(-((np.arange(H, dtype=np.float32) - (H - 170)) / 170) ** 2)[:, None, None] * \
+        np.float32([0.10, 0.012, 0.014])
 
     pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
-    d = ImageDraw.Draw(pil)
-    # 첫 장 왼쪽 가장자리에 맨 나무. 달(둘째 장) · 호박(셋째 장) 과 무게를 맞춘다
-    tree(d, 30, H - 40, np.deg2rad(84), 330, 30, 7, np.random.default_rng(3))
-    # 박쥐. 달 앞은 크고 촘촘, 멀어질수록 작고 성기게. 글자 띠(620~960)는 비운다
-    free = lambda x, y: not (600 < y < 990) and 60 < y < 1060
-    bats(d, bat_swarm(7, mcx, mcy, 240, 110, 44, 104, seed=7, keep=free))
-    bats(d, bat_swarm(20, mcx, 400, 1150, 220, 18, 48, seed=8, keep=free))
+    d = ImageDraw.Draw(pil, 'RGBA')
+    web(d, 0, 0, 300, np.deg2rad(4), np.deg2rad(86))
+    web(d, RW, 0, 300, np.deg2rad(94), np.deg2rad(176))
+    tree(d, 30, H - 40, np.deg2rad(82), 340, 32, 7, np.random.default_rng(3))
+    tree(d, RW - 30, H - 40, np.deg2rad(98), 320, 30, 7, np.random.default_rng(9))
+    free = lambda x, y: not (600 < y < 1000) and 60 < y < 1040
+    bats(d, bat_swarm(8, mcx, mcy, 240, 120, 44, 108, seed=7, keep=free))
+    bats(d, bat_swarm(22, mcx, 400, 1150, 230, 18, 50, seed=8, keep=free))
 
     base = H - 40
-    fence(d, RW, base, 150)
+    fence(d, RW, base - 70, 130)
+    graveyard(d, RW, base, 21, 26, 70, 150, avoid=((2 * W + 470, 2 * W + 920),))
     glow = Image.new('L', (RW, H), 0)
-    pumpkin(d, glow, 2 * W + 790, base - 4, 190)
+    pumpkin(d, glow, 2 * W + 800, base - 2, 190)
     pumpkin(d, glow, 2 * W + 600, base - 2, 110)
 
     out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
-    fog(out, H - 260, H, seed=41, a=0.12)
+    fog(out, H - 300, H, seed=41, a=0.20)
     pil = Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
     d = ImageDraw.Draw(pil)
+    eye_mask = Image.new('L', (RW, H), 0)
+    eyes(eye_mask, [(380, H - 130, 5), (1450, H - 115, 4), (1900, H - 150, 3.5), (2380, H - 120, 5)])
 
-    # 머리
     fe = font(BRAND_FONT, step(-2))
     lg = logo_img(int(W * 0.17))
     for c in range(3):
@@ -239,7 +385,6 @@ def feed():
         tracked(d, (x0 + M, TOP + U * 2), 'BLACKOUT CREW', fe, 0.40, FAINT)
         pil.alpha_composite(lg, (x0 + W - M - lg.width, TOP + U))
 
-    # HALLOWEEN. 아홉 칸에 한 자씩, 칸 가운데
     slot = RW / len(WORD)
     fw = font(BRAND_FONT, 40)
     for size in range(400, 60, -4):
@@ -247,27 +392,28 @@ def feed():
         if max(probe.textlength(ch, font=f) for ch in WORD) <= slot * 0.80:
             fw = f
             break
-    ly = 640
+    ly = 620
+    lh = 0
     for i, ch in enumerate(WORD):
-        m = silver_text(ch, fw, 0.0)
+        m = dripping(silver_text(ch, fw, 0.0), seed=100 + i, n=(1, 3), max_len=120)
         paste(pil, m, slot * i + (slot - m.shape[1]) / 2, ly)
-        lh = m.shape[0]
+        lh = max(lh, silver_text(ch, fw, 0.0).shape[0])
     d = ImageDraw.Draw(pil)
 
-    # 글자 아래 한 줄씩
-    y = ly + lh + U * 5
+    y = ly + lh + 150
     f2 = font(KRB, step(3))
     d.text((M, y), '블랙아웃 할로윈 파티', font=f2, fill=INK)
     d.text((M, y + hh('블', f2) + U), 'BLACKOUT HALLOWEEN', font=font(BRAND_FONT, step(-1)), fill=DIM)
     fd = font(BRAND_FONT, step(4))
     tracked(d, (W + (W - tracked_w(DATE, fd, 0.06)) / 2, y - 6), DATE, fd, 0.06, INK)
-    d.text((W + (W - probe.textlength('할로윈 당일 밤', font=font(KR, step(1)))) / 2, y + hh(DATE, fd) + U),
-           '할로윈 당일 밤', font=font(KR, step(1)), fill=DIM)
+    sub = '할로윈 당일 밤'
+    d.text((W + (W - probe.textlength(sub, font=font(KR, step(1)))) / 2, y + hh(DATE, fd) + U),
+           sub, font=font(KR, step(1)), fill=DIM)
     x3 = 2 * W + M
     d.text((x3, y), PERK, font=font(KRB, step(2)), fill=INK)
     d.text((x3, y + hh('분', font(KRB, step(2))) + U), TBA, font=font(KR, step(0)), fill=DIM)
 
-    out = finish(pil, glow, 'feed')
+    out = finish(pil, glow, eye_mask)
     big = Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8))
     tiles = []
     for c in range(3):
@@ -289,34 +435,37 @@ def feed():
 def story():
     W, H = 1080, 1920
     M = 88
-    TOP, BOT = 250, 1620                  # 위아래는 인스타 UI 가 덮는다
-    img = sky(W, H, [(0.0, (0.018, 0.018, 0.028)), (0.36, (0.056, 0.054, 0.084)),
-                     (0.78, (0.030, 0.030, 0.044)), (1.0, (0.014, 0.014, 0.020))])
-    starfield(img, 60, 1300, 240, seed=32)
+    TOP, BOT = 250, 1620
+    img = night_sky(W, H)
+    starfield(img, 60, 900, 140, seed=32)
     mcx, mcy, MR = W // 2, 640, 300
-    godrays(img, mcx, mcy, MR, seed=6, a=0.22)
-    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-    img += np.exp(-((xx - mcx) ** 2 + (yy - mcy) ** 2) / (2 * (MR * 1.7) ** 2))[..., None] * \
-        np.float32([0.10, 0.10, 0.13])
-    over(img, moonface(MR), mcx - MR, mcy - MR)
-    horizon(img, H - 420, 170, 0.30)
+    moon_halo(img, mcx, mcy, MR)
+    over(img, blood_moon(MR), mcx - MR, mcy - MR)
+    horizon(img, H - 440, 170, 0.22)
+    img += np.exp(-((np.arange(H, dtype=np.float32) - (H - 440)) / 200) ** 2)[:, None, None] * \
+        np.float32([0.10, 0.012, 0.014])
 
     pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
-    d = ImageDraw.Draw(pil)
-    free = lambda x, y: (y < 1000 or y > 1560) and y > TOP + 60
-    bats(d, bat_swarm(5, mcx, mcy, 220, 180, 60, 120, seed=11, keep=free))
+    d = ImageDraw.Draw(pil, 'RGBA')
+    web(d, 0, 0, 230, np.deg2rad(4), np.deg2rad(86))
+    web(d, W, 0, 230, np.deg2rad(94), np.deg2rad(176))
+    free = lambda x, y: (y < 980 or y > 1560) and y > TOP + 60
+    bats(d, bat_swarm(6, mcx, mcy, 220, 180, 60, 124, seed=11, keep=free))
     bats(d, bat_swarm(12, mcx, 560, 440, 280, 18, 46, seed=12, keep=free))
 
-    base = H - 270                        # 답장 바 위로 올린다
-    fence(d, W, base, 160)
+    base = H - 270
+    fence(d, W, base - 40, 110)
+    graveyard(d, W, base, 23, 10, 80, 160, avoid=((W - 380, W - 80), (120, 320)))
     glow = Image.new('L', (W, H), 0)
-    pumpkin(d, glow, W - 230, base - 4, 220)
-    pumpkin(d, glow, 210, base - 2, 120)
+    pumpkin(d, glow, W - 230, base - 2, 220)
+    pumpkin(d, glow, 220, base - 2, 120)
 
     out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
-    fog(out, H - 540, H, seed=42, a=0.12)
+    fog(out, H - 560, H, seed=42, a=0.20)
     pil = Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
     d = ImageDraw.Draw(pil)
+    eye_mask = Image.new('L', (W, H), 0)
+    eyes(eye_mask, [(470, base - 60, 5), (640, base - 40, 4)])
 
     fe = font(BRAND_FONT, step(-1))
     tracked(d, (M, TOP + U), 'BLACKOUT CREW', fe, 0.40, FAINT)
@@ -324,18 +473,18 @@ def story():
     pil.alpha_composite(lg, (W - M - lg.width, TOP))
     d = ImageDraw.Draw(pil)
 
-    # HALLOWEEN 한 줄, 판 폭 가득
     fw = font(BRAND_FONT, 40)
     for size in range(300, 40, -2):
         f = font(BRAND_FONT, size)
         if tracked_w(WORD, f, 0.02) <= W - M * 2:
             fw = f
             break
-    y = 1000
-    m = silver_text(WORD, fw, 0.02)
+    y = 960
+    m0 = silver_text(WORD, fw, 0.02)
+    m = dripping(m0, seed=7, n=(5, 7), max_len=110)
     paste(pil, m, (W - m.shape[1]) / 2, y)
     d = ImageDraw.Draw(pil)
-    y += m.shape[0] + U * 3
+    y += m0.shape[0] + 110
     fd = font(BRAND_FONT, step(5))
     tracked(d, ((W - tracked_w(DATE, fd, 0.06)) / 2, y), DATE, fd, 0.06, INK)
     y += hh(DATE, fd) + U * 3
@@ -345,9 +494,9 @@ def story():
     f3 = font(KR, step(1))
     d.text(((W - probe.textlength(TBA, font=f3)) / 2, y), TBA, font=f3, fill=DIM)
     y += hh(TBA, f3)
-    assert y < BOT - 60, y
+    assert y < BOT - 40, y
 
-    out = finish(pil, glow, 'story')
+    out = finish(pil, glow, eye_mask)
     Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(OUT, 'HW_스토리.jpg'), quality=94)
     night(out, 'HW_스토리')
     print('스토리 완료: HW_스토리')
