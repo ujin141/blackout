@@ -10,7 +10,7 @@
 
     R1  할로윈   bgm_organ      어두운 벽 → 네온 호박이 깜빡이며 켜진다 → 박쥐 → HALLOWEEN → 10.30 FRI
     R2  코스튬   bgm_musicbox   COSTUME · PARTY 가 켜지고 박쥐 떼가 지나간다 → 마녀 · 고양이 · 좀비 …
-    R3  장소     bgm_carpenter  네온 칵테일 → ZSPOT LOUNGE → 주소 → 22:00 — 03:00
+    R3  장소     bgm_carpenter  네온 맥주잔 → ZSPOT LOUNGE → 주소 → 22:00 — 03:00
 
 끝 2.4초는 셋 다 같은 끝판 — 로고 · 날짜 · 장소 · @zspot_lounge.
 
@@ -30,7 +30,7 @@ from PIL import Image, ImageDraw
 
 from poster_halloween import OUT, bat_points
 from poster_halloween3 import ADDR, HANDLE, INK, ORANGE, TIME, VENUE, WORD, cond, kr, logo_img, tape
-from poster_halloween4 import (NEON_OR, NEON_PK, NEON_PU, brick_wall, cocktail_neon, neon, outline, poly_mask,
+from poster_halloween4 import (NEON_OR, NEON_PU, NEON_WH, NEON_YE, beer_neon, brick_wall, neon, outline, poly_mask,
                                pumpkin_neon, text_neon)
 from poster_kit import grain
 from poster_moon import tracked, tracked_w
@@ -309,7 +309,9 @@ def reel_2():
 # ══════════════════════════════════════════════════════════
 
 def reel_3():
-    ck = bake(cocktail_neon(H, W, W // 2, 760, 640), NEON_PK, 1.0)
+    glass, foam = beer_neon(H, W, W // 2 - 50, 790, 560)      # 웰컴드링크가 생맥이라 맥주잔
+    ck = bake(glass, NEON_YE, 1.0)
+    fm = bake(foam, NEON_WH, 0.8)
     vn = rgba(tape(VENUE, cond(110), -3))
     ad = txt(ADDR, kr(44), INK + (255,))
     s1 = txt(DATE, cond(124), INK + (255,), 0.04)
@@ -321,6 +323,7 @@ def reel_3():
             t = i / FPS
             img = wall_frame(WALL, t)
             lay(img, ck, flicker(t, 0.3, 4))
+            lay(img, fm, flicker(t, 0.6, 5))
             for j, (bx, by) in enumerate(((180, 470), (900, 540))):
                 add_sprite(img, BAT_S, bx + np.sin(t * 2.2 + j) * 16, by + np.cos(t * 2.8 + j) * 10, flicker(t, 1.0 + j * 0.2, j))
             head(img)
@@ -352,9 +355,11 @@ def covers():
     neon(img, pumpkin_neon(H, RW, W // 2, BY + 380, 400), NEON_OR, 1.0)
     neon(img, outline(poly_mask(H, RW, [bat_points(W + x, BY + y, s, r, 1.0) for x, y, s, r in
                                         ((300, 360, 120, -0.2), (720, 300, 90, 0.15), (560, 520, 70, 0.1))]), 7), NEON_PU, 1.0)
-    neon(img, cocktail_neon(H, RW, 2 * W + W // 2, BY + 330, 360), NEON_PK, 1.0)
+    glass, foam = beer_neon(H, RW, 2 * W + W // 2 - 40, BY + 350, 380)
+    neon(img, glass, NEON_YE, 1.0)
+    neon(img, foam, NEON_WH, 0.8)
     big = cond(230, 'Bold Condensed')
-    for c, (t, col) in enumerate((('10.30', NEON_OR), ('FRI', NEON_PU), ('22:00', NEON_PK))):
+    for c, (t, col) in enumerate((('10.30', NEON_OR), ('FRI', NEON_PU), ('22:00', NEON_YE))):
         x = c * W + (W - tracked_w(t, big, 0.04)) / 2
         neon(img, text_neon(H, RW, t, big, x, BY + 640, 10, 0.04), col, 1.0)
     out = np.clip(img, 0, 1)
