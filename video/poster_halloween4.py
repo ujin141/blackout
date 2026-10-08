@@ -10,7 +10,7 @@ ZSPOT LOUNGE 사진이 오기 전까지는 어느 가게도 아닌 그림으로 
 라운지 바의 문법은 **벽돌 벽에 네온사인**이다. 클립아트처럼 안 보이려면 선 하나하나가
 빛이어야 한다 — 관 안쪽은 하얗게 타고, 둘레는 색으로 번지고, 벽에 빛이 묻는다.
 
-    HW1   네온 호박 (주황)         분장하고 오면 술 한 잔 서비스 (스티커)
+    HW1   네온 호박 (주황)
     HW2   COSTUME PARTY 네온 (보라) · 박쥐
     HW3   네온 칵테일 (분홍)        ZSPOT LOUNGE · 주소
     셋    벽돌 벽이 세 장을 잇는다 · HALLOWEEN 네온 아홉 자 (HAL / LOW / EEN) · 아래 검정 띠
@@ -198,8 +198,6 @@ def feed():
         tracked(d, (x0 + M, 96), 'BLACKOUT CREW PRESENTS', fe, 0.40, INK + (220,))
         pil.alpha_composite(lg, (x0 + W - M - lg.width, 88))
 
-    st = sticker(['분장하고 오면', '술 한 잔', '서비스'], 170, -10)
-    pil.alpha_composite(st, (W - st.width + 10, 380))
     tp3 = tape(VENUE, cond(92), 3)
     pil.alpha_composite(tp3, (2 * W + W - tp3.width - 50, 220))
     ta = tape(ADDR, kr(38), 3, bg=(18, 12, 22), fg=INK)
@@ -261,8 +259,6 @@ def story():
     tracked(d, (M, TOP + 6), 'BLACKOUT CREW PRESENTS', fe, 0.40, INK + (220,))
     lg = logo_img(int(W * 0.19))
     pil.alpha_composite(lg, (W - M - lg.width, TOP))
-    st = sticker(['분장하고 오면', '술 한 잔', '서비스'], 150, -10)
-    pil.alpha_composite(st, (W - st.width + 30, 600))
     tp = tape('COSTUME PARTY', cond(70), -3)
     pil.alpha_composite(tp, ((W - tp.width) // 2, ly - tp.height - 6))
     d = ImageDraw.Draw(pil, 'RGBA')
