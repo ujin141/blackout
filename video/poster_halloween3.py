@@ -10,14 +10,14 @@
 
     HW1   믹서 위의 손     분장하고 오면 술 한 잔 서비스 (스티커)
     HW2   디제이 얼굴      COSTUME PARTY
-    HW3   바에 모인 사람들  장소 · 라인업 곧 공개
+    HW3   바에 모인 사람들  ZSPOT LOUNGE · 강남구 논현로153길 46 B1
 
 할로윈 색으로 갈아입힌다 — 그림자는 보라, 빛은 주황. 원래 색을 반쯤 남겨 사진이 산다.
 
 ## 셋을 잇는 것
 
     HALLOWEEN   아홉 자를 아홉 칸에 (HAL / LOW / EEN). 주황 채움 · 검정 테 · 보라 그림자
-    아래 띠      검정 띠가 세 장 바닥을 지난다. 날짜 · 코스튬 · 장소
+    아래 띠      검정 띠가 세 장 바닥을 지난다. 날짜 · 시간 · 장소
     박쥐         몇 마리가 첫 장에서 셋째 장으로 날아간다
 
 올리는 순서 HW3 → HW2 → HW1.
@@ -48,6 +48,10 @@ BLACK = (8, 6, 10)
 
 WORD = 'HALLOWEEN'
 DATE = '10.31 SAT'
+TIME = '22:00 — 03:00'
+VENUE = 'ZSPOT LOUNGE'
+ADDR = 'B1 · 강남구 논현로153길 46'
+HANDLE = '@zspot_lounge'
 
 
 def cond(size, w='Bold Condensed'):
@@ -216,8 +220,10 @@ def feed():
     tp = tape('COSTUME PARTY', cond(84), -3)
     pil.alpha_composite(tp, (W + (W - tp.width) // 2, 520))
     # HW3 테이프
-    tp3 = tape('장소 · 라인업 곧 공개', kr(44), 3, bg=(18, 12, 22), fg=INK)
-    pil.alpha_composite(tp3, (2 * W + W - tp3.width - 60, 240))
+    tp3 = tape(VENUE, cond(92), 3)
+    pil.alpha_composite(tp3, (2 * W + W - tp3.width - 50, 200))
+    ta = tape(ADDR, kr(38), 3, bg=(18, 12, 22), fg=INK)
+    pil.alpha_composite(ta, (2 * W + W - ta.width - 60, 200 + tp3.height - 4))
 
     # HALLOWEEN
     slot = RW / len(WORD)
@@ -239,11 +245,9 @@ def feed():
     d.rectangle([0, by, RW, by + 6], fill=ORANGE + (255,))
     fd = cond(88)
     tracked(d, (M, by + 30), DATE, fd, 0.04, INK + (255,))
-    fk = kr(40)
-    t2 = '할로윈 당일 밤 · 코스튬 파티'
-    d.text((W + (W - d.textlength(t2, font=fk)) / 2, by + 46), t2, font=fk, fill=INK + (255,))
-    t3 = 'BLACKOUT HALLOWEEN'
-    f3 = cond(60)
+    tracked(d, (W + (W - tracked_w(TIME, fd, 0.04)) / 2, by + 30), TIME, fd, 0.04, INK + (255,))
+    t3 = HANDLE.upper()
+    f3 = cond(64)
     tracked(d, (2 * W + W - M - tracked_w(t3, f3, 0.04), by + 42), t3, f3, 0.04, ORANGE + (255,))
 
     out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
@@ -292,7 +296,7 @@ def story():
         if d.textlength(WORD, font=f) <= W - M * 2 - 30:
             break
     m = text3d(WORD, f, stroke=9, shadow=(14, 14))
-    ly = 1040
+    ly = 930
     paste(pil, m, (W - m.shape[1]) / 2, ly)
     d = ImageDraw.Draw(pil, 'RGBA')
     tp = tape('COSTUME PARTY', cond(76), -3)
@@ -300,14 +304,17 @@ def story():
     y = ly + m.shape[0] + 30
     fd = cond(130)
     tracked(d, ((W - tracked_w(DATE, fd, 0.04)) / 2, y), DATE, fd, 0.04, INK + (255,))
-    y += 150
-    fk = kr(44)
-    t = '할로윈 당일 밤'
-    d.text(((W - d.textlength(t, font=fk)) / 2, y), t, font=fk, fill=INK + (255,))
-    y += 70
-    tp3 = tape('장소 · 라인업 곧 공개', kr(38), 0, bg=(18, 12, 22), fg=INK)
+    y += 146
+    ft = cond(74)
+    tracked(d, ((W - tracked_w(TIME, ft, 0.04)) / 2, y), TIME, ft, 0.04, ORANGE + (255,))
+    y += 96
+    tp3 = tape(VENUE, cond(70), 0)
     pil.alpha_composite(tp3, ((W - tp3.width) // 2, int(y)))
-    assert y + tp3.height < 1640, y
+    y += tp3.height + 14
+    fk = kr(36)
+    d.text(((W - d.textlength(ADDR, font=fk)) / 2, y), ADDR, font=fk, fill=INK + (255,))
+    y += 50
+    assert y < 1640, y
 
     out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
     bloom(out, 0.70, W * 0.010, 0.25)
