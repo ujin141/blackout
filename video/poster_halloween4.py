@@ -12,7 +12,7 @@ ZSPOT LOUNGE 사진이 오기 전까지는 어느 가게도 아닌 그림으로 
 
     HW1   네온 호박 (주황)
     HW2   COSTUME PARTY 네온 (보라) · 박쥐
-    HW3   네온 칵테일 (분홍)        ZSPOT LOUNGE · 주소
+    HW3   네온 맥주잔 (노랑 · 거품 흰색)  ZSPOT LOUNGE · 주소   — 웰컴드링크가 생맥
     셋    벽돌 벽이 세 장을 잇는다 · HALLOWEEN 네온 아홉 자 (HAL / LOW / EEN) · 아래 검정 띠
 
 올리는 순서 HW3 → HW2 → HW1.
@@ -34,6 +34,8 @@ from poster_moon import fbm, tracked, tracked_w
 NEON_OR = np.float32([1.0, 0.42, 0.06])
 NEON_PU = np.float32([0.60, 0.20, 1.0])
 NEON_PK = np.float32([1.0, 0.22, 0.58])
+NEON_YE = np.float32([1.0, 0.74, 0.14])        # 맥주
+NEON_WH = np.float32([0.92, 0.94, 1.0])        # 거품
 
 
 # ── 벽 ────────────────────────────────────────────────
@@ -121,6 +123,32 @@ def pumpkin_neon(H, W, cx, cy, s, t=9):
     return np.clip(line + stem + leaf + face_line, 0, 1)
 
 
+def beer_neon(H, W, cx, cy, s, t=9):
+    """
+    맥주잔. (몸통 + 손잡이 + 거품 위 테두리 + 거품 줄 + 기포) → 몸통 선, 거품 선 따로 돌려준다.
+    웰컴드링크가 생맥이라 칵테일 대신 이걸 쓴다.
+    """
+    bw, bh = s * 0.52, s * 0.78
+    x0, y0, x1, y1 = cx - bw / 2, cy - bh * 0.45, cx + bw / 2, cy + bh * 0.55
+    body = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(body).rounded_rectangle([x0, y0, x1, y1], int(s * 0.06), fill=255)
+    body = outline(np.asarray(body, np.float32) / 255.0, t)
+    handle = arc_mask(H, W, [((x1 - s * 0.06, y0 + bh * 0.16, x1 + s * 0.26, y0 + bh * 0.70), 270, 90)], t)
+    # 잔 안 세로 홈 두 줄 · 기포
+    ribs = lines_mask(H, W, [[(cx - bw * 0.18, y0 + bh * 0.18), (cx - bw * 0.18, y1 - bh * 0.12)],
+                             [(cx + bw * 0.18, y0 + bh * 0.18), (cx + bw * 0.18, y1 - bh * 0.12)]], max(3, t // 2))
+    bub = outline(poly_mask(H, W, [], [(cx - s * 0.03 + dx * s - r, y0 + dy * bh - r, cx - s * 0.03 + dx * s + r, y0 + dy * bh + r)
+                                       for dx, dy, r in ((-0.06, 0.40, s * 0.018), (0.08, 0.55, s * 0.022),
+                                                         (-0.02, 0.70, s * 0.015), (0.02, 0.30, s * 0.012))]), max(3, t // 2))
+    glass = np.clip(body + handle + ribs * 0.8 + bub, 0, 1)
+    # 거품: 잔 위로 넘치는 구름
+    foam = poly_mask(H, W, [], [(cx + dx * s - r * s, y0 - s * 0.02 - r * s + dy * s, cx + dx * s + r * s, y0 - s * 0.02 + r * s + dy * s)
+                                for dx, dy, r in ((-0.20, 0.0, 0.09), (-0.07, -0.05, 0.11), (0.08, -0.04, 0.10),
+                                                  (0.21, 0.01, 0.08), (0.27, 0.07, 0.06))])
+    foam = outline(foam, t)
+    return glass, foam
+
+
 def cocktail_neon(H, W, cx, cy, s, t=9):
     """마티니 잔 · 올리브 · 빨대."""
     bowl = poly_mask(H, W, [[(cx - s * 0.42, cy - s * 0.40), (cx + s * 0.42, cy - s * 0.40), (cx, cy + s * 0.10)]])
@@ -171,7 +199,9 @@ def feed():
     for i, (t, dy) in enumerate((('COSTUME', 300), ('PARTY', 460))):
         x = W + (W - tracked_w(t, f_cp, 0.04)) / 2
         neon(img, text_neon(H, RW, t, f_cp, x, dy, 8, 0.04), NEON_PU if i == 0 else NEON_OR, 0.9)
-    neon(img, cocktail_neon(H, RW, 2 * W + 330, 520, 420), NEON_PK, 1.0)
+    glass, foam = beer_neon(H, RW, 2 * W + 300, 540, 400)
+    neon(img, glass, NEON_YE, 1.0)
+    neon(img, foam, NEON_WH, 0.8)
 
     # HALLOWEEN 네온. 아홉 칸에 한 자씩
     slot = RW / len(WORD)
