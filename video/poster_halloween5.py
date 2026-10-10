@@ -11,7 +11,7 @@
 
 ## 오게 만드는 말을 크게
 
-    HO1   LADIES FREE           여자 무료 · 남자 10,000원
+    HO1   10.30 FRI NIGHT       할로윈 전날 밤, 새벽 3시까지  (값은 판에 안 쓴다)
     HO2   검은 호박 · 박쥐        코스튬 파티
     HO3   WELCOME DRINK         생맥 or 데킬라 · ZSPOT LOUNGE
     셋    HALLOWEEN 아홉 자가 세 장을 지나고 아래로 흘러내린다 · 맨 아래 검정 띠 (날짜 · 시간 · 장소)
@@ -126,18 +126,12 @@ def main():
         tracked(d, (x0 + M, 96), 'BLACKOUT CREW PRESENTS', fe, 0.40, BK)
         pil.alpha_composite(lg, (x0 + W - M - lg.width, 88))
 
-    # HO1 — LADIES FREE
-    f1 = cond(210, 'Bold Condensed')
-    tracked(d, (M, 170), 'LADIES', f1, 0.02, BK)
-    tracked(d, (M, 380), 'FREE', f1, 0.02, BK)
-    # 'FREE' 옆 동그란 도장
-    cx, cy, r = M + tracked_w('FREE', f1, 0.02) + 130, 520, 108
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BK)
-    ft = kr(46)
-    for i, line in enumerate(('여자', '무료')):
-        tw_ = d.textlength(line, font=ft)
-        d.text((cx - tw_ / 2, cy - 52 + i * 54), line, font=ft, fill=OR_HI)
-    d.text((M, 640), '남자 10,000원', font=kr(54), fill=BK)
+    # HO1 — 날짜. 값은 판에 안 쓴다 (캡션 · 공지에서만)
+    f1 = cond(330, 'Bold Condensed')
+    tracked(d, (M - 6, 150), '10.30', f1, 0.0, BK)
+    f1b = cond(96, 'Bold Condensed')
+    tracked(d, (M, 500), 'FRI NIGHT', f1b, 0.08, BK)
+    d.text((M, 620), '할로윈 전날 밤, 새벽 3시까지', font=kr(46), fill=BK)
 
     # HO2 — 호박 · 박쥐 · 코스튬
     pumpkin(d, W + W // 2, 420, 470)
@@ -168,7 +162,7 @@ def main():
     by = H - 150
     d.rectangle([0, by, RW, H], fill=BK)
     fd = cond(88, 'Bold Condensed')
-    tracked(d, (M, by + 30), DATE, fd, 0.04, OR_HI)
+    tracked(d, (M, by + 30), 'BLACKOUT HALLOWEEN', cond(72, 'Bold Condensed'), 0.04, OR_HI)
     tracked(d, (W + (W - tracked_w(TIME, fd, 0.04)) / 2, by + 30), TIME, fd, 0.04, OR_HI)
     fv = cond(64, 'Bold Condensed')
     tracked(d, (2 * W + W - M - tracked_w(VENUE + ' B1', fv, 0.04), by + 22), VENUE + ' B1', fv, 0.04, OR_HI)
