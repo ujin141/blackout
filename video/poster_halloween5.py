@@ -188,3 +188,78 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# ══════════════════════════════════════════════════════════
+#  스토리 (1080×1920). 피드와 같은 주황판. 값은 안 쓴다
+# ══════════════════════════════════════════════════════════
+
+def story():
+    SW, SH = 1080, 1920
+    TOP, BOT = 250, 1620                       # 위아래는 인스타 UI 가 덮는다
+    yy, xx = np.mgrid[0:SH, 0:SW].astype(np.float32)
+    glow = np.exp(-((xx - SW / 2) / (SW * 0.7)) ** 2 - ((yy - SH * 0.40) / (SH * 0.5)) ** 2)
+    img = np.float32(OR) / 255 * (1 - glow[..., None]) + np.float32(OR_HI) / 255 * glow[..., None]
+    img *= (0.92 + 0.10 * fbm(SH, SW, 5, seed=22, base=5))[..., None]
+    pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).convert('RGBA')
+    d = ImageDraw.Draw(pil)
+
+    tracked(d, (M, TOP + 8), 'BLACKOUT CREW PRESENTS', cond(30, 'SemiBold Condensed'), 0.40, BK)
+    lg = black_logo(int(SW * 0.19))
+    pil.alpha_composite(lg, (SW - M - lg.width, TOP))
+
+    pumpkin(d, SW // 2, 590, 390)
+    bats(d, [(170, 400, 64, -0.2), (900, 380, 76, 0.15), (960, 540, 42, 0.25), (120, 600, 36, 0.1)])
+    fc = cond(76, 'Bold Condensed')
+    t = 'COSTUME PARTY'
+    tracked(d, ((SW - tracked_w(t, fc, 0.10)) / 2, 790), t, fc, 0.10, BK)
+
+    # HALLOWEEN 한 줄 + 흘러내림
+    rng = np.random.default_rng(9)
+    for s in range(300, 60, -4):
+        fw = cond(s, 'Bold Condensed')
+        if d.textlength(WORD, font=fw) <= SW - M * 2:
+            break
+    b = d.textbbox((0, 0), WORD, font=fw)
+    x = (SW - (b[2] - b[0])) / 2 - b[0]
+    y = 900
+    d.text((x, y - b[1]), WORD, font=fw, fill=BK)
+    yb = y + (b[3] - b[1])
+    for _ in range(9):
+        dx = rng.uniform(x + b[0] + 20, x + b[2] - 20)
+        L, w = rng.uniform(25, 90), rng.uniform(9, 15)
+        d.rounded_rectangle([dx - w / 2, yb - 8, dx + w / 2, yb + L], int(w / 2), fill=BK)
+        d.ellipse([dx - w * 0.75, yb + L - w * 0.6, dx + w * 0.75, yb + L + w * 0.9], fill=BK)
+
+    y = yb + 110
+    fd = cond(120, 'Bold Condensed')
+    t = '10.30 FRI'
+    tracked(d, ((SW - tracked_w(t, fd, 0.04)) / 2, y), t, fd, 0.04, BK)
+    y += 128
+    ft = cond(70, 'Bold Condensed')
+    tracked(d, ((SW - tracked_w(TIME, ft, 0.04)) / 2, y), TIME, ft, 0.04, BK)
+    y += 92
+    # 장소 띠
+    fv = cond(64, 'Bold Condensed')
+    vw = tracked_w(VENUE + ' B1', fv, 0.04)
+    d.rectangle([(SW - vw) / 2 - 30, y - 8, (SW + vw) / 2 + 30, y + 78], fill=BK)
+    tracked(d, ((SW - vw) / 2, y), VENUE + ' B1', fv, 0.04, OR_HI)
+    y += 96
+    fa = kr(36)
+    a = ADDR.replace('B1 · ', '')
+    d.text(((SW - d.textlength(a, font=fa)) / 2, y), a, font=fa, fill=BK)
+    y += 58
+    fk = kr(36, bold=False)
+    t = '웰컴드링크 생맥 or 데킬라'
+    d.text(((SW - d.textlength(t, font=fk)) / 2, y), t, font=fk, fill=BK)
+    y += 50
+    assert y < BOT, y
+
+    out = np.asarray(pil.convert('RGB'), np.float32) / 255.0
+    grain(out, 0.018)
+    Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(OUT, 'HO_스토리.jpg'), quality=95)
+    print('완료: HO_스토리')
+
+
+if __name__ == '__main__':
+    story()
